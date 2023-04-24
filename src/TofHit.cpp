@@ -1,7 +1,7 @@
-#include "TofRun.h"
-#include "TofEvent.h"
-#include "TofHit.h"
-#include "TofSignal.h"
+#include "../include/TofRun.h"
+#include "../include/TofEvent.h"
+#include "../include/TofHit.h"
+#include "../include/TofSignal.h"
 
 std::vector<std::string> SplitString(const std::string &s, char delim) {
     std::vector<std::string> elems;

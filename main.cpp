@@ -5,11 +5,11 @@
 
 // #include "TofObjects.h"
 // #include "TofObjects.C"
-#include "TofHit.h"
-#include "TofSignal.h"
-#include "TofEvent.h"
-#include "TofRun.h"
-#include "TofObjectsDict.h"
+#include "./include/TofHit.h"
+#include "./include/TofSignal.h"
+#include "./include/TofEvent.h"
+#include "./include/TofRun.h"
+#include "./include/TofObjectsDict.h"
 
 
 // int main(std::string software, std::string run_full_path, std::string output_directory){

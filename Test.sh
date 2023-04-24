@@ -4,6 +4,11 @@
 # inputDirectory="/home/emanuele/Documents/ToF/sampic/data/" # CHANGE LATER
 outputDirectory="/home/emanuele/Documents/ToF/sampic/NEWresults/"
 
+echo "Compiling and linking the program..."
+
+make clean; # comment this line if you don't want to clean the directory
+make;
+
 if [ $# -eq 0 ]
 then
   echo "Please select a run number from command line to convert the data into ROOT format. Usage: 
@@ -44,6 +49,6 @@ do
 
   eventsFile=$outputDirectory"run"$DataName"_events.root"
   mkdir -p $outputDirectory
-  ./my_program $software $runFullPath $outputDirectory
+  ./main $software $runFullPath $outputDirectory
 
 done

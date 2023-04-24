@@ -1,6 +1,6 @@
 // Do NOT change. Changes will be lost next time file is generated
 
-#define R__DICTIONARY_FILENAME TofObjectsDict
+#define R__DICTIONARY_FILENAME srcdITofObjectsDict
 #define R__NO_DEPRECATION
 
 /*******************************************************************/
@@ -35,10 +35,10 @@
 #include "TDataMember.h"
 
 // Header files passed as explicit arguments
-#include "TofHit.h"
-#include "TofSignal.h"
-#include "TofEvent.h"
-#include "TofRun.h"
+#include "../include/TofHit.h"
+#include "../include/TofSignal.h"
+#include "../include/TofEvent.h"
+#include "../include/TofRun.h"
 
 // Header files passed via #pragma extra_include
 
@@ -626,15 +626,15 @@ namespace ROOT {
 namespace {
   void TriggerDictionaryInitialization_TofObjectsDict_Impl() {
     static const char* headers[] = {
-"TofHit.h",
-"TofSignal.h",
-"TofEvent.h",
-"TofRun.h",
+"../include/TofHit.h",
+"../include/TofSignal.h",
+"../include/TofEvent.h",
+"../include/TofRun.h",
 nullptr
     };
     static const char* includePaths[] = {
 "/snap/root-framework/923/usr/local/include/",
-"/home/emanuele/Documents/ToF/sampic/Reconstruction/",
+"/home/emanuele/Documents/ToF/reconstruction/",
 nullptr
     };
     static const char* fwdDeclCode = R"DICTFWDDCLS(
@@ -643,12 +643,12 @@ nullptr
 #pragma clang diagnostic ignored "-Wignored-attributes"
 #pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
 extern int __Cling_AutoLoading_Map;
-class __attribute__((annotate("$clingAutoload$TofHit.h")))  TofHit;
+class __attribute__((annotate("$clingAutoload$../include/TofHit.h")))  TofHit;
 namespace std{template <typename _Tp> class __attribute__((annotate("$clingAutoload$bits/allocator.h")))  __attribute__((annotate("$clingAutoload$string")))  allocator;
 }
-class __attribute__((annotate("$clingAutoload$TofSignal.h")))  TofSignal;
-class __attribute__((annotate("$clingAutoload$TofEvent.h")))  TofEvent;
-class __attribute__((annotate("$clingAutoload$TofRun.h")))  TofRun;
+class __attribute__((annotate("$clingAutoload$../include/TofSignal.h")))  TofSignal;
+class __attribute__((annotate("$clingAutoload$../include/TofEvent.h")))  TofEvent;
+class __attribute__((annotate("$clingAutoload$../include/TofRun.h")))  TofRun;
 )DICTFWDDCLS";
     static const char* payloadCode = R"DICTPAYLOAD(
 #line 1 "TofObjectsDict dictionary payload"
@@ -656,10 +656,10 @@ class __attribute__((annotate("$clingAutoload$TofRun.h")))  TofRun;
 
 #define _BACKWARD_BACKWARD_WARNING_H
 // Inline headers
-#include "TofHit.h"
-#include "TofSignal.h"
-#include "TofEvent.h"
-#include "TofRun.h"
+#include "../include/TofHit.h"
+#include "../include/TofSignal.h"
+#include "../include/TofEvent.h"
+#include "../include/TofRun.h"
 
 #undef  _BACKWARD_BACKWARD_WARNING_H
 )DICTPAYLOAD";

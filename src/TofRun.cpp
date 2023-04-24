@@ -1,7 +1,7 @@
-#include "TofRun.h"
-#include "TofEvent.h"
-#include "TofHit.h"
-#include "TofSignal.h"
+#include "../include/TofRun.h"
+#include "../include/TofEvent.h"
+#include "../include/TofHit.h"
+#include "../include/TofSignal.h"
 
 // Constructor
 TofRun::TofRun(std::string software){
