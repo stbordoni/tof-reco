@@ -1,0 +1,7 @@
+{
+    "RunBaselineNSamples":5,
+    "RunNSamplesToExclude":0,
+    "RunInterpolationType":"linear",
+    "RunDeleteUnorderedHitsList":false,
+    "RunVerboseMode":false
+}

@@ -1,0 +1,21 @@
+JUST NOTES WHILE DEVELOPING THE CODE
+- improve handling of errors
+- consider options whena a board is missing
+- post trig!
+- add firmware to saved info
+- quick function that returns which plane given the int value
+- fix intthrthr
+ - add variabel total Hits
+- add warning when oerlapping with baseline when doing fit
+
+
+- change hitedge to min and max
+
+- dictionary of errors
+
+- int to say how many edges
+
+- add getters for 
+
+- later, change TofRun to TofGate or smth
+set private

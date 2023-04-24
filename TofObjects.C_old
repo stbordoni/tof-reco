@@ -1,0 +1,615 @@
+//
+// Created by E. Villa on Mar 28th, 2023. 
+// emanuele.villa@cern.ch
+// 
+
+#define TofObjects_cxx
+#include "TofObjects.h"
+#include <stdlib.h>
+#include <vector>
+#include <string>
+#include <nlohmann/json.hpp>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+std::vector<std::string> SplitString(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {elems.push_back(item);}
+    return elems;
+}
+
+
+////////////////////////////////////////////////////////////////////
+// TofHit class
+////////////////////////////////////////////////////////////////////
+
+
+TofHit::TofHit(){
+    // initialize all variables to recognizable value
+    HitId = -1;
+    HitFeb = -1;
+    HitSampic = -1;
+    HitFebChannel = -1;
+    HitDaqChannel = -1;
+    HitChannelOnPlane = -1;
+    HitPlane = -1;
+    HitBar = -1;
+    HitEdge = -1;
+
+    HitUnixTime = -1.0;
+    HitCell0Time = -1.0;
+    HitTime = -1.0;
+    HitTOTValue = -1.0;
+    HitRawTOTValue = -1.0;
+    HitRawPeak = -1.0;
+    HitBaseline = -1.0;
+    HitVoltageIntegral = -1.0;
+    HitPeak = -1.0;
+    HitPeakTime = -1.0;
+
+    HitWaveform = {};
+    HitErrorsList = {};
+}
+
+void TofHit::HitComputeVariables(){
+
+    HitSampic = std::floor(HitFebChannel/nChannelsPerSampic);
+    HitDaqChannel = nChannelsPerFeb*HitFeb + HitFebChannel;
+
+    // HitBaseline = 0;
+    // for(int sampleit = RunBaselineFirstSample; sampleit < RunBaselineFirstSample + RunBaselineNSamples; sampleit++)
+    //     HitBaseline += HitWaveform.at(sampleit);        
+    // HitBaseline /= RunBaselineNSamples;
+
+    // RawPeak is just max in wf, with no fit
+    HitRawPeak = std::max_element(HitWaveform.begin(), HitWaveform.end());
+    
+    HitPeak = HitRawPeak - HitBaseline; // will be changed to use fit
+
+    HitMatchDaqChToTofCh();
+    HitFitWaveform();
+    HitComputeCF();
+
+}
+
+void TofHit::HitFitWaveform(){
+
+
+
+}
+
+void TofHit::HitComputeCF(){
+
+}
+
+void TofHit::HitQualityCheck(){
+    
+    if (HitEdge != 0 && HitEdge != 1){
+        std::string this_error;
+        this_error = "HitEdge variable has incorrect value,  should be 0 or 1\n";
+        std::cerr << this_error << std::endl;
+        HitErrorsList.push_back(this_error);
+        return "!";
+    }
+
+}
+
+void TofHit::HitMatchDaqChToTofCh(){
+    // bulk bars: all except 0,1,18,19
+    // dictionary is U=0, D=1, T=2, B=3, L=4, R=5
+    if (HitFeb == 0 and (HitSampic == 0 or HitSampic == 1)){
+    HitPlane = 2;
+    HitBar = HitFebChannel%16 + 2; // this is when connecting bulk to FEB 0,1,2 and external bars to FEB3. Otherwise, it's channel/2
+    HitChannelOnPlane = HitBar*2 + HitSampic%2;
+    }
+    if (HitFeb == 0 and (HitSampic == 2 or HitSampic == 3)){
+    HitPlane = 1;
+    HitBar = (HitFebChannel - 32)%16 + 2;
+    HitChannelOnPlane = HitBar*2 + HitSampic%2;
+    }
+    if (HitFeb == 1 and (HitSampic == 0 or HitSampic == 1)){
+    HitPlane = 3;
+    HitBar = HitFebChannel%16 + 2;
+    HitChannelOnPlane = HitBar*2 + HitSampic%2;
+    }
+    if (HitFeb == 1 and (HitSampic == 2 or HitSampic == 3)){
+    HitPlane = 0;
+    HitBar = (HitFebChannel - 32)%16 + 2;
+    HitChannelOnPlane = HitBar*2 + HitSampic%2;
+    }
+    if (HitFeb == 2 and (HitSampic == 0 or HitSampic == 1)){
+    HitPlane = 4;
+    HitBar = HitFebChannel%16 + 2;
+    HitChannelOnPlane = HitBar*2 + HitSampic%2;
+    }
+    if (HitFeb == 2 and (HitSampic == 2 or HitSampic == 3)){
+    HitPlane = 5;
+    HitBar = (HitFebChannel - 32)%16 + 2;
+    HitChannelOnPlane = HitBar*2 + HitSampic%2;
+    }
+
+    //external bars
+    if (HitFeb == 3){
+    if (HitSampic == 0){
+        if (HitFebChannel == 0) {HitPlane = 0; HitBar = 0;}
+        if (HitFebChannel == 1) {HitPlane = 0; HitBar = 1;}
+        if (HitFebChannel == 2) {HitPlane = 0; HitBar = 18;}
+        if (HitFebChannel == 3) {HitPlane = 0; HitBar = 19;}
+        if (HitFebChannel == 4) {HitPlane = 2; HitBar = 0;}
+        if (HitFebChannel == 5) {HitPlane = 2; HitBar = 1;}
+        if (HitFebChannel == 6) {HitPlane = 2; HitBar = 18;}
+        if (HitFebChannel == 7) {HitPlane = 2; HitBar = 19;}
+        if (HitFebChannel == 8) {HitPlane = 1; HitBar = 0;}
+        if (HitFebChannel == 9) {HitPlane = 1; HitBar = 1;}
+        if (HitFebChannel == 10) {HitPlane = 1; HitBar = 18;}
+        if (HitFebChannel == 11) {HitPlane = 1; HitBar = 19;}
+        if (HitFebChannel == 12) {HitPlane = 5; HitBar = 0;}
+        if (HitFebChannel == 13) {HitPlane = 5; HitBar = 1;}
+        if (HitFebChannel == 14) {HitPlane = 5; HitBar = 18;}
+        if (HitFebChannel == 15) {HitPlane = 5; HitBar = 19;}
+        HitChannelOnPlane = HitBar*2 + 1;
+    }
+    if (HitSampic == 1){
+        if (HitFebChannel == 16) {HitPlane = 2; HitBar = 0;}
+        if (HitFebChannel == 17) {HitPlane = 2; HitBar = 1;}
+        if (HitFebChannel == 18) {HitPlane = 2; HitBar = 18;}
+        if (HitFebChannel == 19) {HitPlane = 2; HitBar = 19;}
+        if (HitFebChannel == 20) {HitPlane = 0; HitBar = 0;}
+        if (HitFebChannel == 21) {HitPlane = 0; HitBar = 1;}
+        if (HitFebChannel == 22) {HitPlane = 0; HitBar = 18;}
+        if (HitFebChannel == 23) {HitPlane = 0; HitBar = 19;}
+        // if (HitFebChannel == 24) {HitPlane = 3; HitBar = 0;}
+        if (HitFebChannel == 25) {HitPlane = 3; HitBar = 1;}
+        if (HitFebChannel == 26) {HitPlane = 3; HitBar = 18;}
+        // if (HitFebChannel-16 == 27) {HitPlane = 3; HitBar = 19;}
+        if (HitFebChannel == 28) {HitPlane = 4; HitBar = 0;}
+        if (HitFebChannel == 29) {HitPlane = 4; HitBar = 1;}
+        if (HitFebChannel == 30) {HitPlane = 4; HitBar = 18;}
+        if (HitFebChannel == 31) {HitPlane = 4; HitBar = 19;}
+        HitChannelOnPlane = HitBar*2;
+    }
+    if (HitSampic == 2){
+        if (HitFebChannel == 32) {HitPlane = 4; HitBar = 0; HitChannelOnPlane = HitBar*2 + 1;}
+        if (HitFebChannel == 33) {HitPlane = 4; HitBar = 1; HitChannelOnPlane = HitBar*2 + 1;}
+        if (HitFebChannel == 34) {HitPlane = 4; HitBar = 18; HitChannelOnPlane = HitBar*2 + 1;}
+        if (HitFebChannel == 35) {HitPlane = 4; HitBar = 19; HitChannelOnPlane = HitBar*2 + 1;}
+        // if (HitFebChannel == 36) {HitPlane = 3; HitBar = 0; HitChannelOnPlane = HitBar*2 + 1;}
+        if (HitFebChannel == 37) {HitPlane = 3; HitBar = 1; HitChannelOnPlane = HitBar*2 + 1;}
+        if (HitFebChannel == 38) {HitPlane = 3; HitBar = 18; HitChannelOnPlane = HitBar*2 + 1;}
+        // if (HitFebChannel-32 == 39) {HitPlane = 3; HitBar = 19; HitChannelOnPlane = HitBar*2 + 1;}
+        if (HitFebChannel == 40) {HitPlane = 5; HitBar = 0; HitChannelOnPlane = HitBar*2;}
+        if (HitFebChannel == 41) {HitPlane = 5; HitBar = 1; HitChannelOnPlane = HitBar*2;}
+        if (HitFebChannel == 42) {HitPlane = 5; HitBar = 18; HitChannelOnPlane = HitBar*2;}
+        if (HitFebChannel == 43) {HitPlane = 5; HitBar = 19; HitChannelOnPlane = HitBar*2;}
+        if (HitFebChannel == 44) {HitPlane = 1; HitBar = 0; HitChannelOnPlane = HitBar*2;}
+        if (HitFebChannel == 45) {HitPlane = 1; HitBar = 1; HitChannelOnPlane = HitBar*2;}
+        if (HitFebChannel == 46) {HitPlane = 1; HitBar = 18; HitChannelOnPlane = HitBar*2;}
+        if (HitFebChannel == 47) {HitPlane = 1; HitBar = 19; HitChannelOnPlane = HitBar*2;}
+    }
+    }
+    // std::cout << "This is (plane, bar): " << HitPlane << HitBar << "   ";
+    HitEdge = HitChannelOnPlane%2;
+}
+
+char TofHit::HitGetPlaneId(){
+    if (HitPlane == 0) return 'U';
+    else if (HitPlane == 1) return 'D';
+    else if (HitPlane == 2) return 'T';
+    else if (HitPlane == 3) return 'B';
+    else if (HitPlane == 4) return 'L';
+    else if (HitPlane == 5) return 'R';
+    else{
+        std::string this_error;
+        this_error = "HitPlane variable has incorrect value\n";
+        std::cerr << this_error << std::endl;
+        HitErrorsList.push_back(this_error);
+        return '!';
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////
+// TofSignal class
+////////////////////////////////////////////////////////////////////
+
+TofSignal::TofSignal(){
+    // to fill
+}
+
+void TofSignal::SignalQualityCheck(){
+    std::cout << "To be implemented " << std::endl;
+    
+}
+
+////////////////////////////////////////////////////////////////////
+// TofEvent class
+////////////////////////////////////////////////////////////////////
+
+
+TofEvent::TofEvent(){
+    // to fill
+}
+
+
+////////////////////////////////////////////////////////////////////
+// TofRun class
+////////////////////////////////////////////////////////////////////
+
+// Constructor, 
+TofRun::TofRun(std::string software){
+    RunSoftware = software;
+    RunSelectedAnalysisOptions = false;
+    std::cout << "Built object TofRun\n";
+}
+
+void TofRun::RunSaveSettings_linux(std::string run_full_path){
+
+    std::cout << "Linux. Saving Run parameters... ";
+    std::vector <std::string> RunPath_split = SplitString(run_full_path, '/');
+    RunPath = run_full_path;
+    std::cout << "RunPath: " << RunPath << std::endl;
+    RunAddress = RunPath_split.at(RunPath_split.size()-1); // here it's a filename
+    // ifstream RunInputFile(RunFile.c_str(), ios_base::in);
+    
+    size_t start = RunAddress.find("Run") + 3;
+    size_t end = RunAddress.find(".txt");
+    if (start != string::npos && end != string::npos && start < end) {
+        RunNumber = std::stoi(RunAddress.substr(start, end - start));
+        std::cout << "Run number " << RunNumber << endl;
+    } else {
+        std::string this_error;
+        this_error = "Wrong input filename, Run number not found\n";
+        std::cerr << this_error << std::endl;
+        RunErrorsList.push_back(this_error);
+    }
+
+    // hard coding for now, then there should be a settings file from MIDAS?
+
+    RunDate = -1;
+    RunTime = -1;
+    RunUnixTime = -1; 
+
+    RunNFebs = 4;
+    RunNSamplesToRead = 64;
+    RunSamplingFrequency = 3200;
+    RunSampleLength = 1e-3 / RunSamplingFrequency; // ns
+    for (int i=0; i<nFebsMax; i++) for (int j=0; j<nSampicsPerFeb; j++){
+        RunBaseline[i][j] = 0.150; // V
+        RunPostTrig[i][j] = 2;
+    }
+    for (int i=0; i<nChannels; i++) RunTrigThr[i] = 0.020;
+    std::cout << "Run parameters saved.\n";
+
+}
+
+// Windows format, int variable just to call a different constructor
+void TofRun::RunSaveSettings_windows(std::string run_full_path){
+
+    std::cout << "Windows. Saving Run parameters... ";
+    // ifstream RunInputFile(RunFile.c_str(), ios_base::in);
+    RunPath = run_full_path;
+    std::cout << "RunPath: " << RunPath << std::endl;
+    std::vector <std::string> RunPath_split = SplitString(run_full_path, '/');
+    RunAddress = RunPath_split.at(RunPath_split.size()-1); // here it's a filename
+    std::vector <std::string> RunAddress_split = SplitString(RunAddress, '_');
+
+    size_t start, end;
+
+    start = RunAddress.find("run") + 3;
+    if (start != string::npos) {
+        std::cout << "Run address " << RunAddress << std::endl;
+        RunNumber = std::stoi(RunAddress.substr(start));
+        std::cout << "Run number " << RunNumber << std::endl;
+    } else {
+        std::string this_error;
+        this_error = "Wrong input filename, Run number not found.\n";
+        std::cerr << this_error << std::endl;
+        RunErrorsList.push_back(this_error);
+    }
+  
+    // This can be uncommented to read the date from the filename
+    std::string RunDate_day = RunAddress_split.at(1).substr(0,2);
+    std::string RunDate_month = RunAddress_split.at(1).substr(2,2);
+    std::string RunDate_year = RunAddress_split.at(1).substr(4,4);
+    RunDate = std::stoi(RunDate_year+RunDate_month+RunDate_day);
+    
+    std::string RunTime_hours = RunAddress_split.at(2).substr(0,2);
+    std::string RunTime_minutes = RunAddress_split.at(2).substr(3,2);
+    RunTime = std::stoi(RunTime_hours+RunTime_minutes);
+
+    std::string RunSettingsFile = run_full_path + "/Run_Settings.txt";
+    ifstream RunSettingsStream(RunSettingsFile.c_str(), ios_base::in);
+
+    // to fix
+    // RunNSamplesToRead = 64;
+
+    // RunSamplingFrequency = 3200;
+    // RunSampleLength = 1e-3 / RunSamplingFrequency; // ns
+    // for (int i=0; i<nFebsMax; i++) for (int j=0; j<nSampicsPerFeb; j++){
+    //     RunBaseline[i][j] = 0.150; // V
+    //     RunPostTrig[i][j] = 2;
+    // }
+    // for (int i=0; i<nChannels; i++) RunTrigThr[i] = 0.020;
+    // int RunNSamplesPerHit = RunRunNSamplesToRead - HitNBadSampls;
+    // double RunSamplingFrequency = 1E-3*RunSamplingFrequencyMHz;
+    // double RunSample_length = 1. / RunSamplingFrequency;
+
+ 
+  std::string linedump;
+
+  while(!RunSettingsStream.eof())
+  {
+
+    getline(RunSettingsStream, linedump);
+
+    if(linedump.find("UnixTime") != std::string::npos)
+    {
+      std::string RunUnixTime_stringStart = "UnixTime = ";
+      std::string RunUnixTime_stringStop = " date";
+      int RunUnixTime_startPosition = linedump.find(RunUnixTime_stringStart) + RunUnixTime_stringStart.length();
+      int RunUnixTime_length = linedump.find(RunUnixTime_stringStop) - RunUnixTime_startPosition;
+      std::string RunUnixTime_string = linedump.substr(RunUnixTime_startPosition, RunUnixTime_length);
+      RunUnixTime = std::stod(RunUnixTime_string);
+
+    }
+    else if(linedump.find("Total Nb of 64-ch FE-Boards:") != std::string::npos)
+    {
+      std::string RunNFebs_stringStart = "FE-Boards: ";
+      std::string RunNFebs_stringStop = " ===";
+      int RunNFebs_startPosition = linedump.find(RunNFebs_stringStart) + RunNFebs_stringStart.length();
+      int RunNFebs_length = linedump.find(RunNFebs_stringStop) - RunNFebs_startPosition;
+      std::string RunNFebs_string = linedump.substr(RunNFebs_startPosition, RunNFebs_length);
+      RunNFebs = std::stoi(RunNFebs_string);
+
+    }
+    else if(linedump.find("64-ch Front-End Board") != std::string::npos)
+    {
+      std::string Feb_stringStart = "64-ch Front-End Board[";
+      std::string Feb_string = linedump.substr(linedump.find(Feb_stringStart) + Feb_stringStart.length(), 1);
+      int Feb = std::stoi(Feb_string); // not needed
+      
+      std::string RunFebSerialNumber_stringStart = "SerNum: ";
+      std::string RunFebSerialNumber_stringStop = ", Ctrl-FPGA";
+      int RunFebSerialNumber_startPosition = linedump.find(RunFebSerialNumber_stringStart) + RunFebSerialNumber_stringStart.length();
+      int RunFebSerialNumber_length = linedump.find(RunFebSerialNumber_stringStop) - RunFebSerialNumber_startPosition;
+      std::string RunFebSerialNumber_string = linedump.substr(RunFebSerialNumber_startPosition, RunFebSerialNumber_length);
+      RunFebSerialNumber.push_back(RunFebSerialNumber_string);
+    }
+    else if(linedump.find("SamplingFrequency:") != std::string::npos)
+    {
+      std::string RunSamplingFrequency_stringStart = "SamplingFrequency: ";
+      std::string RunSamplingFrequency_stringStop = " MS/s";
+      int RunSamplingFrequency_startPosition = linedump.find(RunSamplingFrequency_stringStart) + RunSamplingFrequency_stringStart.length();
+      int RunSamplingFrequency_length = linedump.find(RunSamplingFrequency_stringStop) - RunSamplingFrequency_startPosition;
+      std::string RunSamplingFrequency_string = linedump.substr(RunSamplingFrequency_startPosition, RunSamplingFrequency_length);
+      RunSamplingFrequency = std::stoi(RunSamplingFrequency_string);
+    }
+    else if(linedump.find("Baseline:") != std::string::npos)
+    {
+      std::string Feb_stringStart = "FE-BOARD[";
+      std::string Feb_string = linedump.substr(linedump.find(Feb_stringStart) + Feb_stringStart.length(), 1);
+
+      std::string Sampic_stringStart = "Sampic[";
+      std::string Sampic_string = linedump.substr(linedump.find(Sampic_stringStart) + Sampic_stringStart.length(), 1);
+
+      std::string Baseline_stringStart = "Baseline: ";
+      std::string Baseline_stringV = linedump.substr(linedump.find(Baseline_stringStart) + Baseline_stringStart.length(), 1);
+      std::string Baseline_stringmV = linedump.substr(linedump.find(Baseline_stringStart) + Baseline_stringStart.length() + 2, 3);
+
+      int Feb = std::stoi(Feb_string);
+      int Sampic = std::stoi(Sampic_string);
+      double Baseline = std::stoi(Baseline_stringV) + 1E-3*std::stoi(Baseline_stringmV);
+
+      RunBaseline[Feb][Sampic] = Baseline;
+
+    }
+    RunNSamplesToRead = 62;
+  }
+  
+  std::cout << "Run parameters saved.\n";
+
+}
+
+
+void TofRun::RunQualityCheck(){
+
+    if (RunNFebs != nFebsMax){
+        std::string this_error;
+        this_error = "Instead of 4 Febs, we have "+std::to_string(RunNFebs)+" Febs.";
+        std::cerr << this_error;
+        RunErrorsList.push_back(this_error);
+    }
+    if (RunSamplingFrequency != 3200){
+        std::string this_error;
+        this_error = "Sampling frequency is set to "+std::to_string(RunSamplingFrequency)+" MHz instead of 3200 MHz.";
+        std::cerr << this_error;
+        RunErrorsList.push_back(this_error);    
+    }  
+
+    if (RunErrorsList.size() == 0) std::cout << "No errors were found when generating the TofRun object\n";
+    else{
+        for (int i = 0; i < RunErrorsList.size(); i++){
+            std::cout << RunErrorsList.at(i) << std::endl;
+        }
+    }
+
+}
+
+void TofRun::RunGetSettings (){
+    // simple function to retrieve all Run parameters
+    std::cout << "To be implemented " << std::endl;
+};
+
+// this function only loads information from the file, almost no computation is done, except cell0time cycles
+void TofRun::RunLoadHits(){
+
+    double Cell0TimeOffset = 2.16e13; // reset after 6 hours
+    // int maxLinesInFile = 1e10; // to limit very long Runs! move to analysis settings
+    int NLinesInFile = 0;
+    int Cell0TimeCycles = 0;
+    double new_sample;
+    double previous_cell0time = -1;
+    std::string dump;
+    TofHit new_Hit; // appo hit, then will be pushedback
+
+
+    // first, load WFs and save ch number, unixtime
+
+    if (RunSoftware == "windows"){
+        // simplified, now it has to be one file per Feb. dont split files when saving
+        for (int febit = 0; febit < RunNFebs; febit++){
+            std::string RunFebDataFile = "/feb" + std::to_string(febit) + "/";
+            std::string fullFilename = RunPath + RunFebDataFile + RunAddress + "_feb"+ std::to_string(febit) + ".txt";
+            std::ifstream RunHitsFileStream(fullFilename, ios_base::in);
+            
+            std::cout << "Loading hits from file " << fullFilename << std::endl;
+
+            std::ifstream CountLines(fullFilename, ios_base::in);
+            std::string linedump;
+            while (!CountLines.eof())
+            {
+                getline(CountLines, linedump);
+                if(linedump != "") NLinesInFile++;
+                // std::cout << linedump << std::endl;
+            }
+            std::cout << "Hits in Feb[" << febit << "]: " << NLinesInFile/2 << std::endl;
+
+            for (int lineit = 0; lineit < NLinesInFile; lineit++){
+            // while (!RunHitsFileStream.eof()){ // change to limit nlines?
+                // std::cout << "Hit number " << NLinesInFile/2 << std::endl;
+                new_Hit.HitFeb = febit;
+                if(lineit%2 == 0){ //even lines
+                    RunHitsFileStream >> dump >>  new_Hit.HitFebChannel
+                            >> dump >>new_Hit.HitUnixTime 
+                            >> dump >> new_Hit.HitCell0Time 
+                            >> dump >> new_Hit.HitRawTOTValue 
+                            >> dump >> new_Hit.HitTOTValue 
+                            >> dump >> dump //Time // computing from wf
+                            >> dump >> dump //Baseline // computing from wf
+                            >> dump >> dump //RawPeak // computing from wf
+                            >> dump >> dump //Amplitude // computing from wf
+                            >> dump >> dump; //DataSize; // not reliable
+                }
+                else{
+                    RunHitsFileStream >> dump; // before the waveform, there is a string "DataSamples"
+                    new_Hit.HitWaveform.clear(); // necessary?
+
+                    for(int sampleit = 0; sampleit < RunNSamplesToRead; sampleit++){
+                        RunHitsFileStream >> new_sample;
+                        new_Hit.HitWaveform.push_back(new_sample);
+                    }
+                }
+
+                new_Hit.HitId = lineit%2;
+
+                if ((previous_cell0time - Cell0TimeCycles*Cell0TimeOffset) - new_Hit.HitCell0Time > 2e13) {
+                    Cell0TimeCycles++; 
+                    std::cout << "Feb " << new_Hit.HitFeb << ", Cell0Time cycle" << Cell0TimeCycles << endl;
+                }
+
+                new_Hit.HitCell0Time += Cell0TimeCycles*Cell0TimeOffset;
+                previous_cell0time = new_Hit.HitCell0Time;
+
+                RunUnorderedHitsList.push_back(new_Hit);
+            }
+
+            NLinesInFile = 0;
+
+        }
+    }
+
+
+    if (RunSoftware == "linux"){
+        ifstream RunHitsFileStream(Form("%s%s", RunPath.c_str(), RunAddress.c_str()), ios_base::in);
+
+        while (!RunHitsFileStream.eof()){ // change to limit nlines?
+
+            RunHitsFileStream >> dump >> new_Hit.HitFebChannel
+                    >> dump >> new_Hit.HitFeb
+                    >> dump >> new_Hit.HitCell0Time,
+                    // >> dump >> new_Hit.HitRawTOTValue // should add
+                    // >> dump >> new_Hit.HitTOTValue // should add
+
+            RunHitsFileStream >> dump; // before the waveform, there is a string "DataSamples"
+            new_Hit.HitWaveform.clear(); // necessary?
+
+            for(int sampleit = 0; sampleit < RunNSamplesInWaveform; sampleit++){
+                RunHitsFileStream >> new_sample;
+                new_Hit.HitWaveform.push_back(new_sample);
+            }
+
+            if ((previous_cell0time - Cell0TimeCycles*Cell0TimeOffset) - new_Hit.HitCell0Time > 2e13) {
+                Cell0TimeCycles++; 
+                std::cout << "Feb " << new_Hit.HitFeb << ", Cell0Time cycle" << Cell0TimeCycles << endl;
+            }
+
+            new_Hit.HitCell0Time += Cell0TimeCycles*Cell0TimeOffset;
+
+            previous_cell0time = new_Hit.HitCell0Time;
+            RunUnorderedHitsList.push_back(new_Hit);
+
+        }
+
+    }
+
+    // now compute all the rest 
+    
+            
+};
+
+
+void TofRun::RunOrderHits(){};
+void TofRun::RunCreateEvents(){};    
+
+void TofRun::RunSetAnalysisOptions (){   
+
+    if (RunSelectedAnalysisOptions == true) return; // avoid double calls
+    
+    std::string RunAnalysisSettingsFile = "AnalysisSettings.json"; // has to be in same folder for now
+    std::ifstream RunAnalysisSettingsStream(RunAnalysisSettingsFile.c_str());
+    if (RunAnalysisSettingsStream.good()) RunSelectedAnalysisOptions = true;
+
+    // for Linux as of april
+    if (RunSelectedAnalysisOptions == false){ 
+        RunInterpolationType = "linear";
+        RunNSamplesInWaveform = 63;
+        RunNSamplesToExclude = 1; // first is not to consider
+        RunBaselineNSamples = 5;
+        RunDeleteUnorderedHitsList = false;
+        return;
+    }
+
+    // Windows
+   
+    if (!RunAnalysisSettingsStream.is_open()) {
+        std::cerr << "Failed to open file\n";
+        RunSelectedAnalysisOptions = false;
+        return;
+    }
+
+    nlohmann::json json_file;
+    RunAnalysisSettingsStream >> json_file;
+    RunInterpolationType = json_file["RunInterpolationType"];
+    RunBaselineNSamples = json_file["RunBaselineNSamples"];
+    RunNSamplesToExclude = json_file["RunNSamplesToExclude"];
+    RunNSamplesInWaveform = RunNSamplesToRead- RunNSamplesToExclude;
+    RunDeleteUnorderedHitsList = json_file["RunDeleteUnorderedHitsList"];
+
+    RunSelectedAnalysisOptions = true;
+}
+
+void TofRun::RunGetAnalysisOptions (){};
+
+
+void TofRun::RunPrintErrors(){
+    for (int i = 0; i < RunErrorsList.size(); i++){
+        std::cout << "------------------------------------------\n";
+        std::cout << "Errors encountered:\n";
+        std::cout << RunErrorsList.at(i) << std::endl;
+        std::cout << "------------------------------------------\n";
+    }
+    
+}
