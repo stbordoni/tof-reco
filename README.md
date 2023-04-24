@@ -1,92 +1,53 @@
-# Reconstruction
+#
 
+# Analysis and reconstruction from SAMPIC data
 
+<a name ="analysis">
 
-## Getting started
+## Analyse a Run
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+With the script `RunSAMPICReconstructionAndAnalysis.sh` one can quickly analyse the data coming from a run:
+- Set the parent directory and where to put the input and output files.
+- Just change the number of the run to analyse inside the script. It is possible to analyse more than one consecutive run at the same time.
+- Select if to run only the reconstruction or also the analysis. Three parameters can be passed from command line:
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+`./RunSAMPICAnalysisAndReconstruction argv[1] argv[2] argv[3]`
 
-## Add your files
+- argv[1] = 1 executes the hit reconstruction and reorders the hits in time with `ReadAndReconstructSingleRun.C` and `OrderHits.C`, while 0 or other values don't do anyting.
+- argv[2] = 1 executes `GroupHits.C` (groups Hits in Events), while 0 or other values don't do anything. This is normally the longest step.
+- argv[3] = 1 executes `ReadToFEvents.C`, that is the high level analysis of the events.
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+If no parameter is passed from command line, it automatically runs in 1 1 1. Note that once the reconstruction and the grouping are done, it is not necessary to redo them before executing the analysis (unless changes have been made). 
 
-```
-cd existing_repo
-git remote add origin https://git.t2k.org/tof_utils/reconstruction.git
-git branch -M main
-git push -uf origin main
-```
+Check the last lines of the script to personalize the execution. The flag -b stops root display, -q quits root after the end of execution, so if one wants to see the root display they have to remove it.
 
-## Integrate with your tools
+<a name="wfdisplay">
 
-- [ ] [Set up project integrations](https://git.t2k.org/tof_utils/reconstruction/-/settings/integrations)
+## Display waveforms
+The program `WFDisplay.C` displays the waveforms of a specific Run, of a specific channel. It can be made smarter to accept more than one channel at the time.
+To run it, there is a simple bash script in this case as well: `DisplayWaveforms.sh`.
+It is necessary to have generated the file `*_events.root`, and to write its mother directory in the script.
+`DisplayWaveforms.sh` accepts two parameters from command line:
 
-## Collaborate with your team
+- argv[1] is the Run to analyse (`int`)
+- argv[2] is the Channel of which waveforms will be displayed (`int`).
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+One can also set these two parameters directly inside the script and launch it without parameters passed from command line.
+If the selected channel has triggered in the selected run, all waveforms will be displayed one at the time in a Canvas. 
+The amplitude of the waveforms and the number of hits in that events will be printed out in the terminal.
+The Y range can be set inside `WFDisplay.C`. 
+Once the program is in execution, double click on the Canvas or single click on the axis to go to the following Waveform
+You can also change the value of a bool to avoid having to click to display the following waveform; all will be shown quickly. 
+This is useful to store all the waveforms of a channel in a quick way. They are then stored in `wfs.csv`.
 
-## Test and Deploy
+## Display Events
+The program `EventDisplay.C` displays the bars thata are triggered in a specific Run, in a specific Event. 
+The option to display more events changing by clicking on the canvas will be added
+To run it, there is a simple bash script in this case as well: `DisplayEvents.sh`.
+It is necessary to have generated the file `*_events.root`, and to write its mother directory in the script.
+`DisplayEvent.sh` accepts two parameters from command line:
 
-Use the built-in continuous integration in GitLab.
+- argv[1] is the Run to analyse (`int`)
+- argv[2] is the Event to displat (`int`).
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+One can also set these two parameters directly inside the script and launch it without parameters passed from command line.
