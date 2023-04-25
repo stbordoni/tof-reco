@@ -27,7 +27,6 @@ lastRun=$1
 for ((runit = $firstRun; runit <= $lastRun; runit++ ))
 do
   echo "runit: "$runit
-  pwd
 
   if [ $runit -ge 1000 ]
   then

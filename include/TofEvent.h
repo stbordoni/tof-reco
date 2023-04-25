@@ -5,7 +5,7 @@
 
 
 
-class TofEvent: public TofSignal{
+class TofEvent{
 public: 
     
     // variables

@@ -6,7 +6,7 @@
 
 
 // TofRun includes the Run settings and all the elements
-class TofRun: public TofHit{
+class TofRun{
 public:
 
     // Sampic hardware details

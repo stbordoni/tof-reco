@@ -553,9 +553,10 @@ void TofRun::RunOrderHits(){
 
     for (int ihit = 0; ihit < RunUnorderedHitsList.size(); ihit++)
         RunOrderedHitsList.push_back(RunUnorderedHitsList.at(pair_cell0times_hitid.at(ihit).second));
-    std::cout << "\nStored hits in RunOrderedHitsList.\n";
     
-    // RunUnorderedHitsList = {}; // free memory?
+    RunUnorderedHitsList = {}; // free memory
+    std::cout << "\nStored hits in RunOrderedHitsList and emptied RunUnorderedHitsList.\n";
+
 }
 
 void TofRun::RunCreateEvents(){

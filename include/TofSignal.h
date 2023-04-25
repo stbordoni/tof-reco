@@ -4,7 +4,7 @@
 #include "TofHit.h"
 
 
-class TofSignal: public TofHit{
+class TofSignal{
 public:
     // constructor
     TofSignal();
