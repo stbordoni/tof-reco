@@ -345,7 +345,7 @@ void TofRun::RunLoadHits(){
     int NLinesInFile = 0, hitId_counter = 0;
     int Cell0TimeCycles = 0;
     double new_sample;
-    double previous_cell0time = -1;
+    double previous_cell0time = 0;
     std::string dump;
     TofHit new_Hit; // appo hit, then will be pushedback
 
@@ -478,6 +478,8 @@ void TofRun::RunLoadHits(){
                 }
 
                 new_Hit.HitId = hitId_counter;
+                // print hit id counter
+                // std::cout << "HitId: " << new_Hit.HitId << " ";
 
                 if ((previous_cell0time - Cell0TimeCycles*Cell0TimeOffset) - new_Hit.HitCell0Time > 2e13) {
                     Cell0TimeCycles++; 
@@ -503,6 +505,8 @@ void TofRun::RunLoadHits(){
 
 
 void TofRun::RunFillHitInfo(TofHit& this_hit){
+
+    // std::cout << "Filling hit info... ";
 
     this_hit.HitSampic = std::floor(this_hit.HitFebChannel/nChannelsPerSampic);
     this_hit.HitDaqChannel = nChannelsPerFeb*this_hit.HitFeb + this_hit.HitFebChannel;
@@ -596,7 +600,17 @@ void TofRun::RunCreateEvents(){
 void TofRun::RunSetAnalysisOptions (){   
 
     if (RunSelectedAnalysisOptions == true) return; // avoid double calls
-    
+
+    // for Linux as of april
+    if (RunSoftware == "linux"){ 
+        RunInterpolationType = "linear";
+        RunNSamplesInWaveform = 63;
+        RunNSamplesToExclude = 1; // first is not to consider
+        RunBaselineNSamples = 5;
+        RunDeleteUnorderedHitsList = false;
+        return;
+    }    
+
     std::string RunAnalysisSettingsFile = "AnalysisSettings.json"; // has to be in same folder for now
     std::ifstream RunAnalysisSettingsStream(RunAnalysisSettingsFile.c_str());
     if (RunAnalysisSettingsStream.good()) RunSelectedAnalysisOptions = true;
@@ -618,17 +632,9 @@ void TofRun::RunSetAnalysisOptions (){
 
     RunNSamplesInWaveform = RunNSamplesToRead- RunNSamplesToExclude;
 
-    RunSelectedAnalysisOptions = true;
 
-    // for Linux as of april
-    if (RunSelectedAnalysisOptions == false){ 
-        RunInterpolationType = "linear";
-        RunNSamplesInWaveform = 63;
-        RunNSamplesToExclude = 1; // first is not to consider
-        RunBaselineNSamples = 5;
-        RunDeleteUnorderedHitsList = false;
-        return;
-    }
+
+    RunSelectedAnalysisOptions = true;
 
 
 }
