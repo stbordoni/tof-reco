@@ -13,13 +13,13 @@ SRCS = $(SRCDIR)/TofHit.cpp $(SRCDIR)/TofSignal.cpp $(SRCDIR)/TofEvent.cpp $(SRC
 OBJS = $(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(SRCS)) main.o
 
 # Compiler flags
-CFLAGS = -c -Wall -O2 -std=c++11 -pthread -std=c++17 -m64 -I$(INCDIR) $(shell root-config --cflags)
+CFLAGS = -c -Wall -O2 -std=c++11 -pthread -std=c++17 -m64 -I$(INCDIR) -I/snap/bin/ $(shell /snap/bin/root-config --cflags)
 
 # Linker flags
-LFLAGS = $(shell root-config --ldflags)
+LFLAGS = -L/snap/bin/ $(shell /snap/bin/root-config --ldflags)
 
 # Libraries
-LIBS = $(shell root-config --libs)
+LIBS = -lCore -lCling -lRIO -lNet -lHist -lGraf -lGraf3d -lTree -lTreePlayer -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lpthread -lm -ldl
 
 # Name of the executable
 EXECUTABLE = main

@@ -1,27 +1,16 @@
-# CHANGE 
+# NEW Reconstruction code for SAMPIC data
 
-# Analysis and reconstruction from SAMPIC data
+We are now using a proper framework. 
+After cloning this repository in your machine, do `mkdir build; cd build; cmake ..; make`, to see if your system meets the requirements.
+You need to have ROOT installed in the standard location, meaning `/usr/local/`, and cmake and c++ meeting the requirements. 
+If that's not the case, update them. 
+In `build` you will have then the executable `TofApp`.
 
-<a name ="analysis">
+An easy way to generate the ROOT file for a run is by running `./Test.sh run_number`, where `run_number` clearly is the number of the run to analyze.
+The standard folder where the run is is `../TofData`, and the results are in `../TofRootFiles`.
+If you want to set different folders, change the path in `Test.sh`.
 
-## Analyse a Run
-
-With the script `RunSAMPICReconstructionAndAnalysis.sh` one can quickly analyse the data coming from a run:
-- Set the parent directory and where to put the input and output files.
-- Just change the number of the run to analyse inside the script. It is possible to analyse more than one consecutive run at the same time.
-- Select if to run only the reconstruction or also the analysis. Three parameters can be passed from command line:
-
-`./RunSAMPICAnalysisAndReconstruction argv[1] argv[2] argv[3]`
-
-- argv[1] = 1 executes the hit reconstruction and reorders the hits in time with `ReadAndReconstructSingleRun.C` and `OrderHits.C`, while 0 or other values don't do anyting.
-- argv[2] = 1 executes `GroupHits.C` (groups Hits in Events), while 0 or other values don't do anything. This is normally the longest step.
-- argv[3] = 1 executes `ReadToFEvents.C`, that is the high level analysis of the events.
-
-If no parameter is passed from command line, it automatically runs in 1 1 1. Note that once the reconstruction and the grouping are done, it is not necessary to redo them before executing the analysis (unless changes have been made). 
-
-Check the last lines of the script to personalize the execution. The flag -b stops root display, -q quits root after the end of execution, so if one wants to see the root display they have to remove it.
-
-<a name="wfdisplay">
+THE FOLLOWING OPTIONS ARE NOT HERE YET FOR THE NEW FORMAT, BUT WILL BE
 
 ## Display waveforms
 The program `WFDisplay.C` displays the waveforms of a specific Run, of a specific channel. It can be made smarter to accept more than one channel at the time.

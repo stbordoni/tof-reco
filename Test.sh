@@ -1,14 +1,18 @@
 #!/bin/bash
 
-# inputDirectory="/home/emanuele/Documents/ToF/linuxData/"
-# inputDirectory="/home/emanuele/Documents/ToF/sampic/data/" # CHANGE LATER
-outputDirectory="/home/emanuele/Documents/ToF/sampic/NEWresults/"
+inputDirectory="../../TofData/" # CHANGE LATER
+outputDirectory="../../TofRootFiles/"
 
-echo "Compiling and linking the program..."
+echo "Moving into build directory"
+cd build;
 
-make clean; # comment this line if you don't want to clean the directory
-make;
+# Compile the code
+echo "Compiling the code"
+cmake ..
+make
 
+
+# Check if the user has selected a run number
 if [ $# -eq 0 ]
 then
   echo "Please select a run number from command line to convert the data into ROOT format. Usage: 
@@ -23,15 +27,16 @@ lastRun=$1
 for ((runit = $firstRun; runit <= $lastRun; runit++ ))
 do
   echo "runit: "$runit
+  pwd
 
   if [ $runit -ge 1000 ]
   then
     software="linux"
-    inputDirectory="/home/emanuele/Documents/ToF/linuxData/"
+    # inputDirectory="/home/emanuele/Documents/ToF/linuxData/"
     runFullPath=$(find $inputDirectory$"linux_run"$runit".txt")
   else
     software="windows"
-    inputDirectory="/home/emanuele/Documents/ToF/sampic/data/"
+    # inputDirectory="/home/emanuele/Documents/ToF/sampic/data/"
     runFullPath=$(find $inputDirectory -type d -name "sampic_*_*h*min_run"$runit)
   fi
   
@@ -49,6 +54,6 @@ do
 
   eventsFile=$outputDirectory"run"$DataName"_events.root"
   mkdir -p $outputDirectory
-  ./main $software $runFullPath $outputDirectory
+  ./TofApp $software $runFullPath $outputDirectory
 
 done
