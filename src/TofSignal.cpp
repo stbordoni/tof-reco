@@ -9,6 +9,9 @@ TofSignal::TofSignal(){
 }
 
 void TofSignal::SignalIdentifyEdges(){
+
+    // add something to identify singlebar
+
     if (SignalBothEdges == true){
         // std::cout << "Two edges in this Signal" << std::endl;
 
@@ -22,7 +25,7 @@ void TofSignal::SignalIdentifyEdges(){
         }
         else{
             // add to errorslist
-            std::cerr << "Error in SignalIdentifyEdges, signal hits list has two elements but they are not left and right\n";
+            // std::cerr << "Error in SignalIdentifyEdges, signal hits list has two elements but they are not left and right\n";
         }
     }
     else if (SignalBothEdges == false){

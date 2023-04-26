@@ -11,6 +11,11 @@
 #include <sstream>
 #include <TFile.h>
 #include <TTree.h>
+#include <TMath.h>
+#include <TGraph.h>
+#include <TF1.h>
+#include <TH1D.h>
+#include <TCanvas.h>
 
 #include "TofObjectsDict.h"
 
@@ -25,6 +30,8 @@
 // Simple function to split strings, might move elsewhere
 std::vector<std::string> SplitString(const std::string &, char);
 
+// Adapted gaussian function for fitting
+Double_t FitFunction(Double_t *, Double_t *);
 
 
 
@@ -53,13 +60,16 @@ public:
     double HitPeakTime;
 
     // fit
-    double HitFitParameter[6];
-    std::vector<double> HitVoltageValueFromFit;
+    double HitSampleLength; // taken from run
+    std::vector <double> HitPeakFraction; // taken from run
 
-    std::vector<double> HitPeakFractionSampleLinearInt;
-    std::vector<double> HitPeakFractionTimeLinearInt;
-    std::vector<double> HitPeakFractionSampleSplineInt;
-    std::vector<double> HitPeakFractionTimeSplineInt;
+    double HitFitParameter[6];
+    std::vector <double> HitCfTimeFromFit;
+
+    std::vector <double> HitPeakFractionSampleLinearInt;
+    std::vector <double> HitPeakFractionTimeLinearInt;
+    std::vector <double> HitPeakFractionSampleSplineInt;
+    std::vector <double> HitPeakFractionTimeSplineInt;
 
     std::vector <std::string> HitErrorsList; // check if better to have only RunErrors
 
@@ -71,8 +81,7 @@ public:
 
     // Functions
     // void HitComputeVariables();
-    double HitFitWaveform();
-    void HitComputeCf();
+    void HitFitWaveform();
     void HitQualityCheck();
     void HitMatchDaqChToTofCh();
     char HitGetPlaneId();

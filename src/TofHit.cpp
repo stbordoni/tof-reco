@@ -11,6 +11,23 @@ std::vector<std::string> SplitString(const std::string &s, char delim) {
     return elems;
 }
 
+Double_t FitFunction(Double_t *x,Double_t *parameters){
+
+    Double_t mean = 0;
+    Double_t sigma = 0;
+
+    if( x[0] < parameters[1] ) 
+        sigma = TMath::Abs(parameters[2])*(x[0]-parameters[1])+parameters[3]; 
+    else 
+        sigma = TMath::Abs(parameters[4])*(x[0]-parameters[1])+parameters[3]; 
+
+    mean = (x[0] - parameters[1]);
+    Double_t fit_value = parameters[0]*TMath::Exp(-0.5*pow(mean/sigma,2))+parameters[5];
+
+    return fit_value;
+
+}
+
 TofHit::TofHit(){
     // initialize all variables to recognizable value
     HitId = -1;
@@ -36,54 +53,86 @@ TofHit::TofHit(){
 
     HitWaveform = {};
     HitErrorsList = {};
+    HitPeakFraction = {};
+    HitCfTimeFromFit = {};
+    HitPeakFractionSampleLinearInt = {};
+    HitPeakFractionTimeLinearInt = {};
+    HitPeakFractionSampleSplineInt = {};
+    HitPeakFractionTimeSplineInt = {};
+
+    // Fit Parameters
+    HitFitParameter[0] = -999;
+    HitFitParameter[1] = -999;
+    HitFitParameter[2] = -999;
+    HitFitParameter[3] = -999;
+    HitFitParameter[4] = -999;
+    HitFitParameter[5] = -999;
 }
 
 
 
-double TofHit::HitFitWaveform(){
 
-//  Double_t arg = 0;
-//  double sigm = 0;
 
-//  if( x[0] < HitFitParameter[1] ) 
-//    sigm = TMath::Abs(HitFitParameter[2])*(x[0]-HitFitParameter[1])+HitFitParameter[3]; 
-//  else 
-//    sigm = TMath::Abs(HitFitParameter[4])*(x[0]-HitFitParameter[1])+HitFitParameter[3]; 
- 
-//  // sigm = HitFitParameter[2]*(x[0]-HitFitParameter[1])+HitFitParameter[3]; 
- 
-//  arg = (x[0] - HitFitParameter[1])/sigm;
-//  Double_t fitval = HitFitParameter[0]*TMath::Exp(-0.5*arg*arg)+HitFitParameter[5];
-//  return fitval;
+void TofHit::HitFitWaveform(){
 
-}
+    // std::cout << ". HitFitWaveform" ; 
+    // // print channel id
+    // std::cout << "Hitid: " << HitId ;    
 
-void TofHit::HitComputeCf(){
+    HitFitParameter[0] = HitPeak;
+    HitFitParameter[1] = HitPeakSample;
+    HitFitParameter[2] = 0.2; // WidthDep1
+    HitFitParameter[3] = 13.; // Width
+    HitFitParameter[4] = 0.2; // WidthDep2
+    HitFitParameter[5] = 0.0; // Baseline
 
-//   double mx =0; 
-//   int imx = 0;
+    TF1 fit_function("fit_function",FitFunction,0,HitWaveform.size(),6);        
+    fit_function.SetParameter(0,HitFitParameter[0]);
+    fit_function.SetParameter(1,HitFitParameter[1]);
+    fit_function.SetParameter(2,HitFitParameter[2]);
+    fit_function.SetParameter(3,HitFitParameter[3]);
+    fit_function.SetParameter(4,HitFitParameter[4]);
+    fit_function.SetParameter(5,HitFitParameter[5]);
+    
+    // create appo canvas just to not create a dedfault one during execution. Look for a workaround
+    TCanvas *c_appo = new TCanvas("c_appo","c_appo",800,600);
+    c_appo->cd();
+    TH1D * h_waveform = new TH1D(Form("Channel%i",HitDaqChannel),Form("Waveform Ch%i", HitDaqChannel),HitWaveform.size(),-0.5,HitWaveform.size()-0.5);
 
-//   for(int i =0; i < HitWaveform.size(); i++ ) {
-//     if( h->GetBinContent(i+1) > mx ) {mx = h->GetBinContent(i+1); imx = i;}
-//   }
+    h_waveform->GetXaxis()->SetTitle("Sample");
+    h_waveform->GetYaxis()->SetTitle("Amplitude(V)"); 
 
-//   TF1 func("fit",fitf,0,62,6);
-      
-//   func.SetParameter(0,mx);
-//   func.SetParameter(1,imx);
-//   func.SetParameter(2,0.2);
-//   func.SetParameter(3,13.);
-//   func.SetParameter(4,0.2);
-//   func.SetParameter(5,0.0);
-  
-//   h->Fit("fit","","",imx-30,imx+10);
+    for(int j =0; j < HitWaveform.size();j++ ) {
+        h_waveform->SetBinContent(j+1, HitWaveform[j]);
+        h_waveform->SetBinError(j+1,1.e-4); // check this
+    }
 
-//   for( int i = 0; i < 6; i++ ) 
-//     HitFitParameter[i] = func.GetParameter(i); 
-  
+    // can turn off Quiet mode
+    h_waveform->Fit("fit_function","Q","",  HitPeakSample-30, HitPeakSample+10);
 
-//   return func.GetX(th*func.GetParameter(0)+func.GetParameter(5));
- 
+    double fit_peak = TMath::Abs(fit_function.GetParameter(0));
+    double fit_peakTime = fit_function.GetParameter(1);
+    double fit_widthDep1 = fit_function.GetParameter(2);
+    double fit_width = fit_function.GetParameter(3);
+    double fit_widthDep2 = fit_function.GetParameter(4);
+    double fit_baseLine = fit_function.GetParameter(5);
+
+
+    // std::cout << "fit done" << std::endl;
+    if (fit_peakTime < 60. && fit_peakTime > 0.){
+        for (int i = 0; i < HitPeakFraction.size(); i++){
+            double fit_value = fit_function.GetX(HitPeakFraction.at(i)*fit_peak + fit_baseLine);
+            HitCfTimeFromFit.push_back(fit_value * HitSampleLength ); // +  HitCell0Time
+            std::cout << "fit_value: " << fit_value << std::endl;
+            std::cout << "HitPeakFraction.at(i): " << HitPeakFraction.at(i) << std::endl;
+            std::cout << "HitTimeFromFit.at(i): " << HitCfTimeFromFit.at(i) << std::endl;
+        }
+    }
+    // add else?
+
+    h_waveform->Delete();
+    c_appo->Close();
+    std::cout << std::endl;
 }
 
 void TofHit::HitQualityCheck(){
@@ -192,6 +241,14 @@ void TofHit::HitMatchDaqChToTofCh(){
     }
     // std::cout << "This is (plane, bar): " << HitPlane << HitBar << "   ";
     HitEdge = HitChannelOnPlane%2;
+
+    // singlebar
+    if (HitDaqChannel == 216) {HitPlane = -1; HitBar = -1;}
+    if (HitDaqChannel == 219) {HitPlane = -1; HitBar = -1;}
+    if (HitDaqChannel == 228) {HitPlane = -1; HitBar = -1;}
+    if (HitDaqChannel == 231) {HitPlane = -1; HitBar = -1;}
+    if (HitDaqChannel == 242) {HitPlane = -1; HitBar = -1;}
+    if (HitDaqChannel == 243) {HitPlane = -1; HitBar = -1;}
 }
 
 char TofHit::HitGetPlaneId(){

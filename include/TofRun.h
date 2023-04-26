@@ -18,6 +18,8 @@ public:
 
     // Run details
     std::string RunSoftware;
+    bool RunSinglebarType;
+    int RunMaxHitsToLoad;
     std::string RunPath; // this will be dependent on the local machine
     std::string RunAddress; // for linux its currently a file, for windows a folder
     std::vector<std::string> RunFebSerialNumber; // = {"1.12", "1.13", "1.18", "1.19"}; // when a board is missign what happens?
@@ -71,7 +73,7 @@ private:
     bool RunVerboseMode;
     bool RunSelectedAnalysisOptions; // false in constructor, set to true when SetAnalysisOptions is called succesfully
     std::string RunInterpolationType; // spline or linear, deafult is linear
-    std::vector<double> RunHitPeakFraction = {0.05,0.10,0.20,0.30,0.40,0.50,0.60,0.70,0.90};
+    std::vector<double> RunHitPeakFraction = {0.05,0.10,0.20,0.30,0.40,0.50,0.60,0.70,0.80,0.90};
     int RunNSamplesInWaveform; // actual samples used, different for windows and linux
     int RunNSamplesToExclude; // default is 1
     int RunBaselineFirstSample = 0; // default, this is already after removing bad samples

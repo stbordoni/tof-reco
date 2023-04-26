@@ -7,7 +7,7 @@
 TofRun::TofRun(std::string software){
     RunSoftware = software;
     RunSelectedAnalysisOptions = false;
-
+    RunSinglebarType = false;
 
 
     std::cout << "Built object TofRun\n";
@@ -42,7 +42,7 @@ void TofRun::RunSaveSettings_linux(std::string run_full_path){
 
     RunNFebs = 4;
     RunNSamplesToRead = 64;
-    RunSamplingFrequency = 3200;
+    RunSamplingFrequency = 3200; // MHz
     RunSampleLength = 1e-3 / RunSamplingFrequency; // ns
     for (int i=0; i<nFebsMax; i++) for (int j=0; j<nSampicsPerFeb; j++){
         RunBaseline[i][j] = 0.150; // V
@@ -134,8 +134,9 @@ void TofRun::RunSaveSettings_windows(std::string run_full_path){
       int RunNFebs_startPosition = linedump.find(RunNFebs_stringStart) + RunNFebs_stringStart.length();
       int RunNFebs_length = linedump.find(RunNFebs_stringStop) - RunNFebs_startPosition;
       std::string RunNFebs_string = linedump.substr(RunNFebs_startPosition, RunNFebs_length);
-      
+      std::cout << "RunNFebs_string: " << RunNFebs_string << std::endl;
       RunNFebs = std::stoi(RunNFebs_string);
+        std::cout << "RunNFebs: " << RunNFebs << std::endl;
 
     }
     else if(linedump.find("64-ch Front-End Board") != std::string::npos)
@@ -159,9 +160,11 @@ void TofRun::RunSaveSettings_windows(std::string run_full_path){
       int RunSamplingFrequency_startPosition = linedump.find(RunSamplingFrequency_stringStart) + RunSamplingFrequency_stringStart.length();
       int RunSamplingFrequency_length = linedump.find(RunSamplingFrequency_stringStop) - RunSamplingFrequency_startPosition;
       std::string RunSamplingFrequency_string = linedump.substr(RunSamplingFrequency_startPosition, RunSamplingFrequency_length);
-      
+      std::cout << "RunSamplingFrequency_string: " << RunSamplingFrequency_string << std::endl;
       RunSamplingFrequency = std::stoi(RunSamplingFrequency_string);
-      RunSampleLength = 1e-3 / RunSamplingFrequency; // ns
+      RunSampleLength = 1e3 / RunSamplingFrequency; // ns
+      std::cout << "RunSamplingFrequency: " << RunSamplingFrequency << std::endl;
+        std::cout << "RunSampleLength: " << RunSampleLength << std::endl;
     }
     else if(linedump.find("Baseline:") != std::string::npos)
     {
@@ -206,9 +209,26 @@ void TofRun::RunSaveSettings_windows(std::string run_full_path){
         std::string EnabledForCentralTrigger_stringStart = "EnabledForCentralTrigger: ";
         std::string EnabledForCentralTrigger_string = linedump.substr(linedump.find(EnabledForCentralTrigger_stringStart) + EnabledForCentralTrigger_stringStart.length(), 1);
 
+        int length_of_stringV = 2;
         std::string InternalTriggerTreshold_stringStart = "InternalTriggerTreshold: ";
         std::string InternalTriggerTreshold_stringV = linedump.substr(linedump.find(InternalTriggerTreshold_stringStart) + InternalTriggerTreshold_stringStart.length(), 1);
-        std::string InternalTriggerTreshold_stringmV = linedump.substr(linedump.find(InternalTriggerTreshold_stringStart) + InternalTriggerTreshold_stringStart.length() + 2, 3);
+        // if the value is negative
+        if (InternalTriggerTreshold_stringV == "-")
+        {
+           // then add another digit
+            InternalTriggerTreshold_stringV = linedump.substr(linedump.find(InternalTriggerTreshold_stringStart) + InternalTriggerTreshold_stringStart.length(), 2);
+            length_of_stringV++;
+        }
+        std::string InternalTriggerTreshold_stringmV = linedump.substr(linedump.find(InternalTriggerTreshold_stringStart) + InternalTriggerTreshold_stringStart.length() + length_of_stringV, 3);
+
+        // std::cout << "Feb_string: " << Feb_string << std::endl;
+        // std::cout << "Sampic_string: " << Sampic_string << std::endl;
+        // std::cout << "Channel_string: " << Channel_string << std::endl;
+        // std::cout << "Enabled_string: " << Enabled_string << std::endl;
+        // std::cout << "TriggerMode_string: " << TriggerMode_string << std::endl;
+        // std::cout << "EnabledForCentralTrigger_string: " << EnabledForCentralTrigger_string << std::endl;
+        // std::cout << "InternalTriggerTreshold_stringV: " << InternalTriggerTreshold_stringV << std::endl;
+        // std::cout << "InternalTriggerTreshold_stringmV: " << InternalTriggerTreshold_stringmV << std::endl;
 
         int feb = std::stoi(Feb_string);
         int sampic = std::stoi(Sampic_string);
@@ -222,6 +242,14 @@ void TofRun::RunSaveSettings_windows(std::string run_full_path){
 
         std::string trigger_mode = TriggerMode_string;
         
+        // print 
+        // std::cout << "Feb: " << feb << std::endl;
+        // std::cout << "Sampic: " << sampic << std::endl;
+        // std::cout << "Channel: " << channel << std::endl;
+        // std::cout << "Enabled: " << enabled_for_central_trigger << std::endl;
+        // std::cout << "TriggerMode: " << trigger_mode << std::endl;
+        // std::cout << "InternalTriggerTreshold: " << InternalTriggerTreshold_string << std::endl;
+
 
 
 
@@ -387,6 +415,12 @@ void TofRun::RunLoadHits(){
             std::cout << "Hits in Feb[" << febit << "]: " << NLinesInFile/2 << std::endl;
 
             for (int lineit = 0; lineit < NLinesInFile; lineit++){
+                
+                // print progression of this ciycle in %
+                if (lineit % (NLinesInFile/1000) == 0) {
+                    std::cout << "Loading hits from file " << full_filename << " " << lineit/(NLinesInFile/100) << "%\r";
+                    std::cout.flush();
+                }
 
                 new_Hit.HitFeb = febit;
 
@@ -432,12 +466,14 @@ void TofRun::RunLoadHits(){
                     // std::cout << "Filling hit info... ";
                     RunFillHitInfo(new_Hit);    // can do elsewhere
                     if (RunVerboseMode == true) new_Hit.HitGetHitInfo();
-                    // std::cout << "Done. ";
+                    // std::cout << "Filled hit info. ";
+
 
                     RunUnorderedHitsList.push_back(new_Hit);
                     // std::cout << "Hit added to this run. " ;
                     hitId_counter++;
                 }
+                if (hitId_counter > RunMaxHitsToLoad) break;
             }
 
             NLinesInFile = 0;
@@ -505,6 +541,7 @@ void TofRun::RunLoadHits(){
 
                 RunFillHitInfo(new_Hit);    // can do elsewhere
                 if (RunVerboseMode == true) new_Hit.HitGetHitInfo();
+                std::cout << "Filled hit info. \n";
 
                 RunUnorderedHitsList.push_back(new_Hit);
                 hitId_counter++;
@@ -529,6 +566,17 @@ void TofRun::RunFillHitInfo(TofHit& this_hit){
         this_hit.HitBaseline += this_hit.HitWaveform.at(sampleit);        
     this_hit.HitBaseline /= RunBaselineNSamples;
 
+
+    // subtract baseline to waveform
+    for(int sampleit = 0; sampleit < RunNSamplesInWaveform; sampleit++)
+        this_hit.HitWaveform.at(sampleit) -= this_hit.HitBaseline;
+
+    // Make waveform positive in case it's negative (pmts). Dirty but ok for now
+    if (this_hit.HitDaqChannel == 216 || this_hit.HitDaqChannel == 219 || this_hit.HitDaqChannel == 228 || this_hit.HitDaqChannel == 231){
+        for(int sampleit = 0; sampleit < RunNSamplesInWaveform; sampleit++)
+        this_hit.HitWaveform.at(sampleit) *= -1;   
+    }
+
     // RawPeak is just max in wf, with no fit
     this_hit.HitRawPeak = *std::max_element(this_hit.HitWaveform.begin(), this_hit.HitWaveform.end());
     auto max_it = std::max_element(this_hit.HitWaveform.begin(), this_hit.HitWaveform.end());
@@ -544,9 +592,17 @@ void TofRun::RunFillHitInfo(TofHit& this_hit){
         this_hit.HitVoltageIntegral += this_hit.HitWaveform.at(sampleit);
     }
 
+    this_hit.HitPeakFraction = RunHitPeakFraction;
+    
+    this_hit.HitSampleLength = RunSampleLength;
+    // std::cout << "Sample length: " << this_hit.HitSampleLength << std::endl;
+
     this_hit.HitMatchDaqChToTofCh();
-    // this_hit.HitFitWaveform();
-    // this_hit.HitComputeCf();
+    this_hit.HitFitWaveform();
+
+    // std::cout << "Filled hit info. ";
+    // //print hid id
+    // std::cout << "HitId: " << this_hit.HitId << " ";
 
 }
 
@@ -645,6 +701,7 @@ void TofRun::RunSetAnalysisOptions (){
     RunNSamplesToExclude = analysis_settings_file["RunNSamplesToExclude"];
     RunDeleteUnorderedHitsList = analysis_settings_file["RunDeleteUnorderedHitsList"];
     RunVerboseMode = analysis_settings_file["RunVerboseMode"];
+    RunMaxHitsToLoad = analysis_settings_file["RunMaxHitsToLoad"];
     
 
     RunNSamplesInWaveform = RunNSamplesToRead- RunNSamplesToExclude;
@@ -676,6 +733,7 @@ void TofRun::RunGenerateOutputFile(std::string output_directory){
 
     std::string output_file_name = "run"+ std::to_string(RunNumber) + ".root";
 
+    std::cout << "Generating output file " << output_file_name << " in " << output_directory << std::endl;
     TFile *output_file = new TFile(Form("%s%s", output_directory.c_str(), output_file_name.c_str()), "RECREATE");
     TTree *output_tree = new TTree(Form("TreeTofRun%d", RunNumber), "Tree contanining all TofRun information");
 
