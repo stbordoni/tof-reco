@@ -355,10 +355,23 @@ void TofRun::RunLoadHits(){
     if (RunSoftware == "windows"){
         // simplified, now it has to be one file per Feb. dont split files when saving
         for (int febit = 0; febit < RunNFebs; febit++){
+
+            // print working directory
+            // char buffer[FILENAME_MAX];
+            // getcwd(buffer, FILENAME_MAX);
+            // std::cout << "Current working directory: " << buffer << std::endl;
+
             std::string RunFebDataFile = "/feb" + std::to_string(febit) + "/";
             std::string full_filename = RunPath + RunFebDataFile + RunAddress + "_feb"+ std::to_string(febit) + ".txt";
             std::ifstream RunHitsFileStream;
             RunHitsFileStream.open(full_filename);
+
+            if (!RunHitsFileStream.is_open()) {
+                std::string this_error = "Error opening file " + full_filename;
+                std::cerr << this_error << std::endl;
+                RunErrorsList.push_back(this_error);
+                return;
+            }
             
             std::cout << "Loading hits from file " << full_filename << std::endl;
 
@@ -611,15 +624,19 @@ void TofRun::RunSetAnalysisOptions (){
         return;
     }    
 
-    std::string RunAnalysisSettingsFile = "AnalysisSettings.json"; // has to be in same folder for now
+    std::string RunAnalysisSettingsFile = "../AnalysisSettings.json"; // has to be in same folder for now
     std::ifstream RunAnalysisSettingsStream(RunAnalysisSettingsFile.c_str());
     if (RunAnalysisSettingsStream.good()) RunSelectedAnalysisOptions = true;
 
     if (!RunAnalysisSettingsStream.is_open()) {
-        std::cerr << "Failed to open file\n";
+        std::string this_error = "Failed to open " + RunAnalysisSettingsFile;
+        std::cerr << this_error << std::endl;
+        RunErrorsList.push_back(this_error);
         RunSelectedAnalysisOptions = false;
         return;
     }
+
+    std::cout << "Reading analysis settings from " << RunAnalysisSettingsFile << std::endl;
 
     nlohmann::json analysis_settings_file;
     RunAnalysisSettingsStream >> analysis_settings_file;
@@ -657,27 +674,29 @@ void TofRun::RunPrintErrors(){
 
 void TofRun::RunGenerateOutputFile(std::string output_directory){
 
-    std::string output_file_name = "Run"+ std::to_string(RunNumber) + ".root";
+    std::string output_file_name = "run"+ std::to_string(RunNumber) + ".root";
 
     TFile *output_file = new TFile(Form("%s%s", output_directory.c_str(), output_file_name.c_str()), "RECREATE");
-    TTree *output_tree = new TTree(output_file_name.c_str(), output_file_name.c_str());
+    TTree *output_tree = new TTree(Form("TreeTofRun%d", RunNumber), "Tree contanining all TofRun information");
+
+    output_tree -> Branch("TofRun", this);
 
     //add all variables to tree
-    output_tree->Branch("RunNumber", &RunNumber);
-    output_tree->Branch("RunNSamplesToRead", &RunNSamplesToRead);
-    output_tree->Branch("RunNSamplesToExclude", &RunNSamplesToExclude);
-    output_tree->Branch("RunNSamplesInWaveform", &RunNSamplesInWaveform);
-    output_tree->Branch("RunBaselineNSamples", &RunBaselineNSamples);
-    output_tree->Branch("RunBaselineFirstSample", &RunBaselineFirstSample);
-    output_tree->Branch("RunSampleLength", &RunSampleLength);
-    output_tree->Branch("RunInterpolationType", &RunInterpolationType);
-    output_tree->Branch("RunDeleteUnorderedHitsList", &RunDeleteUnorderedHitsList);
-    output_tree->Branch("RunVerboseMode", &RunVerboseMode);
-    output_tree->Branch("RunSelectedAnalysisOptions", &RunSelectedAnalysisOptions);
-    output_tree->Branch("RunErrorsList", &RunErrorsList);
-    output_tree->Branch("RunUnorderedHitsList", &RunUnorderedHitsList);
-    output_tree->Branch("RunOrderedHitsList", &RunOrderedHitsList);
-    output_tree->Branch("RunEventsList", &RunEventsList);
+    // output_tree->Branch("RunNumber", &RunNumber);
+    // output_tree->Branch("RunNSamplesToRead", &RunNSamplesToRead);
+    // output_tree->Branch("RunNSamplesToExclude", &RunNSamplesToExclude);
+    // output_tree->Branch("RunNSamplesInWaveform", &RunNSamplesInWaveform);
+    // output_tree->Branch("RunBaselineNSamples", &RunBaselineNSamples);
+    // output_tree->Branch("RunBaselineFirstSample", &RunBaselineFirstSample);
+    // output_tree->Branch("RunSampleLength", &RunSampleLength);
+    // output_tree->Branch("RunInterpolationType", &RunInterpolationType);
+    // output_tree->Branch("RunDeleteUnorderedHitsList", &RunDeleteUnorderedHitsList);
+    // output_tree->Branch("RunVerboseMode", &RunVerboseMode);
+    // output_tree->Branch("RunSelectedAnalysisOptions", &RunSelectedAnalysisOptions);
+    // output_tree->Branch("RunErrorsList", &RunErrorsList);
+    // // output_tree->Branch("RunUnorderedHitsList", &RunUnorderedHitsList);
+    // output_tree->Branch("RunOrderedHitsList", &RunOrderedHitsList);
+    // output_tree->Branch("RunEventsList", &RunEventsList);
     
     output_tree->Fill();
     output_file->Write();

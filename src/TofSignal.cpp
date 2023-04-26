@@ -10,7 +10,7 @@ TofSignal::TofSignal(){
 
 void TofSignal::SignalIdentifyEdges(){
     if (SignalBothEdges == true){
-        std::cout << "Two edges in this Signal" << std::endl;
+        // std::cout << "Two edges in this Signal" << std::endl;
 
         if (SignalHitsList.at(0).HitEdge == 0 && SignalHitsList.at(1).HitEdge == 1){
             SignalHitLeft = SignalHitsList.at(0);
@@ -20,12 +20,14 @@ void TofSignal::SignalIdentifyEdges(){
             SignalHitLeft = SignalHitsList.at(1);
             SignalHitRight = SignalHitsList.at(0);
         }
-        else
+        else{
+            // add to errorslist
             std::cerr << "Error in SignalIdentifyEdges, signal hits list has two elements but they are not left and right\n";
+        }
     }
     else if (SignalBothEdges == false){
         // print "Only one edge in this Signal"
-        std::cout << "Only one edge in this Signal" << std::endl;
+        // std::cout << "Only one edge in this Signal" << std::endl;
         if (SignalHitsList.at(0).HitEdge == 0){
             SignalHitLeft = SignalHitsList.at(0);
         }
@@ -37,6 +39,8 @@ void TofSignal::SignalIdentifyEdges(){
     }
     else
         std::cerr << "Error in SignalIdentifyEdges, signal hits list has more than two elements\n";
+    
+    // SignalGetSignalInfo();
 }
 
 void TofSignal::SignalQualityCheck(){

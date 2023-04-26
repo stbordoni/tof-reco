@@ -51,8 +51,13 @@ do
     continue
   fi
 
-  eventsFile=$outputDirectory"run"$DataName"_events.root"
   mkdir -p $outputDirectory
+  
+  echo ""
+  echo "Currently we are in"
+  pwd
+  echo ""
+  
   ./TofApp $software $runFullPath $outputDirectory
 
 done

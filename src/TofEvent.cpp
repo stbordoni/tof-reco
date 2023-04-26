@@ -11,12 +11,10 @@ TofEvent::TofEvent(){
 void TofEvent::EventCreateSignals(){
     TofSignal new_signal;
     bool create_new_signal = true;
-    int this_hit_bar = -1;
-    std::vector <TofHit> appo_eventshitslist = EventHitsList;
-    // print size of EventHitsLits and appo_eventshitslist
+    int this_hit_bar = -1, this_hit_plane = -1;
     std::vector <int> skip_elements;
 
-    for (int ihit = 0; ihit < appo_eventshitslist.size(); ihit++){
+    for (int ihit = 0; ihit < EventHitsList.size(); ihit++){
         
         // std::cout << "ihit: " << ihit << std::endl;
 
@@ -27,12 +25,13 @@ void TofEvent::EventCreateSignals(){
 
         if (create_new_signal) {
             new_signal = TofSignal(); // reset
-            this_hit_bar = appo_eventshitslist.at(ihit).HitBar;
-            new_signal.SignalHitsList.push_back(appo_eventshitslist.at(ihit));
+            this_hit_bar = EventHitsList.at(ihit).HitBar;
+            this_hit_plane = EventHitsList.at(ihit).HitPlane;
+            new_signal.SignalHitsList.push_back(EventHitsList.at(ihit));
             // std::cout << "New signal for bar " << this_hit_bar << std::endl;
         }
 
-        for (int ihit2 = ihit+1; ihit2 < appo_eventshitslist.size(); ihit2++){
+        for (int ihit2 = ihit+1; ihit2 < EventHitsList.size(); ihit2++){
             
             //print ihit2
             // std::cout << "ihit2: " << ihit2 << std::endl;
@@ -43,12 +42,12 @@ void TofEvent::EventCreateSignals(){
                 }
             }
 
-            if (appo_eventshitslist.at(ihit2).HitBar == this_hit_bar){
+            if (EventHitsList.at(ihit2).HitBar == this_hit_bar && EventHitsList.at(ihit2).HitPlane == this_hit_plane){
                 // std::cout << "Found hit for other edge of bar " << this_hit_bar << std::endl;
-                new_signal.SignalHitsList.push_back(appo_eventshitslist.at(ihit2));
+                new_signal.SignalHitsList.push_back(EventHitsList.at(ihit2));
                 new_signal.SignalBothEdges = true;
                 // remove this element from the vector, already considered
-                // appo_eventshitslist.erase(appo_eventshitslist.begin() + ihit2); // not ideal
+                // EventHitsList.erase(EventHitsList.begin() + ihit2); // not ideal
                 // std::cout << "Size of new_signal.SignalHitsList: " << new_signal.SignalHitsList.size() << std::endl;
                 skip_elements.push_back(ihit2);
                 create_new_signal = true;
@@ -57,7 +56,7 @@ void TofEvent::EventCreateSignals(){
         }
 
         // more operations on SignalHits to add?
-        // new_signal.SignalIdentifyEdges(); // to debug
+        new_signal.SignalIdentifyEdges(); // to debug
         EventSignalsList.push_back(new_signal);
         // std::cout << "Stored new signal for bar " << this_hit_bar << std::endl;
         EventSize++;

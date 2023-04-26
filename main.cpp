@@ -42,6 +42,32 @@ int main(int argc, char *argv[]){
     thisRun.RunPrintErrors();
     thisRun.RunGenerateOutputFile(output_directory);
 
+    // check output file, meaning open it and print out runnumber  
+    // std::string outputfile = output_directory + "run" + std::to_string(thisRun.RunNumber) + ".root";
+    // std::cout << "reading output file: " << outputfile << std::endl;
+    // TFile *f = new TFile(outputfile.c_str(), "READ");
+    // TTree *t = (TTree*)f->Get(Form("TreeTofRun%d", thisRun.RunNumber));
+    // TofRun *run = new TofRun(software);
+    // t->SetBranchAddress("TofRun", &run);
+    // t->GetEntry(0);
+    // std::cout << "Run number: " << run->RunNumber << std::endl;
+    // std::cout << "Run address: " << run->RunAddress << std::endl;
+    // // print all channels inside RunEventslist.EventSignalsList
+    // std::cout << "Number of events: " << run->RunEventsList.size() << std::endl;
+    // for (int i = 0; i < run->RunEventsList.size(); i++){
+    //     for (int j = 0; j < run->RunEventsList[i].EventSignalsList.size(); j++){
+    //         std::cout << "Channel: " << run->RunEventsList[i].EventSignalsList[j].SignalHitsList[0].HitDaqChannel << std::endl;
+    //     }
+    // }
+
+
+    // f->Close();
+    // delete f;
+    // delete t;
+    // delete run;
+    // close outputfile
+
+
     // generate outputfile  
     // std::string outputfile = output_directory + thisRun.RunAddress + ".root";
     // TFile *f = new TFile(outputfile.c_str(), "RECREATE");
