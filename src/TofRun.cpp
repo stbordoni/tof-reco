@@ -464,11 +464,10 @@ void TofRun::RunLoadHits(){
                     new_Hit.HitCell0Time += Cell0TimeCycles*Cell0TimeOffset;
                     previous_cell0time = new_Hit.HitCell0Time;
                     // std::cout << "Filling hit info... ";
-                    RunFillHitInfo(new_Hit);    // can do elsewhere
-                    if (RunVerboseMode == true) new_Hit.HitGetHitInfo();
+                    
                     // std::cout << "Filled hit info. ";
 
-
+                    RunFillHitInfo(new_Hit);
                     RunUnorderedHitsList.push_back(new_Hit);
                     // std::cout << "Hit added to this run. " ;
                     hitId_counter++;
@@ -554,7 +553,7 @@ void TofRun::RunLoadHits(){
 };
 
 
-void TofRun::RunFillHitInfo(TofHit& this_hit){
+void TofRun::RunFillHitInfo(TofHit & this_hit){
 
     // std::cout << "Filling hit info... ";
 
@@ -598,11 +597,15 @@ void TofRun::RunFillHitInfo(TofHit& this_hit){
     // std::cout << "Sample length: " << this_hit.HitSampleLength << std::endl;
 
     this_hit.HitMatchDaqChToTofCh();
+
+    this_hit.HitCfTimeFromFit.clear(); // avoid memory issues
+
     this_hit.HitFitWaveform();
 
     // std::cout << "Filled hit info. ";
     // //print hid id
     // std::cout << "HitId: " << this_hit.HitId << " ";
+    if (RunVerboseMode == true) this_hit.HitGetHitInfo();
 
 }
 
@@ -663,6 +666,7 @@ void TofRun::RunCreateEvents(){
 
     }
     std::cout << "Created " << RunEventsList.size() << " events." << std::endl;
+    RunOrderedHitsList = {}; // free memory
 
 }
 

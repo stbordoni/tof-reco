@@ -11,9 +11,9 @@ std::vector<std::string> SplitString(const std::string &s, char delim) {
     return elems;
 }
 
-Double_t FitFunction(Double_t *x,Double_t *parameters){
+Double_t FitFunction(Double_t *x,Double_t *parameters){ // why x is a pointer 
 
-    Double_t mean = 0;
+    Double_t x_relative = 0;
     Double_t sigma = 0;
 
     if( x[0] < parameters[1] ) 
@@ -21,8 +21,8 @@ Double_t FitFunction(Double_t *x,Double_t *parameters){
     else 
         sigma = TMath::Abs(parameters[4])*(x[0]-parameters[1])+parameters[3]; 
 
-    mean = (x[0] - parameters[1]);
-    Double_t fit_value = parameters[0]*TMath::Exp(-0.5*pow(mean/sigma,2))+parameters[5];
+    x_relative = (x[0] - parameters[1]);
+    Double_t fit_value = parameters[0]*TMath::Exp(-0.5*pow(x_relative/sigma,2))+parameters[5];
 
     return fit_value;
 
@@ -75,10 +75,6 @@ TofHit::TofHit(){
 
 void TofHit::HitFitWaveform(){
 
-    // std::cout << ". HitFitWaveform" ; 
-    // // print channel id
-    // std::cout << "Hitid: " << HitId ;    
-
     HitFitParameter[0] = HitPeak;
     HitFitParameter[1] = HitPeakSample;
     HitFitParameter[2] = 0.2; // WidthDep1
@@ -86,6 +82,13 @@ void TofHit::HitFitWaveform(){
     HitFitParameter[4] = 0.2; // WidthDep2
     HitFitParameter[5] = 0.0; // Baseline
 
+    double fit_peak = -1;
+    double fit_peakSample = -1;
+    double fit_widthDep1 = -1;
+    double fit_width = -1;
+    double fit_widthDep2 = -1;
+    double fit_baseLine = -1;
+    
     TF1 fit_function("fit_function",FitFunction,0,HitWaveform.size(),6);        
     fit_function.SetParameter(0,HitFitParameter[0]);
     fit_function.SetParameter(1,HitFitParameter[1]);
@@ -95,44 +98,73 @@ void TofHit::HitFitWaveform(){
     fit_function.SetParameter(5,HitFitParameter[5]);
     
     // create appo canvas just to not create a dedfault one during execution. Look for a workaround
-    TCanvas *c_appo = new TCanvas("c_appo","c_appo",800,600);
-    c_appo->cd();
-    TH1D * h_waveform = new TH1D(Form("Channel%i",HitDaqChannel),Form("Waveform Ch%i", HitDaqChannel),HitWaveform.size(),-0.5,HitWaveform.size()-0.5);
 
+    TH1D * h_waveform = new TH1D(Form("Channel%i, HitId%i",HitDaqChannel, HitId),Form("Waveform Ch%i", HitDaqChannel),HitWaveform.size(),-0.5,HitWaveform.size()-0.5);
     h_waveform->GetXaxis()->SetTitle("Sample");
     h_waveform->GetYaxis()->SetTitle("Amplitude(V)"); 
-
     for(int j =0; j < HitWaveform.size();j++ ) {
         h_waveform->SetBinContent(j+1, HitWaveform[j]);
         h_waveform->SetBinError(j+1,1.e-4); // check this
     }
 
-    // can turn off Quiet mode
-    h_waveform->Fit("fit_function","Q","",  HitPeakSample-30, HitPeakSample+10);
+    // disable error messages during execution
+    gROOT->ProcessLine("gErrorIgnoreLevel = kFatal;"); // PRETTY EXTEME, ONLY FOR DEBUGGING
+    int fit_min = 2; // HitPeakSample-10;
+    int fit_max = 60; // HitPeakSample+10; // check this
+    int fit_status = h_waveform->Fit("fit_function","Q","",  fit_min, fit_max);
 
-    double fit_peak = TMath::Abs(fit_function.GetParameter(0));
-    double fit_peakTime = fit_function.GetParameter(1);
-    double fit_widthDep1 = fit_function.GetParameter(2);
-    double fit_width = fit_function.GetParameter(3);
-    double fit_widthDep2 = fit_function.GetParameter(4);
-    double fit_baseLine = fit_function.GetParameter(5);
+    // continue the loop if fit fails
+    if (fit_status!= 0){
+        // std::cout << "fit failed" << std::endl;
+        HitFitSuccess = false;
+        h_waveform->Delete();
+        return;
+    }
+    
+    HitFitSuccess = true;
+
+    fit_peak = TMath::Abs(fit_function.GetParameter(0));
+    fit_peakSample = fit_function.GetParameter(1);
+    fit_widthDep1 = fit_function.GetParameter(2);
+    fit_width = fit_function.GetParameter(3);
+    fit_widthDep2 = fit_function.GetParameter(4);
+    fit_baseLine = fit_function.GetParameter(5);
 
 
-    // std::cout << "fit done" << std::endl;
-    if (fit_peakTime < 60. && fit_peakTime > 0.){
+    if (fit_peakSample < HitWaveform.size() && fit_peakSample > 0. && fit_peak > 0.){
         for (int i = 0; i < HitPeakFraction.size(); i++){
+            
+            // std::cout << "argument of getX " << HitPeakFraction.at(i)*fit_peak + fit_baseLine << std::endl;
             double fit_value = fit_function.GetX(HitPeakFraction.at(i)*fit_peak + fit_baseLine);
-            HitCfTimeFromFit.push_back(fit_value * HitSampleLength ); // +  HitCell0Time
-            std::cout << "fit_value: " << fit_value << std::endl;
-            std::cout << "HitPeakFraction.at(i): " << HitPeakFraction.at(i) << std::endl;
-            std::cout << "HitTimeFromFit.at(i): " << HitCfTimeFromFit.at(i) << std::endl;
+
+            if (std::isnan(fit_value) || fit_value < fit_min || fit_value > fit_max){
+                HitFitSuccess = false;
+                // std::cerr << "Error: Grid search failed to find a root. Fit not succesfull, moving to next.\n";
+                return;
+            }
+            else
+                HitCfTimeFromFit.push_back(fit_value * HitSampleLength + HitCell0Time ); // +  HitCell0Time
         }
     }
-    // add else?
+
+    // to print on a canvas the fit function, change to true 
+    if (false){
+            gROOT->SetBatch(kFALSE);
+            TCanvas *c_appo = new TCanvas("c_appo","c_appo",800,600);
+
+            std::cout << "Drawing " << h_waveform->GetName() << std::endl;
+            c_appo->cd();
+            h_waveform->Draw();
+            fit_function.Draw("same");
+            c_appo->Update();
+            c_appo->Modified();
+            c_appo->WaitPrimitive();
+            c_appo->Clear();
+    }
 
     h_waveform->Delete();
-    c_appo->Close();
-    std::cout << std::endl;
+    // c_appo->Close();
+
 }
 
 void TofHit::HitQualityCheck(){

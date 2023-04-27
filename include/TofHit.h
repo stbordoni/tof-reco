@@ -16,6 +16,7 @@
 #include <TF1.h>
 #include <TH1D.h>
 #include <TCanvas.h>
+#include <TROOT.h>
 
 #include "TofObjectsDict.h"
 
@@ -62,6 +63,7 @@ public:
     // fit
     double HitSampleLength; // taken from run
     std::vector <double> HitPeakFraction; // taken from run
+    bool HitFitSuccess;
 
     double HitFitParameter[6];
     std::vector <double> HitCfTimeFromFit;

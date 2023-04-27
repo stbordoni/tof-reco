@@ -4,12 +4,19 @@ We are now using a proper framework.
 After cloning this repository in your machine, do `mkdir build; cd build; cmake ..; make`, to see if your system meets the requirements.
 You need to have ROOT installed in the standard location, meaning `/usr/local/`, and cmake and c++ meeting the requirements. 
 If that's not the case, update them. 
-In `build` you will have then the executable `TofApp`.
 
-An easy way to generate the ROOT file for a run is by running `./Test.sh run_number`, where `run_number` clearly is the number of the run to analyze.
+## Generate ROOT file
+An easy way to generate the ROOT file for a run is by running `./GenerateRootFile.sh run_number`, where `run_number` clearly is the number of the run to analyze.
 The standard folder where the run is is `../TofData`, and the results are in `../TofRootFiles`.
-If you want to set different folders, change the path in `Test.sh`.
+If you want to set different folders, change the path in `GenerateRootFile.sh`.
 
+## Read ROOT file
+To read the ROOT file the method is basically the same:
+run `./ReadRootFile.sh run_number`. 
+You can change what is printed or do other operations changing `ReadRootFile.cpp`.
+
+
+<!-- 
 THE FOLLOWING OPTIONS ARE NOT HERE YET FOR THE NEW FORMAT, BUT WILL BE
 
 ## Display waveforms
@@ -39,4 +46,4 @@ It is necessary to have generated the file `*_events.root`, and to write its mot
 - argv[1] is the Run to analyse (`int`)
 - argv[2] is the Event to displat (`int`).
 
-One can also set these two parameters directly inside the script and launch it without parameters passed from command line.
+One can also set these two parameters directly inside the script and launch it without parameters passed from command line. -->

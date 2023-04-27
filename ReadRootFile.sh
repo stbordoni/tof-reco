@@ -1,7 +1,7 @@
 #!/bin/bash
 
-inputDirectory="../../TofData/" # CHANGE LATER
-outputDirectory="../../TofRootFiles/"
+# change if you desire to use a different input directory
+inputDirectory="../../TofRootFiles/" 
 
 echo "Moving into build directory"
 cd build;
@@ -27,22 +27,10 @@ lastRun=$1
 for ((runit = $firstRun; runit <= $lastRun; runit++ ))
 do
   echo "runit: "$runit
-
-  if [ $runit -ge 1000 ]
-  then
-    software="linux"
-    # inputDirectory="/home/emanuele/Documents/ToF/linuxData/"
-    runFullPath=$(find $inputDirectory$"linux_run"$runit".txt")
-  else
-    software="windows"
-    # inputDirectory="/home/emanuele/Documents/ToF/sampic/data/"
-    runFullPath=$(find $inputDirectory -type d -name "sampic_*_*h*min_run"$runit)
-  fi
-  
   echo "inputDirectory: "$inputDirectory
-  echo "This run was taken using the "$software" software"
+  ls $inputDirectory
+  runFullPath=$(find $inputDirectory$"run"$runit".root")
   echo "runFullPath: "$runFullPath
-  echo "outputDirectory: "$outputDirectory
 
   # Stop execution if the selected run is not present in the input directory
   if [ "$runFullPath" == "" ]
@@ -51,13 +39,14 @@ do
     continue
   fi
 
-  mkdir -p $outputDirectory
+  if [ $runit -ge 1000 ]
+  then
+    software="linux"
+  else
+    software="windows"
+  fi
   
-  echo ""
-  echo "Currently we are in"
-  pwd
-  echo ""
-  
-  ./TofApp $software $runFullPath $outputDirectory
+  echo "./ReadRootFile $software $runFullPath"
+  ./ReadRootFile $software $runFullPath
 
 done

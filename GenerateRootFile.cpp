@@ -43,28 +43,28 @@ int main(int argc, char *argv[]){
     thisRun.RunGenerateOutputFile(output_directory);
 
     // check output file, meaning open it and print out runnumber  
-    std::string outputfile = output_directory + "run" + std::to_string(thisRun.RunNumber) + ".root";
-    std::cout << "reading output file: " << outputfile << std::endl;
-    TFile *f = new TFile(outputfile.c_str(), "READ");
-    TTree *t = (TTree*)f->Get(Form("TreeTofRun%d", thisRun.RunNumber));
-    TofRun *run = new TofRun(software);
-    t->SetBranchAddress("TofRun", &run);
-    t->GetEntry(0);
-    std::cout << "Run number: " << run->RunNumber << std::endl;
-    std::cout << "Run address: " << run->RunAddress << std::endl;
-    // print all channels inside RunEventslist.EventSignalsList
-    std::cout << "Number of events: " << run->RunEventsList.size() << std::endl;
-    // for (int i = 0; i < run->RunEventsList.size(); i++){
-    for (int i = 0; i < 10; i++){
-        std::cout << "----this event has " << run->RunEventsList[i].EventHitsList.size() << " hits" << std::endl;
-        for (int j = 0; j < run->RunEventsList[i].EventHitsList.size(); j++){
-            std::cout << "--size of cf array " << run->RunEventsList.at(i).EventHitsList.at(j).HitCfTimeFromFit.size() << std::endl;
-            for (int k = 0; k < run->RunEventsList.at(i).EventHitsList.at(j).HitCfTimeFromFit.size(); k++){
-                std::cout << "hit " << j << " has " << run->RunEventsList.at(i).EventHitsList.at(j).HitCfTimeFromFit.at(k) << " cf time ";
-            }
+    // std::string outputfile = output_directory + "run" + std::to_string(thisRun.RunNumber) + ".root";
+    // std::cout << "reading output file: " << outputfile << std::endl;
+    // TFile *f = new TFile(outputfile.c_str(), "READ");
+    // TTree *t = (TTree*)f->Get(Form("TreeTofRun%d", thisRun.RunNumber));
+    // TofRun *run = new TofRun(software);
+    // t->SetBranchAddress("TofRun", &run);
+    // t->GetEntry(0);
+    // std::cout << "Run number: " << run->RunNumber << std::endl;
+    // std::cout << "Run address: " << run->RunAddress << std::endl;
+    // // print all channels inside RunEventslist.EventSignalsList
+    // std::cout << "Number of events: " << run->RunEventsList.size() << std::endl;
+    // // for (int i = 0; i < run->RunEventsList.size(); i++){
+    // for (int i = 0; i < 10; i++){
+    //     std::cout << "----this event has " << run->RunEventsList[i].EventHitsList.size() << " hits" << std::endl;
+    //     for (int j = 0; j < run->RunEventsList[i].EventHitsList.size(); j++){
+    //         // std::cout << "--size of cf array " << run->RunEventsList.at(i).EventHitsList.at(j).HitCfTimeFromFit.size() << std::endl;
+    //         for (int k = 0; k < run->RunEventsList.at(i).EventHitsList.at(j).HitCfTimeFromFit.size(); k++){
+    //             std::cout << "hit " << j << " has " << run->RunEventsList.at(i).EventHitsList.at(j).HitCfTimeFromFit.at(k) << " cf time " <<std::endl;
+    //         }
             
-        }
-    }
+    //     }
+    // }
 
 
     // f->Close();
