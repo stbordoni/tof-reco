@@ -4,5 +4,7 @@
     "RunInterpolationType":"linear",
     "RunDeleteUnorderedHitsList":false,
     "RunVerboseMode":false,
-    "RunMaxHitsToLoad":10000
+    "RunMaxHitsToLoad":1000,
+
+    "HitDisplay":false
 }

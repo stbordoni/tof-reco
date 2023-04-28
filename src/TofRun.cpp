@@ -546,6 +546,8 @@ void TofRun::RunLoadHits(){
                 hitId_counter++;
 
             }
+            if (hitId_counter > RunMaxHitsToLoad) break;
+
         }
 
     }
@@ -742,23 +744,6 @@ void TofRun::RunGenerateOutputFile(std::string output_directory){
     TTree *output_tree = new TTree(Form("TreeTofRun%d", RunNumber), "Tree contanining all TofRun information");
 
     output_tree -> Branch("TofRun", this);
-
-    //add all variables to tree
-    // output_tree->Branch("RunNumber", &RunNumber);
-    // output_tree->Branch("RunNSamplesToRead", &RunNSamplesToRead);
-    // output_tree->Branch("RunNSamplesToExclude", &RunNSamplesToExclude);
-    // output_tree->Branch("RunNSamplesInWaveform", &RunNSamplesInWaveform);
-    // output_tree->Branch("RunBaselineNSamples", &RunBaselineNSamples);
-    // output_tree->Branch("RunBaselineFirstSample", &RunBaselineFirstSample);
-    // output_tree->Branch("RunSampleLength", &RunSampleLength);
-    // output_tree->Branch("RunInterpolationType", &RunInterpolationType);
-    // output_tree->Branch("RunDeleteUnorderedHitsList", &RunDeleteUnorderedHitsList);
-    // output_tree->Branch("RunVerboseMode", &RunVerboseMode);
-    // output_tree->Branch("RunSelectedAnalysisOptions", &RunSelectedAnalysisOptions);
-    // output_tree->Branch("RunErrorsList", &RunErrorsList);
-    // // output_tree->Branch("RunUnorderedHitsList", &RunUnorderedHitsList);
-    // output_tree->Branch("RunOrderedHitsList", &RunOrderedHitsList);
-    // output_tree->Branch("RunEventsList", &RunEventsList);
     
     output_tree->Fill();
     output_file->Write();

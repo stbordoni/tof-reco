@@ -3,11 +3,9 @@ JUST NOTES WHILE DEVELOPING THE CODE
 - consider options whena a board is missing
 - post trig!
 - add firmware to saved info
-- quick function that returns which plane given the int value
 - fix intthrthr
  - add variabel total Hits
 - add warning when oerlapping with baseline when doing fit
-
 
 - change hitedge to min and max
 
@@ -19,3 +17,38 @@ JUST NOTES WHILE DEVELOPING THE CODE
 
 - later, change TofRun to TofGate or smth
 set private
+
+- goodness of fit if new fgit position is within 5 DataSamples  
+
+hitfirquality
+
+constructor for this_hit_time
+
+integral vs maxt
+
+tot vs integral  
+
+if discrepancy was too big in fit
+
+create method for CF and set deafult value
+
+HitFitFunction
+
+method to create hist from vector
+
+method create histogram
+
+signal get position in bar and absolute nd280 position of the bar, not signal 
+
+change cosntructor of TofSignal to have 2 or 1 tofhit
+
+
+pos reco with amplitudes
+
+double getTime using average of left and right and with correction
+
+double get time from ext coordinate of TPC
+
+signal is 1,2,3 
+
+data segment
