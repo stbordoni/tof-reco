@@ -504,6 +504,12 @@ void TofRun::RunLoadHits(){
 
         for (int lineit = 0; lineit < NLinesInFile; lineit++){
 
+            // print progression of this ciycle in %
+            if (lineit % (NLinesInFile/1000) == 0) {
+                    std::cout << "Loading hits from file " << full_filename << " " << lineit/(NLinesInFile/100) << "%\r";
+                    std::cout.flush();
+            }
+
             if(lineit%2 == 0){ //even lines
 
                 RunHitsFileStream >> dump >> new_Hit.HitFebChannel
@@ -540,13 +546,17 @@ void TofRun::RunLoadHits(){
 
                 RunFillHitInfo(new_Hit);    // can do elsewhere
                 if (RunVerboseMode == true) new_Hit.HitGetHitInfo();
-                std::cout << "Filled hit info. \n";
+                // std::cout << "Filled hit info. \n";
 
                 RunUnorderedHitsList.push_back(new_Hit);
                 hitId_counter++;
+                // std::cout << "hitid_counter " << hitId_counter << std::endl;
 
             }
-            if (hitId_counter > RunMaxHitsToLoad) break;
+            if (hitId_counter > RunMaxHitsToLoad){
+                std::cout << "\nReached max hits set in analysis settings\n";
+                break;
+            } 
 
         }
 
@@ -683,6 +693,7 @@ void TofRun::RunSetAnalysisOptions (){
         RunNSamplesToExclude = 1; // first is not to consider
         RunBaselineNSamples = 5;
         RunDeleteUnorderedHitsList = false;
+        RunMaxHitsToLoad = 1000;
         return;
     }    
 

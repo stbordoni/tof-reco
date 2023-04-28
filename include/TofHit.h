@@ -94,12 +94,7 @@ public:
     void HitGetHitInfo();
 
     // getters
-    void GetHitId(){return HitId;};
-    void GetHitSampic(){return HitSampic;};
-    void GetHitDaqChannel(){return HitDaqChannel;};
-    void GetHitPlane(){return HitPlane;};
-    void GetHitBar(){return HitBar;};
-    
+    int GetHitId(){return HitId;};
 
 private: 
     // check if to make some variables private 
