@@ -15,13 +15,22 @@ make
 # Check if the user has selected a run number
 if [ $# -eq 0 ]
 then
-  echo "Please select a run number from command line to convert the data into ROOT format. Usage: 
-  $ ./GenerateRootFile.sh run_number."
+  echo "Please select a run number (or an interval) from command line to convert the data into ROOT format. Usage: 
+  $ ./GenerateRootFile.sh run_number. or $ ./GenerateRootFile.sh first_run_number last_run_number."
+  exit 0
+elif [ $# -eq 1 ]
+then
+  firstRun=$1
+  lastRun=$1
+elif [ $# -eq 2 ]
+then
+  firstRun=$1
+  lastRun=$2
+else
+  echo "Please select a run number (or an interval) from command line to convert the data into ROOT format. Usage:
+  $ ./GenerateRootFile.sh run_number. or $ ./GenerateRootFile.sh first_run_number last_run_number."
   exit 0
 fi
-
-firstRun=$1
-lastRun=$1
 
 # Iterate over all the selected runs
 for ((runit = $firstRun; runit <= $lastRun; runit++ ))

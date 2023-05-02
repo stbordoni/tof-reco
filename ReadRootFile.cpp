@@ -42,23 +42,23 @@ int main(int argc, char *argv[]){
     std::cout << "Run number: " << run->RunNumber << std::endl;
     std::cout << "Run address: " << run->RunAddress << std::endl;
     std::cout << "Number of events: " << run->RunEventsList.size() << std::endl;
-    for (int i = 0; i < run->RunEventsList.size(); i++){
+    // for (int i = 0; i < run->RunEventsList.size(); i++){
 
-        std::cout << " Event " << i << std::endl;
+    //     std::cout << " Event " << i << std::endl;
 
-        for (int j = 0; j < run->RunEventsList.at(i).EventHitsList.size(); j++){
+    //     for (int j = 0; j < run->RunEventsList.at(i).EventHitsList.size(); j++){
 
-            // skipping if the fit was not successful, could also use the bool HitFitSuccess
-            if (run->RunEventsList.at(i).EventHitsList.at(j).HitCfTimeFromFit.size() == 0){
-                std::cout << "  Hit " << j << ": unsuccesful fit, skipping.\n";
-                continue;
-            } 
-            std::cout << "  Hit " << j << " has " << run->RunEventsList.at(i).EventHitsList.at(j).HitCfTimeFromFit.at(cf_index) << "ns time at CF ";
-            std::cout << run->RunEventsList.at(i).EventHitsList.at(j).HitPeakFraction.at(cf_index);
-            std::cout << ".  CfTime - Cell0Time = ";
-            std::cout << run->RunEventsList.at(i).EventHitsList.at(j).HitCfTimeFromFit.at(cf_index) - run->RunEventsList.at(i).EventHitsList.at(j).HitCell0Time;
-            std::cout <<  "ns" << std::endl;
-        }
-    }
+    //         // skipping if the fit was not successful, could also use the bool HitFitSuccess
+    //         if (run->RunEventsList.at(i).EventHitsList.at(j).GetHitCfTimeFromFit().size() == 0){
+    //             std::cout << "  Hit " << j << ": unsuccesful fit, skipping.\n";
+    //             continue;
+    //         } 
+    //         std::cout << "  Hit " << j << " has " << run->RunEventsList.at(i).EventHitsList.at(j).HitCfTimeFromFit.at(cf_index) << "ns time at CF ";
+    //         std::cout << run->RunEventsList.at(i).EventHitsList.at(j).HitPeakFraction.at(cf_index);
+    //         std::cout << ".  CfTime - Cell0Time = ";
+    //         std::cout << run->RunEventsList.at(i).EventHitsList.at(j).HitCfTimeFromFit.at(cf_index) - run->RunEventsList.at(i).EventHitsList.at(j).HitCell0Time;
+    //         std::cout <<  "ns" << std::endl;
+    //     }
+    // }
     return 0;
 }

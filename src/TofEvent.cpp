@@ -25,8 +25,8 @@ void TofEvent::EventCreateSignals(){
 
         if (create_new_signal) {
             new_signal = TofSignal(); // reset
-            this_hit_bar = EventHitsList.at(ihit).HitBar;
-            this_hit_plane = EventHitsList.at(ihit).HitPlane;
+            this_hit_bar = EventHitsList.at(ihit).GetHitBar();
+            this_hit_plane = EventHitsList.at(ihit).GetHitPlane();
             new_signal.SignalHitsList.push_back(EventHitsList.at(ihit));
             // std::cout << "New signal for bar " << this_hit_bar << std::endl;
         }
@@ -42,7 +42,7 @@ void TofEvent::EventCreateSignals(){
                 }
             }
 
-            if (EventHitsList.at(ihit2).HitBar == this_hit_bar && EventHitsList.at(ihit2).HitPlane == this_hit_plane){
+            if (EventHitsList.at(ihit2).GetHitBar() == this_hit_bar && EventHitsList.at(ihit2).GetHitPlane() == this_hit_plane){
                 // std::cout << "Found hit for other edge of bar " << this_hit_bar << std::endl;
                 new_signal.SignalHitsList.push_back(EventHitsList.at(ihit2));
                 new_signal.SignalBothEdges = true;
@@ -73,9 +73,9 @@ void TofEvent::EventGetEventInfo(){
     for (int isignal = 0; isignal < EventSignalsList.size(); isignal++){
         std::cout << "Signal " << isignal << std::endl;
         std::cout << "Signal size: " << EventSignalsList.at(isignal).SignalHitsList.size() << std::endl;
-        std::cout << "Signal bar: " << EventSignalsList.at(isignal).SignalHitsList.at(0).HitBar << std::endl;
-        std::cout << "Signal left edge: " << EventSignalsList.at(isignal).SignalHitLeft.HitEdge << std::endl;
-        std::cout << "Signal right edge: " << EventSignalsList.at(isignal).SignalHitRight.HitEdge << std::endl;
+        std::cout << "Signal bar: " << EventSignalsList.at(isignal).SignalHitsList.at(0).GetHitEdge() << std::endl;
+        std::cout << "Signal left edge: " << EventSignalsList.at(isignal).SignalHitLeft.GetHitEdge() << std::endl;
+        std::cout << "Signal right edge: " << EventSignalsList.at(isignal).SignalHitRight.GetHitEdge() << std::endl;
     }
 }
 

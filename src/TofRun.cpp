@@ -422,47 +422,56 @@ void TofRun::RunLoadHits(){
                     std::cout.flush();
                 }
 
-                new_Hit.HitFeb = febit;
+                new_Hit.SetHitFeb(febit);
 
                 if(lineit%2 == 0){ //even lines
-                    RunHitsFileStream >> dump >> new_Hit.HitFebChannel
-                            >> dump >> new_Hit.HitUnixTime 
-                            >> dump >> new_Hit.HitCell0Time 
-                            >> dump >> new_Hit.HitRawTOTValue 
-                            >> dump >> new_Hit.HitTOTValue 
+                    int hit_feb_channel = -1;
+                    double hit_unix_time = -1;
+                    double hit_cell0time = -1;
+                    double hit_raw_TOT_value = -1;
+                    double hit_TOT_value = -1;
+                    RunHitsFileStream >> dump >> hit_feb_channel
+                            >> dump >> hit_unix_time 
+                            >> dump >> hit_cell0time 
+                            >> dump >> hit_raw_TOT_value
+                            >> dump >> hit_TOT_value 
                             >> dump >> dump //Time // computing from wf
                             >> dump >> dump //Baseline // computing from wf
                             >> dump >> dump //RawPeak // computing from wf
                             >> dump >> dump //Amplitude // computing from wf
                             >> dump >> dump; //DataSize; // not reliable
                     // std::cout << "Hitch " << new_Hit.HitFebChannel << std::endl;
+                    new_Hit.SetHitFebChannel(hit_feb_channel);
+                    new_Hit.SetHitCell0Time(hit_cell0time);
+                    new_Hit.SetHitRawTOTValue(hit_raw_TOT_value);
+                    new_Hit.SetHitTOTValue(hit_TOT_value);
+
                 }
                 else{
 
                     RunHitsFileStream >> dump; // before the waveform, there is a string "DataSamples"
 
-                    new_Hit.HitWaveform.clear(); // necessary?
+                    // new_Hit.HitWaveform.clear(); // necessary?
 
                     for (int sampleit = 0; sampleit < RunNSamplesToExclude; sampleit++) RunHitsFileStream >> dump;
-
+                    std::vector <double> this_wf;
                     for(int sampleit = 0; sampleit < RunNSamplesToRead; sampleit++){
                         RunHitsFileStream >> new_sample;
                         // std::cout << new_sample << std::endl;
-                        new_Hit.HitWaveform.push_back(new_sample);
+                        this_wf.push_back(new_sample);
                     }
-            
-                
-                    new_Hit.HitId = hitId_counter;
+                    new_Hit.SetHitWaveform(this_wf);
+                    new_Hit.SetHitId(hitId_counter);
                     //print hitidcounter
                     // std::cout << "HitId: " << new_Hit.HitId << " ";
 
-                    if ((previous_cell0time - Cell0TimeCycles*Cell0TimeOffset) - new_Hit.HitCell0Time > 2e13) {
+                    if ((previous_cell0time - Cell0TimeCycles*Cell0TimeOffset) - new_Hit.GetHitCell0Time() > 2e13) {
                         Cell0TimeCycles++; 
-                        std::cout << "Feb " << new_Hit.HitFeb << ", Cell0Time cycle" << Cell0TimeCycles << std::endl;
+                        std::cout << "Feb " << new_Hit.GetHitFeb() << ", Cell0Time cycle" << Cell0TimeCycles << std::endl;
                     }
 
-                    new_Hit.HitCell0Time += Cell0TimeCycles*Cell0TimeOffset;
-                    previous_cell0time = new_Hit.HitCell0Time;
+                    new_Hit.SetHitCell0Time(new_Hit.GetHitCell0Time() + Cell0TimeCycles*Cell0TimeOffset);
+                    previous_cell0time = new_Hit.GetHitCell0Time();
                     // std::cout << "Filling hit info... ";
                     
                     // std::cout << "Filled hit info. ";
@@ -511,38 +520,43 @@ void TofRun::RunLoadHits(){
             }
 
             if(lineit%2 == 0){ //even lines
-
-                RunHitsFileStream >> dump >> new_Hit.HitFebChannel
-                        >> dump >> new_Hit.HitFeb
-                        >> dump >> new_Hit.HitCell0Time;
+                int hit_feb_channel = -1;
+                double hit_feb = -1;
+                double hit_cell0time = -1;
+                RunHitsFileStream >> dump >> hit_feb_channel
+                        >> dump >> hit_feb
+                        >> dump >> hit_cell0time;
                         // >> dump >> new_Hit.HitRawTOTValue // should add
                         // >> dump >> new_Hit.HitTOTValue // should add
                 // std::cout << "New hit channel " << new_Hit.HitFebChannel << " time " << new_Hit.HitCell0Time << std::endl;
+                new_Hit.SetHitFebChannel(hit_feb_channel);
+                new_Hit.SetHitFeb(hit_feb);
+                new_Hit.SetHitCell0Time(hit_cell0time);
             } 
             else{
                 RunHitsFileStream >> dump; // before the waveform, there is a string "DataSamples"
-                new_Hit.HitWaveform.clear(); // necessary?
+                // new_Hit.HitWaveform.clear(); // necessary?
 
                 for (int sampleit = 0; sampleit < RunNSamplesToExclude; sampleit++) RunHitsFileStream >> dump;
-
+                std::vector <double> this_wf;
                 for(int sampleit = 0; sampleit < RunNSamplesInWaveform; sampleit++){
                     RunHitsFileStream >> new_sample;
-                    new_Hit.HitWaveform.push_back(new_sample);
+                    this_wf.push_back(new_sample);
                     // std::cout << new_sample << std::endl;
                 }
-
-                new_Hit.HitId = hitId_counter;
+                new_Hit.SetHitWaveform(this_wf);
+                new_Hit.SetHitId(hitId_counter);
                 // print hit id counter
                 // std::cout << "HitId: " << new_Hit.HitId << " ";
 
-                if ((previous_cell0time - Cell0TimeCycles*Cell0TimeOffset) - new_Hit.HitCell0Time > 2e13) {
+                if ((previous_cell0time - Cell0TimeCycles*Cell0TimeOffset) - new_Hit.GetHitCell0Time() > 2e13) {
                     Cell0TimeCycles++; 
-                    std::cout << "Feb " << new_Hit.HitFeb << ", Cell0Time cycle" << Cell0TimeCycles << std::endl;
+                    std::cout << "Feb " << new_Hit.GetHitFeb() << ", Cell0Time cycle" << Cell0TimeCycles << std::endl;
                 }
 
-                new_Hit.HitCell0Time += Cell0TimeCycles*Cell0TimeOffset;
+                new_Hit.SetHitCell0Time(new_Hit.GetHitCell0Time() + Cell0TimeCycles*Cell0TimeOffset);
 
-                previous_cell0time = new_Hit.HitCell0Time;
+                previous_cell0time = new_Hit.GetHitCell0Time();
 
                 RunFillHitInfo(new_Hit);    // can do elsewhere
                 if (RunVerboseMode == true) new_Hit.HitGetHitInfo();
@@ -565,61 +579,140 @@ void TofRun::RunLoadHits(){
 };
 
 
-void TofRun::RunFillHitInfo(TofHit & this_hit){
+void TofRun::RunFillHitInfo(TofHit &this_hit){
+    // Set HitSampic using setter function
+    this_hit.SetHitSampic(std::floor(this_hit.GetHitFebChannel()/nChannelsPerSampic));
 
-    // std::cout << "Filling hit info... ";
+    // Set HitDaqChannel using setter function
+    this_hit.SetHitDaqChannel(nChannelsPerFeb*this_hit.GetHitFeb() + this_hit.GetHitFebChannel());
 
-    this_hit.HitSampic = std::floor(this_hit.HitFebChannel/nChannelsPerSampic);
-    this_hit.HitDaqChannel = nChannelsPerFeb*this_hit.HitFeb + this_hit.HitFebChannel;
-
-    this_hit.HitBaseline = 0;
+    // Calculate HitBaseline
+    double baseline = 0;
+    std::vector <double> this_wf = this_hit.GetHitWaveform();
     for(int sampleit = RunBaselineFirstSample; sampleit < RunBaselineFirstSample + RunBaselineNSamples; sampleit++)
-        this_hit.HitBaseline += this_hit.HitWaveform.at(sampleit);        
-    this_hit.HitBaseline /= RunBaselineNSamples;
+        baseline += this_wf.at(sampleit);
+    baseline /= RunBaselineNSamples;
 
+    // Set HitBaseline using setter function
+    this_hit.SetHitBaseline(baseline);
 
-    // subtract baseline to waveform
+    // Subtract baseline from waveform
     for(int sampleit = 0; sampleit < RunNSamplesInWaveform; sampleit++)
-        this_hit.HitWaveform.at(sampleit) -= this_hit.HitBaseline;
+        this_wf.at(sampleit) -= baseline;
+    
+    this_hit.SetHitWaveform(this_wf);
 
     // Make waveform positive in case it's negative (pmts). Dirty but ok for now
-    if (this_hit.HitDaqChannel == 216 || this_hit.HitDaqChannel == 219 || this_hit.HitDaqChannel == 228 || this_hit.HitDaqChannel == 231){
-        for(int sampleit = 0; sampleit < RunNSamplesInWaveform; sampleit++)
-        this_hit.HitWaveform.at(sampleit) *= -1;   
-    }
+    // if (this_hit.HitDaqChannel == 216 || this_hit.HitDaqChannel == 219 || this_hit.HitDaqChannel == 228 || this_hit.HitDaqChannel == 231){
+    //     for(int sampleit = 0; sampleit < RunNSamplesInWaveform; sampleit++)
+    //         this_hit.HitWaveform.at(sampleit) *= -1;   
+    // }
 
     // RawPeak is just max in wf, with no fit
-    this_hit.HitRawPeak = *std::max_element(this_hit.HitWaveform.begin(), this_hit.HitWaveform.end());
-    auto max_it = std::max_element(this_hit.HitWaveform.begin(), this_hit.HitWaveform.end());
-    size_t max_index = std::distance(this_hit.HitWaveform.begin(), max_it);
-    this_hit.HitPeakSample = max_index; // not super useful
+    double raw_peak = *std::max_element(this_wf.begin(), this_wf.end());
+    auto max_it = std::max_element(this_wf.begin(), this_wf.end());
+    size_t max_index = std::distance(this_wf.begin(), max_it);
 
-    this_hit.HitPeak = this_hit.HitRawPeak - this_hit.HitBaseline; // will be changed to use fit
+    // Set HitRawPeak using setter function
+    this_hit.SetHitRawPeak(raw_peak);
 
-    this_hit.HitPeakTime = this_hit.HitPeakSample*RunSampleLength; // will be replaced by fit
+    // Set HitPeakSample using setter function
+    this_hit.SetHitPeakSample(max_index);
 
-    this_hit.HitVoltageIntegral = 0.;
-    for(int sampleit = RunBaselineFirstSample + RunBaselineNSamples; sampleit < RunNSamplesInWaveform; sampleit++){
-        this_hit.HitVoltageIntegral += this_hit.HitWaveform.at(sampleit);
-    }
+    // Calculate and set HitPeak using setter function
+    double peak = raw_peak - baseline;
+    this_hit.SetHitPeak(peak);
 
-    this_hit.HitPeakFraction = RunHitPeakFraction;
-    
-    this_hit.HitSampleLength = RunSampleLength;
-    // std::cout << "Sample length: " << this_hit.HitSampleLength << std::endl;
+    // Calculate and set HitPeakTime using setter function
+    double peak_time = max_index*RunSampleLength;
+    this_hit.SetHitPeakTime(peak_time);
 
+    // Calculate HitVoltageIntegral
+    double voltage_integral = 0.; // fix
+    // for(int sampleit = RunBaselineFirstSample + RunBaselineNSamples; sampleit < RunNSamplesInWaveform; sampleit++){
+    //     voltage_integral += this_wf.at(sampleit);
+    // }
+
+    // Set HitVoltageIntegral using setter function
+    this_hit.SetHitVoltageIntegral(voltage_integral);
+
+    // Set HitPeakFraction using setter function
+    this_hit.SetHitPeakFraction(RunHitPeakFraction);
+
+    // Set HitSampleLength using setter function
+    this_hit.SetHitSampleLength(RunSampleLength);
+
+    // Call HitMatchDaqChToTofCh method
     this_hit.HitMatchDaqChToTofCh();
 
-    this_hit.HitCfTimeFromFit.clear(); // avoid memory issues
+    // Clear HitCfTimeFromFit vector
+    // this_hit.GeHitCfTimeFromFit.clear();
 
+    // Call HitFitWaveform method
     this_hit.HitFitWaveform();
 
-    // std::cout << "Filled hit info. ";
-    // //print hid id
-    // std::cout << "HitId: " << this_hit.HitId << " ";
-    if (RunVerboseMode == true) this_hit.HitGetHitInfo();
-
+    // Print hit info if verbose mode is on
+    if (RunVerboseMode == true) {
+        this_hit.HitGetHitInfo();
+    }
 }
+
+
+// void TofRun::RunFillHitInfo(TofHit this_hit){
+
+//     // std::cout << "Filling hit info... ";
+
+//     this_hit.HitSampic = std::floor(this_hit.HitFebChannel/nChannelsPerSampic);
+//     this_hit.HitDaqChannel = nChannelsPerFeb*this_hit.HitFeb + this_hit.HitFebChannel;
+
+//     this_hit.HitBaseline = 0;
+//     for(int sampleit = RunBaselineFirstSample; sampleit < RunBaselineFirstSample + RunBaselineNSamples; sampleit++)
+//         this_hit.HitBaseline += this_hit.HitWaveform.at(sampleit);        
+//     this_hit.HitBaseline /= RunBaselineNSamples;
+
+
+//     // subtract baseline to waveform
+//     for(int sampleit = 0; sampleit < RunNSamplesInWaveform; sampleit++)
+//         this_hit.HitWaveform.at(sampleit) -= this_hit.HitBaseline;
+
+//     // Make waveform positive in case it's negative (pmts). Dirty but ok for now
+//     if (this_hit.HitDaqChannel == 216 || this_hit.HitDaqChannel == 219 || this_hit.HitDaqChannel == 228 || this_hit.HitDaqChannel == 231){
+//         for(int sampleit = 0; sampleit < RunNSamplesInWaveform; sampleit++)
+//         this_hit.HitWaveform.at(sampleit) *= -1;   
+//     }
+
+//     // RawPeak is just max in wf, with no fit
+//     this_hit.HitRawPeak = *std::max_element(this_hit.HitWaveform.begin(), this_hit.HitWaveform.end());
+//     auto max_it = std::max_element(this_hit.HitWaveform.begin(), this_hit.HitWaveform.end());
+//     size_t max_index = std::distance(this_hit.HitWaveform.begin(), max_it);
+//     this_hit.HitPeakSample = max_index; // not super useful
+
+//     this_hit.HitPeak = this_hit.HitRawPeak - this_hit.HitBaseline; // will be changed to use fit
+
+//     this_hit.HitPeakTime = this_hit.HitPeakSample*RunSampleLength; // will be replaced by fit
+
+//     this_hit.HitVoltageIntegral = 0.;
+//     for(int sampleit = RunBaselineFirstSample + RunBaselineNSamples; sampleit < RunNSamplesInWaveform; sampleit++){
+//         this_hit.HitVoltageIntegral += this_hit.HitWaveform.at(sampleit);
+//     }
+
+//     this_hit.HitPeakFraction = RunHitPeakFraction;
+    
+//     this_hit.HitSampleLength = RunSampleLength;
+//     // std::cout << "Sample length: " << this_hit.HitSampleLength << std::endl;
+
+//     this_hit.HitMatchDaqChToTofCh();
+
+//     this_hit.HitCfTimeFromFit.clear(); // avoid memory issues
+
+//     this_hit.HitFitWaveform();
+
+//     // std::cout << "Filled hit info. ";
+//     // //print hid id
+//     // std::cout << "HitId: " << this_hit.HitId << " ";
+//     if (RunVerboseMode == true) this_hit.HitGetHitInfo();
+
+// }
 
 
 void TofRun::RunOrderHits(){
@@ -627,7 +720,7 @@ void TofRun::RunOrderHits(){
     std::vector<std::pair<double, int>> pair_cell0times_hitid;
 
     for (int ihit = 0; ihit < RunUnorderedHitsList.size(); ihit++)
-        pair_cell0times_hitid.push_back(std::make_pair(RunUnorderedHitsList.at(ihit).HitCell0Time, ihit));
+        pair_cell0times_hitid.push_back(std::make_pair(RunUnorderedHitsList.at(ihit).GetHitCell0Time(), ihit));
 
     // for (int ihit = 0; ihit < 200; ihit++)
     //     std::cout << pair_cell0times_hitid.at(ihit).first << " ";
@@ -659,12 +752,12 @@ void TofRun::RunCreateEvents(){
 
         if (create_new_event) {
             // std::cout << "Creating new event" << std::endl;
-            this_hit_time = RunOrderedHitsList.at(ihit).HitCell0Time;
+            this_hit_time = RunOrderedHitsList.at(ihit).GetHitCell0Time();
             new_event = TofEvent(); // reset
             // std::cout << "Create new event\n";
         }
 
-        if (RunOrderedHitsList.at(ihit).HitCell0Time - this_hit_time < coincidence_window){
+        if (RunOrderedHitsList.at(ihit).GetHitCell0Time() - this_hit_time < coincidence_window){
             new_event.EventHitsList.push_back(RunOrderedHitsList.at(ihit));
             create_new_event = false;
         }

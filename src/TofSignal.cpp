@@ -15,11 +15,11 @@ void TofSignal::SignalIdentifyEdges(){
     if (SignalBothEdges == true){
         // std::cout << "Two edges in this Signal" << std::endl;
 
-        if (SignalHitsList.at(0).HitEdge == 0 && SignalHitsList.at(1).HitEdge == 1){
+        if (SignalHitsList.at(0).GetHitEdge() == 0 && SignalHitsList.at(1).GetHitEdge() == 1){
             SignalHitLeft = SignalHitsList.at(0);
             SignalHitRight = SignalHitsList.at(1);
         }
-        else if (SignalHitsList.at(0).HitEdge == 1 && SignalHitsList.at(1).HitEdge == 0){
+        else if (SignalHitsList.at(0).GetHitEdge() == 1 && SignalHitsList.at(1).GetHitEdge() == 0){
             SignalHitLeft = SignalHitsList.at(1);
             SignalHitRight = SignalHitsList.at(0);
         }
@@ -31,10 +31,10 @@ void TofSignal::SignalIdentifyEdges(){
     else if (SignalBothEdges == false){
         // print "Only one edge in this Signal"
         // std::cout << "Only one edge in this Signal" << std::endl;
-        if (SignalHitsList.at(0).HitEdge == 0){
+        if (SignalHitsList.at(0).GetHitEdge() == 0){
             SignalHitLeft = SignalHitsList.at(0);
         }
-        else if (SignalHitsList.at(0).HitEdge == 1){
+        else if (SignalHitsList.at(0).GetHitEdge() == 1){
             SignalHitRight = SignalHitsList.at(0);
         }
         else
@@ -64,7 +64,7 @@ void TofSignal::SignalQualityCheck(){
 
 void TofSignal::SignalGetSignalInfo(){
     std::cout << "Signal size: " << SignalHitsList.size() << std::endl;
-    std::cout << "Signal bar: " << SignalHitsList.at(0).HitBar << std::endl;
-    std::cout << "Signal left edge: " << SignalHitLeft.HitEdge << std::endl;
-    std::cout << "Signal right edge: " << SignalHitRight.HitEdge << std::endl;
+    std::cout << "Signal bar: " << SignalHitsList.at(0).GetHitBar() << std::endl;
+    std::cout << "Signal left edge: " << SignalHitLeft.GetHitEdge() << std::endl;
+    std::cout << "Signal right edge: " << SignalHitRight.GetHitEdge() << std::endl;
 }

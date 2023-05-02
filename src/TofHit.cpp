@@ -29,48 +29,8 @@ Double_t FitFunction(Double_t *x,Double_t *parameters){ // why x is a pointer
 }
 
 TofHit::TofHit(){
-    // initialize all variables to recognizable value
-    HitId = -1;
-    HitFeb = -1;
-    HitSampic = -1;
-    HitFebChannel = -1;
-    HitDaqChannel = -1;
-    HitChannelOnPlane = -1;
-    HitPlane = -1;
-    HitBar = -1;
-    HitEdge = -1;
-    HitPeakSample = -1;
-
-    HitUnixTime = -1.0;
-    HitCell0Time = -1.0;
-    HitTOTValue = -1.0;
-    HitRawTOTValue = -1.0;
-    HitRawPeak = -1.0;
-    HitBaseline = -1.0;
-    HitVoltageIntegral = -1.0;
-    HitPeak = -1.0;
-    HitPeakTime = -1.0;
-
-    HitWaveform = {};
-    HitErrorsList = {};
-    HitPeakFraction = {};
-    HitCfTimeFromFit = {};
-    HitPeakFractionSampleLinearInt = {};
-    HitPeakFractionTimeLinearInt = {};
-    HitPeakFractionSampleSplineInt = {};
-    HitPeakFractionTimeSplineInt = {};
-
-    // Fit Parameters
-    HitFitParameter[0] = -999;
-    HitFitParameter[1] = -999;
-    HitFitParameter[2] = -999;
-    HitFitParameter[3] = -999;
-    HitFitParameter[4] = -999;
-    HitFitParameter[5] = -999;
+    
 }
-
-
-
 
 
 void TofHit::HitFitWaveform(){
