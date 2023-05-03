@@ -4,261 +4,258 @@
 #include "../include/TofSignal.h"
 
 // Constructor
-TofRun::TofRun(std::string software){
-    RunSoftware = software;
-    RunSelectedAnalysisOptions = false;
-    RunSinglebarType = false;
-
-
-    std::cout << "Built object TofRun\n";
-}
-
-void TofRun::RunSaveSettings_linux(std::string run_full_path){
-
-    std::cout << "Linux. Saving Run parameters... ";
-    std::vector <std::string> RunPath_split = SplitString(run_full_path, '/');
-    RunPath = run_full_path;
-    std::cout << "RunPath: " << RunPath << std::endl;
-    RunAddress = RunPath_split.at(RunPath_split.size()-1); // here it's a filename
-    // ifstream RunInputFile(RunFile.c_str(), ios_base::in);
+TofRun::TofRun(std::string software, std::string run_full_path){
     
-    size_t start = RunAddress.find("run") + 3;
-    size_t end = RunAddress.find(".txt");
-    if (start != std::string::npos && end != std::string::npos && start < end) {
-        RunNumber = std::stoi(RunAddress.substr(start, end - start));
-        std::cout << "Run number " << RunNumber << std::endl;
+    // Save run software
+    RunSoftware = software;
+    if (RunSoftware == "linux"){
+        std::cout << "Linux. Creating TofRun object... ";
+    } else if (RunSoftware == "windows"){
+        std::cout << "Windows. Creating TofRun object... ";
     } else {
         std::string this_error;
-        this_error = "Wrong input filename, Run number not found\n";
+        this_error = "Wrong software input, has to be linux or windows. TofRun object not created\n";
         std::cerr << this_error << std::endl;
         RunErrorsList.push_back(this_error);
+        RunPrintErrors();
+        exit(1);
     }
 
-    // hard coding for now, then there should be a settings file from MIDAS?
-
-    RunDate = -1;
-    RunTime = -1;
-    RunUnixTime = -1; 
-
-    RunNFebs = 4;
-    RunNSamplesToRead = 64;
-    RunSamplingFrequency = 3200; // MHz
-    RunSampleLength = 1e-3 / RunSamplingFrequency; // ns
-    for (int i=0; i<nFebsMax; i++) for (int j=0; j<nSampicsPerFeb; j++){
-        RunBaseline[i][j] = 0.150; // V
-        RunPostTrig[i][j] = 2;
-    }
-    for (int i=0; i<nChannels; i++) RunTrigThr[i] = 0.020;
-    std::cout << "Run parameters saved.\n";
-
-}
-
-// Windows format, int variable just to call a different constructor
-void TofRun::RunSaveSettings_windows(std::string run_full_path){
-
-    std::cout << "Windows. Saving Run parameters... ";
-    // ifstream RunInputFile(RunFile.c_str(), ios_base::in);
+    // Save run number and other info in the run address
     RunPath = run_full_path;
+    std::vector <std::string> split_run_path = SplitString(RunPath, '/');
     std::cout << "RunPath: " << RunPath << std::endl;
-    std::vector <std::string> RunPath_split = SplitString(run_full_path, '/');
-    RunAddress = RunPath_split.at(RunPath_split.size()-1); // here it's a filename
-    std::vector <std::string> RunAddress_split = SplitString(RunAddress, '_');
+    RunAddress = split_run_path.at(split_run_path.size()-1); // filename for linux, folder for windows
+    std::vector <std::string> split_run_address = SplitString(RunAddress, '_');
 
     size_t start, end;
-
     start = RunAddress.find("run") + 3;
     if (start != std::string::npos) {
-        std::cout << "Run address " << RunAddress << std::endl;
-        RunNumber = std::stoi(RunAddress.substr(start));
-        std::cout << "Run number " << RunNumber << std::endl;
+
+        std::string run_number_and_extension = RunAddress.substr(start);
+        end = run_number_and_extension.find(".txt");
+        if (end != std::string::npos) {
+            std::cout << run_number_and_extension.substr(0, end) << std::endl;
+            RunNumber = std::stoi(run_number_and_extension.substr(0, end)); // linux
+        } else {
+            RunNumber = std::stoi(run_number_and_extension); // windows, no extension
+        }
+
     } else {
+
         std::string this_error;
         this_error = "Wrong input filename, Run number not found.\n";
         std::cerr << this_error << std::endl;
         RunErrorsList.push_back(this_error);
+        RunPrintErrors();
+        exit(1);
+
     }
-  
+
     // This can be uncommented to read the date from the filename
-    std::string RunDate_day = RunAddress_split.at(1).substr(0,2);
-    std::string RunDate_month = RunAddress_split.at(1).substr(2,2);
-    std::string RunDate_year = RunAddress_split.at(1).substr(4,4);
-
-    RunDate = std::stoi(RunDate_year+RunDate_month+RunDate_day);
+    // Declare the following string variables in one line
+    std::string run_date_day, run_date_month, run_date_year, run_date_hours, run_date_minutes;
     
-    std::string RunTime_hours = RunAddress_split.at(2).substr(0,2);
-    std::string RunTime_minutes = RunAddress_split.at(2).substr(3,2);
-
-    RunTime = std::stoi(RunTime_hours+RunTime_minutes);
-
-    std::string RunSettingsFile = run_full_path + "/Run_Settings.txt";
-    std::ifstream RunSettingsStream;
-    RunSettingsStream.open(RunSettingsFile.c_str());
-
-    // to fix
-    // RunNSamplesToRead = 64;
-
-    // RunSamplingFrequency = 3200;
-    // for (int i=0; i<nFebsMax; i++) for (int j=0; j<nSampicsPerFeb; j++){
-    //     RunBaseline[i][j] = 0.150; // V
-    //     RunPostTrig[i][j] = 2;
-    // }
-    // for (int i=0; i<nChannels; i++) RunTrigThr[i] = 0.020;
-    // int RunNSamplesPerHit = RunRunNSamplesToRead - HitNBadSampls;
-    // double RunSamplingFrequency = 1E-3*RunSamplingFrequencyMHz;
-    // double RunSample_length = 1. / RunSamplingFrequency;
-
- 
-    std::string linedump;
-    std::cout << "enter runsettingstream\n";
-
-
-  while(!RunSettingsStream.eof())
-  {
-
-    getline(RunSettingsStream, linedump);
-
-    if(linedump.find("UnixTime") != std::string::npos)
-    {
-      std::string RunUnixTime_stringStart = "UnixTime = ";
-      std::string RunUnixTime_stringStop = " date";
-      int RunUnixTime_startPosition = linedump.find(RunUnixTime_stringStart) + RunUnixTime_stringStart.length();
-      int RunUnixTime_length = linedump.find(RunUnixTime_stringStop) - RunUnixTime_startPosition;
-      std::string RunUnixTime_string = linedump.substr(RunUnixTime_startPosition, RunUnixTime_length);
-      RunUnixTime = std::stod(RunUnixTime_string);
-
-    }
-    else if(linedump.find("Total Nb of 64-ch FE-Boards:") != std::string::npos)
-    {
-      std::string RunNFebs_stringStart = "FE-Boards: ";
-      std::string RunNFebs_stringStop = " ===";
-      int RunNFebs_startPosition = linedump.find(RunNFebs_stringStart) + RunNFebs_stringStart.length();
-      int RunNFebs_length = linedump.find(RunNFebs_stringStop) - RunNFebs_startPosition;
-      std::string RunNFebs_string = linedump.substr(RunNFebs_startPosition, RunNFebs_length);
-      std::cout << "RunNFebs_string: " << RunNFebs_string << std::endl;
-      RunNFebs = std::stoi(RunNFebs_string);
-        std::cout << "RunNFebs: " << RunNFebs << std::endl;
-
-    }
-    else if(linedump.find("64-ch Front-End Board") != std::string::npos)
-    {
-      std::string Feb_stringStart = "64-ch Front-End Board[";
-      std::string Feb_string = linedump.substr(linedump.find(Feb_stringStart) + Feb_stringStart.length(), 1);
-      
-      int Feb = std::stoi(Feb_string); // not needed
-      
-      std::string RunFebSerialNumber_stringStart = "SerNum: ";
-      std::string RunFebSerialNumber_stringStop = ", Ctrl-FPGA";
-      int RunFebSerialNumber_startPosition = linedump.find(RunFebSerialNumber_stringStart) + RunFebSerialNumber_stringStart.length();
-      int RunFebSerialNumber_length = linedump.find(RunFebSerialNumber_stringStop) - RunFebSerialNumber_startPosition;
-      std::string RunFebSerialNumber_string = linedump.substr(RunFebSerialNumber_startPosition, RunFebSerialNumber_length);
-      RunFebSerialNumber.push_back(RunFebSerialNumber_string);
-    }
-    else if(linedump.find("SamplingFrequency:") != std::string::npos)
-    {
-      std::string RunSamplingFrequency_stringStart = "SamplingFrequency: ";
-      std::string RunSamplingFrequency_stringStop = " MS/s";
-      int RunSamplingFrequency_startPosition = linedump.find(RunSamplingFrequency_stringStart) + RunSamplingFrequency_stringStart.length();
-      int RunSamplingFrequency_length = linedump.find(RunSamplingFrequency_stringStop) - RunSamplingFrequency_startPosition;
-      std::string RunSamplingFrequency_string = linedump.substr(RunSamplingFrequency_startPosition, RunSamplingFrequency_length);
-      std::cout << "RunSamplingFrequency_string: " << RunSamplingFrequency_string << std::endl;
-      RunSamplingFrequency = std::stoi(RunSamplingFrequency_string);
-      RunSampleLength = 1e3 / RunSamplingFrequency; // ns
-      std::cout << "RunSamplingFrequency: " << RunSamplingFrequency << std::endl;
-        std::cout << "RunSampleLength: " << RunSampleLength << std::endl;
-    }
-    else if(linedump.find("Baseline:") != std::string::npos)
-    {
-      std::string Feb_stringStart = "FE-BOARD[";
-      std::string Feb_string = linedump.substr(linedump.find(Feb_stringStart) + Feb_stringStart.length(), 1);
-
-      std::string Sampic_stringStart = "SAMPIC[";
-      std::string Sampic_string = linedump.substr(linedump.find(Sampic_stringStart) + Sampic_stringStart.length(), 1);
-
-      std::string Baseline_stringStart = "Baseline: ";
-      std::string Baseline_stringV = linedump.substr(linedump.find(Baseline_stringStart) + Baseline_stringStart.length(), 1);
-      std::string Baseline_stringmV = linedump.substr(linedump.find(Baseline_stringStart) + Baseline_stringStart.length() + 2, 3);
-
-      int Feb = std::stoi(Feb_string);
-
-      int Sampic = std::stoi(Sampic_string);
-
-      double Baseline = std::stoi(Baseline_stringV) + 1E-3*std::stoi(Baseline_stringmV);
-
-      RunBaseline[Feb][Sampic] = Baseline;
-
-    }
-    else if(linedump.find("==== FE-BOARD") != std::string::npos && linedump.find("SAMPIC") != std::string::npos && linedump.find("CHANNEL") != std::string::npos)
-    {
-        std::string Feb_stringStart = "FE-BOARD[";
-        std::string Feb_string = linedump.substr(linedump.find(Feb_stringStart) + Feb_stringStart.length(), 1);
-
-        std::string Sampic_stringStart = "SAMPIC[";
-        std::string Sampic_string = linedump.substr(linedump.find(Sampic_stringStart) + Sampic_stringStart.length(), 1);
-
-        std::string Channel_stringStart = "CHANNEL[";
-        std::string Channel_string = linedump.substr(linedump.find(Channel_stringStart) + Channel_stringStart.length(), 1);
-
-        std::string Enabled_stringStart = "Enabled: ";
-        std::string Enabled_string = linedump.substr(linedump.find(Enabled_stringStart) + Enabled_stringStart.length(), 1);
-
-        std::string TriggerMode_stringStart = "TriggerMode: '";
-        std::string TriggerMode_stringEnd = "'";
-        std::string TriggerMode_string = linedump.substr(linedump.find(TriggerMode_stringStart) + TriggerMode_stringStart.length(),
-                                                        linedump.find(TriggerMode_stringEnd) - linedump.find(TriggerMode_stringStart) - TriggerMode_stringStart.length());
-
-        std::string EnabledForCentralTrigger_stringStart = "EnabledForCentralTrigger: ";
-        std::string EnabledForCentralTrigger_string = linedump.substr(linedump.find(EnabledForCentralTrigger_stringStart) + EnabledForCentralTrigger_stringStart.length(), 1);
-
-        int length_of_stringV = 2;
-        std::string InternalTriggerTreshold_stringStart = "InternalTriggerTreshold: ";
-        std::string InternalTriggerTreshold_stringV = linedump.substr(linedump.find(InternalTriggerTreshold_stringStart) + InternalTriggerTreshold_stringStart.length(), 1);
-        // if the value is negative
-        if (InternalTriggerTreshold_stringV == "-")
-        {
-           // then add another digit
-            InternalTriggerTreshold_stringV = linedump.substr(linedump.find(InternalTriggerTreshold_stringStart) + InternalTriggerTreshold_stringStart.length(), 2);
-            length_of_stringV++;
-        }
-        std::string InternalTriggerTreshold_stringmV = linedump.substr(linedump.find(InternalTriggerTreshold_stringStart) + InternalTriggerTreshold_stringStart.length() + length_of_stringV, 3);
-
-        // std::cout << "Feb_string: " << Feb_string << std::endl;
-        // std::cout << "Sampic_string: " << Sampic_string << std::endl;
-        // std::cout << "Channel_string: " << Channel_string << std::endl;
-        // std::cout << "Enabled_string: " << Enabled_string << std::endl;
-        // std::cout << "TriggerMode_string: " << TriggerMode_string << std::endl;
-        // std::cout << "EnabledForCentralTrigger_string: " << EnabledForCentralTrigger_string << std::endl;
-        // std::cout << "InternalTriggerTreshold_stringV: " << InternalTriggerTreshold_stringV << std::endl;
-        // std::cout << "InternalTriggerTreshold_stringmV: " << InternalTriggerTreshold_stringmV << std::endl;
-
-        int feb = std::stoi(Feb_string);
-        int sampic = std::stoi(Sampic_string);
-        int channel = std::stoi(Channel_string);
-        // int enabled = std::stoi(Enabled_string);
-        int enabled_for_central_trigger = std::stoi(EnabledForCentralTrigger_string);
-        double InternalTriggerTreshold_string = std::stoi(InternalTriggerTreshold_stringV) + 1E-3*std::stoi(InternalTriggerTreshold_stringmV);
-
-        RunTrigThr [feb*nChannelsPerFeb + sampic*nChannelsPerSampic + channel] = InternalTriggerTreshold_string;
-        // std::cout << "channel " << feb*RunNFebs*nChannelsPerFeb + sampic*nChannelsPerSampic + channel << RunTrigThr[feb*RunNFebs*nChannelsPerFeb + sampic*nChannelsPerSampic + channel] << std::endl;
-
-        std::string trigger_mode = TriggerMode_string;
+    if (RunSoftware == "linux"){
         
-        // print 
-        // std::cout << "Feb: " << feb << std::endl;
-        // std::cout << "Sampic: " << sampic << std::endl;
-        // std::cout << "Channel: " << channel << std::endl;
-        // std::cout << "Enabled: " << enabled_for_central_trigger << std::endl;
-        // std::cout << "TriggerMode: " << trigger_mode << std::endl;
-        // std::cout << "InternalTriggerTreshold: " << InternalTriggerTreshold_string << std::endl;
+        // in linux the format is sampic_YYYYMMDD_HHMM_runX.txt
+        RunDate = std::stoi(split_run_address.at(1));
+        RunTime = std::stoi(split_run_address.at(2));
 
+    } else if (RunSoftware == "windows"){
 
+        // in windows the format is sampic_MMDDYYYY_HHhMMm_runX  
+        std::string run_date_month = split_run_address.at(1).substr(0,2);
+        std::string run_date_day = split_run_address.at(1).substr(2,2);
+        std::string run_date_year = split_run_address.at(1).substr(4,4);
+        std::cout << run_date_year + run_date_month + run_date_day << std::endl;
+        RunDate = std::stoi(run_date_year + run_date_month + run_date_day);
 
+        std::string run_date_hours = split_run_address.at(2).substr(0,2);
+        std::string run_date_minutes = split_run_address.at(2).substr(3,2);
+        RunTime = std::stoi(run_date_hours+run_date_minutes);
 
     }
 
-    RunNSamplesToRead = 62;
-  }
-  
-  std::cout << "Run parameters saved.\n";
+    std::cout << "Built object TofRun for run number " << RunNumber << std::endl;
+}
+
+void TofRun::RunSaveSettings (){
+    
+    if (RunSoftware == "linux"){
+        std::cout << "Linux. Saving Run parameters... ";
+        
+        // hard coding for now, then there should be a settings file dumped from MIDAS
+        RunNFebs = 4;
+        RunNSamplesToRead = 64;
+        RunSamplingFrequency = 3200; // MHz
+        RunSampleLength = 1e-3 / RunSamplingFrequency; // ns
+        for (int i=0; i<nFebsMax; i++) for (int j=0; j<nSampicsPerFeb; j++){
+            RunBaseline[i][j] = 0.150; // V
+            RunPostTrig[i][j] = 2;
+        }
+        for (int i=0; i<nChannels; i++) RunTrigThr[i] = 0.020;
+        std::cout << "Run parameters saved.\n";
+    }
+    else if (RunSoftware == "windows"){
+
+        std::cout << "Windows. Saving Run parameters... ";
+        // ifstream RunInputFile(RunFile.c_str(), ios_base::in);
+        std::string RunSettingsFile = RunPath + "/Run_Settings.txt";
+        std::ifstream RunSettingsStream;
+        RunSettingsStream.open(RunSettingsFile.c_str());
+    
+        std::string linedump;
+        std::cout << "enter runsettingstream\n";
+
+
+        while(!RunSettingsStream.eof())
+        {
+
+            getline(RunSettingsStream, linedump);
+
+            if(linedump.find("UnixTime") != std::string::npos)
+            {
+            std::string RunUnixTime_stringStart = "UnixTime = ";
+            std::string RunUnixTime_stringStop = " date";
+            int RunUnixTime_startPosition = linedump.find(RunUnixTime_stringStart) + RunUnixTime_stringStart.length();
+            int RunUnixTime_length = linedump.find(RunUnixTime_stringStop) - RunUnixTime_startPosition;
+            std::string RunUnixTime_string = linedump.substr(RunUnixTime_startPosition, RunUnixTime_length);
+            RunUnixTime = std::stod(RunUnixTime_string);
+
+            }
+            else if(linedump.find("Total Nb of 64-ch FE-Boards:") != std::string::npos)
+            {
+            std::string RunNFebs_stringStart = "FE-Boards: ";
+            std::string RunNFebs_stringStop = " ===";
+            int RunNFebs_startPosition = linedump.find(RunNFebs_stringStart) + RunNFebs_stringStart.length();
+            int RunNFebs_length = linedump.find(RunNFebs_stringStop) - RunNFebs_startPosition;
+            std::string RunNFebs_string = linedump.substr(RunNFebs_startPosition, RunNFebs_length);
+            std::cout << "RunNFebs_string: " << RunNFebs_string << std::endl;
+            RunNFebs = std::stoi(RunNFebs_string);
+                std::cout << "RunNFebs: " << RunNFebs << std::endl;
+
+            }
+            else if(linedump.find("64-ch Front-End Board") != std::string::npos)
+            {
+            std::string Feb_stringStart = "64-ch Front-End Board[";
+            std::string Feb_string = linedump.substr(linedump.find(Feb_stringStart) + Feb_stringStart.length(), 1);
+            
+            int Feb = std::stoi(Feb_string); // not needed
+            
+            std::string RunFebSerialNumber_stringStart = "SerNum: ";
+            std::string RunFebSerialNumber_stringStop = ", Ctrl-FPGA";
+            int RunFebSerialNumber_startPosition = linedump.find(RunFebSerialNumber_stringStart) + RunFebSerialNumber_stringStart.length();
+            int RunFebSerialNumber_length = linedump.find(RunFebSerialNumber_stringStop) - RunFebSerialNumber_startPosition;
+            std::string RunFebSerialNumber_string = linedump.substr(RunFebSerialNumber_startPosition, RunFebSerialNumber_length);
+            RunFebSerialNumber.push_back(RunFebSerialNumber_string);
+            }
+            else if(linedump.find("SamplingFrequency:") != std::string::npos)
+            {
+            std::string RunSamplingFrequency_stringStart = "SamplingFrequency: ";
+            std::string RunSamplingFrequency_stringStop = " MS/s";
+            int RunSamplingFrequency_startPosition = linedump.find(RunSamplingFrequency_stringStart) + RunSamplingFrequency_stringStart.length();
+            int RunSamplingFrequency_length = linedump.find(RunSamplingFrequency_stringStop) - RunSamplingFrequency_startPosition;
+            std::string RunSamplingFrequency_string = linedump.substr(RunSamplingFrequency_startPosition, RunSamplingFrequency_length);
+            std::cout << "RunSamplingFrequency_string: " << RunSamplingFrequency_string << std::endl;
+            RunSamplingFrequency = std::stoi(RunSamplingFrequency_string);
+            RunSampleLength = 1e3 / RunSamplingFrequency; // ns
+            std::cout << "RunSamplingFrequency: " << RunSamplingFrequency << std::endl;
+                std::cout << "RunSampleLength: " << RunSampleLength << std::endl;
+            }
+            else if(linedump.find("Baseline:") != std::string::npos)
+            {
+            std::string Feb_stringStart = "FE-BOARD[";
+            std::string Feb_string = linedump.substr(linedump.find(Feb_stringStart) + Feb_stringStart.length(), 1);
+
+            std::string Sampic_stringStart = "SAMPIC[";
+            std::string Sampic_string = linedump.substr(linedump.find(Sampic_stringStart) + Sampic_stringStart.length(), 1);
+
+            std::string Baseline_stringStart = "Baseline: ";
+            std::string Baseline_stringV = linedump.substr(linedump.find(Baseline_stringStart) + Baseline_stringStart.length(), 1);
+            std::string Baseline_stringmV = linedump.substr(linedump.find(Baseline_stringStart) + Baseline_stringStart.length() + 2, 3);
+
+            int Feb = std::stoi(Feb_string);
+
+            int Sampic = std::stoi(Sampic_string);
+
+            double Baseline = std::stoi(Baseline_stringV) + 1E-3*std::stoi(Baseline_stringmV);
+
+            RunBaseline[Feb][Sampic] = Baseline;
+
+            }
+            else if(linedump.find("==== FE-BOARD") != std::string::npos && linedump.find("SAMPIC") != std::string::npos && linedump.find("CHANNEL") != std::string::npos)
+            {
+                std::string Feb_stringStart = "FE-BOARD[";
+                std::string Feb_string = linedump.substr(linedump.find(Feb_stringStart) + Feb_stringStart.length(), 1);
+
+                std::string Sampic_stringStart = "SAMPIC[";
+                std::string Sampic_string = linedump.substr(linedump.find(Sampic_stringStart) + Sampic_stringStart.length(), 1);
+
+                std::string Channel_stringStart = "CHANNEL[";
+                std::string Channel_string = linedump.substr(linedump.find(Channel_stringStart) + Channel_stringStart.length(), 1);
+
+                std::string Enabled_stringStart = "Enabled: ";
+                std::string Enabled_string = linedump.substr(linedump.find(Enabled_stringStart) + Enabled_stringStart.length(), 1);
+
+                std::string TriggerMode_stringStart = "TriggerMode: '";
+                std::string TriggerMode_stringEnd = "'";
+                std::string TriggerMode_string = linedump.substr(linedump.find(TriggerMode_stringStart) + TriggerMode_stringStart.length(),
+                                                                linedump.find(TriggerMode_stringEnd) - linedump.find(TriggerMode_stringStart) - TriggerMode_stringStart.length());
+
+                std::string EnabledForCentralTrigger_stringStart = "EnabledForCentralTrigger: ";
+                std::string EnabledForCentralTrigger_string = linedump.substr(linedump.find(EnabledForCentralTrigger_stringStart) + EnabledForCentralTrigger_stringStart.length(), 1);
+
+                int length_of_stringV = 2;
+                std::string InternalTriggerTreshold_stringStart = "InternalTriggerTreshold: ";
+                std::string InternalTriggerTreshold_stringV = linedump.substr(linedump.find(InternalTriggerTreshold_stringStart) + InternalTriggerTreshold_stringStart.length(), 1);
+                // if the value is negative
+                if (InternalTriggerTreshold_stringV == "-")
+                {
+                // then add another digit
+                    InternalTriggerTreshold_stringV = linedump.substr(linedump.find(InternalTriggerTreshold_stringStart) + InternalTriggerTreshold_stringStart.length(), 2);
+                    length_of_stringV++;
+                }
+                std::string InternalTriggerTreshold_stringmV = linedump.substr(linedump.find(InternalTriggerTreshold_stringStart) + InternalTriggerTreshold_stringStart.length() + length_of_stringV, 3);
+
+                // std::cout << "Feb_string: " << Feb_string << std::endl;
+                // std::cout << "Sampic_string: " << Sampic_string << std::endl;
+                // std::cout << "Channel_string: " << Channel_string << std::endl;
+                // std::cout << "Enabled_string: " << Enabled_string << std::endl;
+                // std::cout << "TriggerMode_string: " << TriggerMode_string << std::endl;
+                // std::cout << "EnabledForCentralTrigger_string: " << EnabledForCentralTrigger_string << std::endl;
+                // std::cout << "InternalTriggerTreshold_stringV: " << InternalTriggerTreshold_stringV << std::endl;
+                // std::cout << "InternalTriggerTreshold_stringmV: " << InternalTriggerTreshold_stringmV << std::endl;
+
+                int feb = std::stoi(Feb_string);
+                int sampic = std::stoi(Sampic_string);
+                int channel = std::stoi(Channel_string);
+                // int enabled = std::stoi(Enabled_string);
+                int enabled_for_central_trigger = std::stoi(EnabledForCentralTrigger_string);
+                double InternalTriggerTreshold_string = std::stoi(InternalTriggerTreshold_stringV) + 1E-3*std::stoi(InternalTriggerTreshold_stringmV);
+
+                RunTrigThr [feb*nChannelsPerFeb + sampic*nChannelsPerSampic + channel] = InternalTriggerTreshold_string;
+                // std::cout << "channel " << feb*RunNFebs*nChannelsPerFeb + sampic*nChannelsPerSampic + channel << RunTrigThr[feb*RunNFebs*nChannelsPerFeb + sampic*nChannelsPerSampic + channel] << std::endl;
+
+                std::string trigger_mode = TriggerMode_string;
+                
+                // print 
+                // std::cout << "Feb: " << feb << std::endl;
+                // std::cout << "Sampic: " << sampic << std::endl;
+                // std::cout << "Channel: " << channel << std::endl;
+                // std::cout << "Enabled: " << enabled_for_central_trigger << std::endl;
+                // std::cout << "TriggerMode: " << trigger_mode << std::endl;
+                // std::cout << "InternalTriggerTreshold: " << InternalTriggerTreshold_string << std::endl;
+
+
+
+
+            }
+
+            RunNSamplesToRead = 62;
+        }
+    }
+    std::cout << "Run parameters saved.\n";
 
 }
 
@@ -350,7 +347,6 @@ void TofRun::RunGetInfo (){
 
     std::cout << "RunVerboseMode: " << RunVerboseMode << std::endl;
     std::cout << "RunSelectedAnalysisOptions: " << RunSelectedAnalysisOptions << std::endl;
-    std::cout << "RunInterpolationType: " << RunInterpolationType << std::endl;
     std::cout << "RunHitPeakFraction: ";
     for (const auto& fraction : RunHitPeakFraction) {
         std::cout << fraction << " ";
@@ -360,7 +356,7 @@ void TofRun::RunGetInfo (){
     std::cout << "RunNSamplesToExclude: " << RunNSamplesToExclude << std::endl;
     std::cout << "RunBaselineFirstSample: " << RunBaselineFirstSample << std::endl;
     std::cout << "RunBaselineNSamples: " << RunBaselineNSamples << std::endl;
-    std::cout << "RunDeleteUnorderedHitsList: " << RunDeleteUnorderedHitsList << std::endl;
+    std::cout << "RunDeleteHitsList: " << RunDeleteHitsList << std::endl;
     std::cout << std::endl;
 
 };
@@ -575,8 +571,10 @@ void TofRun::RunLoadHits(){
         }
 
     }
+}
 
-};
+
+
 
 
 void TofRun::RunFillHitInfo(TofHit &this_hit){
@@ -770,6 +768,7 @@ void TofRun::RunCreateEvents(){
         }
 
     }
+    
     std::cout << "Created " << RunEventsList.size() << " events." << std::endl;
     RunOrderedHitsList = {}; // free memory
 
@@ -781,11 +780,10 @@ void TofRun::RunSetAnalysisOptions (){
 
     // for Linux as of april
     if (RunSoftware == "linux"){ 
-        RunInterpolationType = "linear";
         RunNSamplesInWaveform = 63;
         RunNSamplesToExclude = 1; // first is not to consider
         RunBaselineNSamples = 5;
-        RunDeleteUnorderedHitsList = false;
+        RunDeleteHitsList = false;
         RunMaxHitsToLoad = 1000;
         return;
     }    
@@ -806,10 +804,9 @@ void TofRun::RunSetAnalysisOptions (){
 
     nlohmann::json analysis_settings_file;
     RunAnalysisSettingsStream >> analysis_settings_file;
-    RunInterpolationType = analysis_settings_file["RunInterpolationType"];
     RunBaselineNSamples = analysis_settings_file["RunBaselineNSamples"];
     RunNSamplesToExclude = analysis_settings_file["RunNSamplesToExclude"];
-    RunDeleteUnorderedHitsList = analysis_settings_file["RunDeleteUnorderedHitsList"];
+    RunDeleteHitsList = analysis_settings_file["RunDeleteHitsList"];
     RunVerboseMode = analysis_settings_file["RunVerboseMode"];
     RunMaxHitsToLoad = analysis_settings_file["RunMaxHitsToLoad"];
     

@@ -19,19 +19,10 @@ int main(int argc, char *argv[]){
     std::string run_full_path = argv[2];
     std::string output_directory = argv[3];
 
-    TofRun thisRun(software);
+    TofRun thisRun(software, run_full_path);
     std::cout << "Run path " << run_full_path << std::endl;
     
-    if (software == "linux"){
-        thisRun.RunSaveSettings_linux(run_full_path);
-    } 
-    else if (software == "windows"){
-        thisRun.RunSaveSettings_windows(run_full_path);
-    }
-    else {
-        std::cerr << "Invalid value for 'software' variable, it has to be 'linux' or 'windows'\n";
-        return 0;
-    }
+    thisRun.RunSaveSettings();
 
     thisRun.RunQualityCheck();
     thisRun.RunSetAnalysisOptions();

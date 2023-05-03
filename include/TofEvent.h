@@ -8,9 +8,6 @@
 class TofEvent{
 public: 
     
-    // variables
-    int EventSize; // number of signals in event, add also hits?
-
     // Constructor
     TofEvent();
     ~TofEvent(){};
@@ -20,6 +17,18 @@ public:
     // Functions
     void EventCreateSignals();
     void EventGetEventInfo();
+
+    // Setters
+    void SetEventSize(int value) { EventSize = value; }
+
+    // Getters
+    int GetEventSize() {return EventSize;}
+    
+
+private:
+
+    // Variables
+    int EventSize {0};
 
 };
 

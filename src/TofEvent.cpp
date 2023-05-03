@@ -4,7 +4,6 @@
 #include "../include/TofSignal.h"
 
 TofEvent::TofEvent(){
-    EventSize = 0;
     // EventCreateSignals();
 }
 
@@ -64,6 +63,7 @@ void TofEvent::EventCreateSignals(){
     
     }
 
+    EventSize = EventSignalsList.size();
     // std::cout << "Created " << EventSignalsList.size() << " signals" << std::endl;
 
 }

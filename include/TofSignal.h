@@ -6,21 +6,27 @@
 
 class TofSignal{
 public:
-    // constructor
+
+    // Constructors
     TofSignal();
     ~TofSignal(){};
 
     // variables
-    bool SignalBothEdges;
     // vector of hits or this, choose
-    TofHit SignalHitLeft; 
-    TofHit SignalHitRight; 
-    std::vector <TofHit> SignalHitsList;
-    
+       
     // functions
     void SignalQualityCheck();
     void SignalIdentifyEdges();
     void SignalGetSignalInfo();
+
+private:
+
+    // variables
+    int SignalSize {0};
+    int SignalType {0}; // 0 = unknown, 1 = left, 2 = right, 3 = both
+    TofHit SignalHitLeft; 
+    TofHit SignalHitRight; 
+    std::vector <TofHit> SignalHitsList;
 
 };
 

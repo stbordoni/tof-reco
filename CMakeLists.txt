@@ -36,7 +36,7 @@ set(SOURCES
   # ${CMAKE_CURRENT_SOURCE_DIR}/ReadHits.cpp
 )
 
-# create the executable
+# create the executables
 add_executable(GenerateRootFile ${SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/GenerateRootFile.cpp)
 add_executable(ReadRootFile ${SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/ReadRootFile.cpp)
 

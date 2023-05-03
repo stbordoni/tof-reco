@@ -111,6 +111,8 @@ public:
 
 
 private:
+
+    // Variables
     // Read from input file
     int HitFeb {-1};
     int HitFebChannel{-1};

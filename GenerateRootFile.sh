@@ -41,7 +41,7 @@ do
   then
     software="linux"
     # inputDirectory="/home/emanuele/Documents/ToF/linuxData/"
-    runFullPath=$(find $inputDirectory$"linux_run"$runit".txt")
+    runFullPath=$(find $inputDirectory -name "sampic_*_*_run"$runit".txt")
   else
     software="windows"
     # inputDirectory="/home/emanuele/Documents/ToF/sampic/data/"

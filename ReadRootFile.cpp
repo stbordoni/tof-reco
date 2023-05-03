@@ -26,7 +26,7 @@ int main(int argc, char *argv[]){
         return 1;
     }
     TTree *t = (TTree*)f->Get(Form("TreeTofRun%i", run_number));
-    TofRun *run = new TofRun(software);
+    TofRun *run = new TofRun();
     // t->SetBranchAddress("TofRun", &run);
     int status = t->SetBranchAddress("TofRun", &run);
     if (status != 0) {
@@ -39,9 +39,9 @@ int main(int argc, char *argv[]){
     // Select desired constant fraction to print, 1 = 10%
     int cf_index = 1;
 
-    std::cout << "Run number: " << run->RunNumber << std::endl;
-    std::cout << "Run address: " << run->RunAddress << std::endl;
-    std::cout << "Number of events: " << run->RunEventsList.size() << std::endl;
+    std::cout << "Run number: " << run->GetRunNumber() << std::endl;
+    std::cout << "Run address: " << run->GetRunAddress() << std::endl;
+    // std::cout << "Number of events: " << run->GetRunEventsList().size() << std::endl;
     // for (int i = 0; i < run->RunEventsList.size(); i++){
 
     //     std::cout << " Event " << i << std::endl;
