@@ -4,67 +4,78 @@
 #include "../include/TofSignal.h"
 
 
-TofSignal::TofSignal(){
-    SignalBothEdges = false;
-}
-
-void TofSignal::SignalIdentifyEdges(){
-
-    // add something to identify singlebar
-
-    if (SignalBothEdges == true){
-        // std::cout << "Two edges in this Signal" << std::endl;
-
-        if (SignalHitsList.at(0).GetHitEdge() == 0 && SignalHitsList.at(1).GetHitEdge() == 1){
-            SignalHitLeft = SignalHitsList.at(0);
-            SignalHitRight = SignalHitsList.at(1);
-        }
-        else if (SignalHitsList.at(0).GetHitEdge() == 1 && SignalHitsList.at(1).GetHitEdge() == 0){
-            SignalHitLeft = SignalHitsList.at(1);
-            SignalHitRight = SignalHitsList.at(0);
-        }
-        else{
-            // add to errorslist
-            // std::cerr << "Error in SignalIdentifyEdges, signal hits list has two elements but they are not left and right\n";
-        }
+TofSignal::TofSignal(TofHit one_hit){
+    if (one_hit.GetHitEdge() == 0){
+        SignalHitMin = one_hit;
+        SignalType = 1;
     }
-    else if (SignalBothEdges == false){
-        // print "Only one edge in this Signal"
-        // std::cout << "Only one edge in this Signal" << std::endl;
-        if (SignalHitsList.at(0).GetHitEdge() == 0){
-            SignalHitLeft = SignalHitsList.at(0);
-        }
-        else if (SignalHitsList.at(0).GetHitEdge() == 1){
-            SignalHitRight = SignalHitsList.at(0);
-        }
-        else
-            std::cerr << "Error in SignalIdentifyEdges, signal hits list has one element but it is not left or right\n";
+    else if (one_hit.GetHitEdge() == 1){
+        SignalHitMax = one_hit;
+        SignalType = 2;
+        
     }
     else
-        std::cerr << "Error in SignalIdentifyEdges, signal hits list has more than two elements\n";
-    
-    // SignalGetSignalInfo();
+        std::cerr << "Error in TofSignal constructor, hit has no edge 0 or 1\n";
+
+    SignalGetSignalInfo();
+}
+
+TofSignal::TofSignal(TofHit first_hit, TofHit second_hit){
+
+    if (first_hit.GetHitBar() != second_hit.GetHitBar()){
+        std::string this_error = "Error in TofSignal constructor, hits are not in the same bar\n";
+        SignalErrorsList.push_back(this_error);
+        std::cerr << this_error;
+        exit(1);
+    }
+
+    if (first_hit.GetHitEdge() == 0 && second_hit.GetHitEdge() == 1){
+        SignalHitMin = first_hit;
+        SignalHitMax = second_hit;
+        SignalType = 3;
+    }
+    else if (first_hit.GetHitEdge() == 1 && second_hit.GetHitEdge() == 0){ 
+        std::string this_error = "Warning: calling TofSignal(hit_max, hit_min) instead of TofSignal(hit_min, hit_max) \n";
+        std::cerr << this_error;
+        SignalErrorsList.push_back(this_error);
+
+        SignalHitMin = second_hit;
+        SignalHitMax = first_hit;
+        SignalType = 3;
+    }
+    else
+        std::cerr << "Error in TofSignal constructor, hits have no edges 0 and 1\n";
+
+    SignalGetSignalInfo();
 }
 
 void TofSignal::SignalQualityCheck(){
-    if (SignalHitsList.size() > 2){
-        std::cerr << "Error in SignalQualityCheck, signal has more than two hits\n";
-    }
-    else if (SignalHitsList.size() == 0){
-        std::cerr << "Error in SignalQualityCheck, signal has no hits\n";
-    }
-    else if (SignalHitsList.size() == 1 && SignalBothEdges == false){
-        std::cerr << "Error in SignalQualityCheck, signal has one hit but no edges\n";
-    }
-    else if (SignalHitsList.size() == 2 && SignalBothEdges == true){
-        std::cerr << "Error in SignalQualityCheck, signal has two hits but no edges\n";
-    }
-    
+
 }
 
 void TofSignal::SignalGetSignalInfo(){
-    std::cout << "Signal size: " << SignalHitsList.size() << std::endl;
-    std::cout << "Signal bar: " << SignalHitsList.at(0).GetHitBar() << std::endl;
-    std::cout << "Signal left edge: " << SignalHitLeft.GetHitEdge() << std::endl;
-    std::cout << "Signal right edge: " << SignalHitRight.GetHitEdge() << std::endl;
+    std::cout << "SignalType: " << SignalType << std::endl;
+    if (SignalType == 1){
+        std::cout << "SignalHitMin: " << std::endl;
+        SignalHitMin.HitGetHitInfo();
+    }
+    else if (SignalType == 2){
+        std::cout << "SignalHitMax: " << std::endl;
+        SignalHitMax.HitGetHitInfo();
+    }
+    else if (SignalType == 3){
+        std::cout << "SignalHitMin: " << std::endl;
+        SignalHitMin.HitGetHitInfo();
+        std::cout << "SignalHitMax: " << std::endl;
+        SignalHitMax.HitGetHitInfo();
+    }
+    else
+        std::cerr << "Error in SignalGetSignalInfo, SignalType is not 1, 2 or 3\n";
+
+}
+
+void TofSignal::SignalPrintErrorsList(){
+    for (int i = 0; i < SignalErrorsList.size(); i++){
+        std::cerr << SignalErrorsList.at(i) << std::endl;
+    }
 }

@@ -261,31 +261,21 @@ char TofHit::HitGetPlaneId(){
 
 
 void TofHit::HitGetHitInfo(){
-    std::cout << "HitId: " << HitId << std::endl;
-    std::cout << "HitFeb: " << HitFeb << std::endl;
-    std::cout << "HitSampic: " << HitSampic << std::endl;
-    std::cout << "HitFebChannel: " << HitFebChannel << std::endl;
-    std::cout << "HitDaqChannel: " << HitDaqChannel << std::endl;
-    std::cout << "HitChannelOnPlane: " << HitChannelOnPlane << std::endl;
-    std::cout << "HitPlane: " << HitPlane << std::endl;
-    std::cout << "HitBar: " << HitBar << std::endl;
-    std::cout << "HitEdge: " << HitEdge << std::endl;
-    std::cout << "HitUnixTime: " << HitUnixTime << std::endl;
-    std::cout << "HitCell0Time: " << HitCell0Time << std::endl;
-    std::cout << "HitTOTValue: " << HitTOTValue << std::endl;
-    std::cout << "HitRawTOTValue: " << HitRawTOTValue << std::endl;
-    std::cout << "HitRawPeak: " << HitRawPeak << std::endl;
 
-    std::cout << "HitWaveform: ";
-    for (auto elem : HitWaveform) {
-        std::cout << elem << " ";
-    }
-    std::cout << std::endl;
+    // print all other variables
+    std::cout << "This is (daq, feb, sampic, channel): " << HitDaqChannel << HitFebChannel << HitSampic << HitChannelOnPlane << "   ";
+    std::cout << "HitId: " << HitId << "   ";
+    std::cout << "HitEdge: " << HitEdge << "   ";
+    std::cout << "HitPlane: " << HitPlane << "   ";
+    std::cout << "HitBar: " << HitBar << "   ";
+    std::cout << "HitChannelOnPlane: " << HitChannelOnPlane << "   ";
+    std::cout << "HitDaqChannel: " << HitDaqChannel << "   ";
+    std::cout << "HitFebChannel: " << HitFebChannel << "   ";
+    std::cout << "HitSampic: " << HitSampic << "   ";
+    std::cout << "HitErrorsList: " << HitErrorsList.size() << std::endl;
+    std::cout << "HitBaseline: " << HitBaseline << "   ";
+    std::cout << "HitPeak: " << HitPeak << "   ";
+    std::cout << "HitPeakTime: " << HitPeakTime << "   ";
 
-    std::cout << "HitBaseline: " << HitBaseline << std::endl;
-    std::cout << "HitVoltageIntegral: " << HitVoltageIntegral << std::endl;
-    std::cout << "HitPeak: " << HitPeak << std::endl;
-    std::cout << "HitPeakSample: " << HitPeakSample << std::endl;
-    std::cout << "HitPeakTime: " << HitPeakTime << std::endl;
-    std::cout << std::endl;
+
 }
