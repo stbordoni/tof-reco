@@ -754,7 +754,7 @@ void TofRun::RunCreateEvents(){
         }
 
         if (RunOrderedHitsList.at(ihit).GetHitCell0Time() - this_hit_time < coincidence_window){
-            new_event.AddSignal(RunOrderedHitsList.at(ihit));
+            new_event.AddHit(RunOrderedHitsList.at(ihit));
             create_new_event = false;
         }
         else{            

@@ -47,7 +47,7 @@ TofSignal::TofSignal(TofHit first_hit, TofHit second_hit){
         std::cerr << "Error in TofSignal constructor, hits have no edges 0 and 1\n";
     
     SignalComputePosition();
-    // SignalGetSignalInfo();
+    SignalGetSignalInfo();
 }
 
 void TofSignal::SignalComputePosition(){

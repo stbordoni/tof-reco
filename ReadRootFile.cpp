@@ -4,6 +4,7 @@
 #include "./include/TofEvent.h"
 #include "./include/TofRun.h"
 #include "./include/TofObjectsDict.h"
+#include <TApplication.h>
 
 int main(int argc, char *argv[]){
 
@@ -12,11 +13,11 @@ int main(int argc, char *argv[]){
     std::string run_full_path = argv[2];
     std::cout << "Run path " << run_full_path << std::endl;
 
-    // create one canvas split in 9, and the histograms to plot HitBar, HitPlane, SignalPosition, HitPeak
+    TApplication *app = new TApplication("myapp", &argc, argv);
     TCanvas *c_goodSignals = new TCanvas("c_goodSignals", "GoodSignals", 900, 900);
     c_goodSignals->Divide(2,2);
-    TH1F *h_signalBar = new TH1F("h1", "HitBar", 20, -0.5, 19.5);
-    TH1F *h_signalPlane = new TH1F("h_signalPlane", "HitPlane", 6, -0.5, 5.5);
+    TH1F *h_signalBar = new TH1F("h_signalBar", "SignalBar", 20, -0.5, 19.5);
+    TH1F *h_signalPlane = new TH1F("h_signalPlane", "SignalPlane", 6, -0.5, 5.5);
     TH1F *h_signalPosition = new TH1F("h_signalPosition", "SignalPosition", 50, 0., 220.);
     TH1F *h_hitPeak = new TH1F("h_hitPeak", "HitPeak", 50, -0.1,1.1 );
 
@@ -51,24 +52,23 @@ int main(int argc, char *argv[]){
     
     for (int i = 0; i < run->RunEventsList.size(); i++){
 
-        std::cout << " Event " << i << std::endl;
-        // print number of signals in this event
-        std::cout << "  Number of signals: " << run->RunEventsList.at(i).GetEventSignalsList().size() << std::endl;
 
         for (int j = 0; j < run->RunEventsList.at(i).GetEventSignalsList().size(); j++){
             
             // consider only signals having two hits
             if (run->RunEventsList.at(i).GetEventSignalsList().at(j).GetSignalType() != 3) continue;
             
+            std::cout << " Event " << i << " has number of signals: " << run->RunEventsList.at(i).GetEventSignalsList().size() << std::endl;            
             std::cout << "   Signal " << j << " has both hits" << std::endl;
             h_signalPosition->Fill(run->RunEventsList.at(i).GetEventSignalsList().at(j).GetSignalPosition());
             h_signalBar->Fill(run->RunEventsList.at(i).GetEventSignalsList().at(j).GetSignalHitMin().GetHitBar());
             h_signalPlane->Fill(run->RunEventsList.at(i).GetEventSignalsList().at(j).GetSignalHitMin().GetHitPlane());
-            h_signalBar->Fill(run->RunEventsList.at(i).GetEventSignalsList().at(j).GetSignalHitMax().GetHitBar());
-            h_signalPlane->Fill(run->RunEventsList.at(i).GetEventSignalsList().at(j).GetSignalHitMax().GetHitPlane());
+            h_hitPeak->Fill(run->RunEventsList.at(i).GetEventSignalsList().at(j).GetSignalHitMin().GetHitPeak());
 
         }
     }
+
+    std::cout << "Now plotting histograms" << std::endl;
 
     // plot histograms
     c_goodSignals->cd(1);
@@ -79,6 +79,8 @@ int main(int argc, char *argv[]){
     h_signalPosition->Draw("HIST");
     c_goodSignals->cd(4);
     h_hitPeak->Draw("HIST");
+    // c_goodSignals->Update();
+    app->Run();
 
     return 0;
 }

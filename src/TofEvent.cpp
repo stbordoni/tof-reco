@@ -23,7 +23,7 @@ void TofEvent::EventCreateSignals(){
 
         this_hit_bar = EventHitsList.at(ihit).GetHitBar();
         this_hit_plane = EventHitsList.at(ihit).GetHitPlane();
-        // std::cout << "New signal for bar " << this_hit_bar << std::endl;
+        std::cout << "New signal for bar " << this_hit_bar << std::endl;
 
         for (int ihit2 = ihit+1; ihit2 < EventHitsList.size(); ihit2++){
             

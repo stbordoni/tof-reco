@@ -18,7 +18,7 @@ public:
 
     // Setters
     void SetEventSize(int value) { EventSize = value; }
-    void AddSignal(TofSignal value) { EventSignalsList.push_back(value); }
+    void AddHit(TofHit value) { EventHitsList.push_back(value); }
 
     // Getters
     int GetEventSize() {return EventSize;}
