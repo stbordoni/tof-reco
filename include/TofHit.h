@@ -46,10 +46,12 @@ public:
     // Functions
     // void HitComputeVariables();
     void HitFitWaveform();
+    double HitComputeCfTime(double);
     void HitQualityCheck();
     void HitMatchDaqChToTofCh();
     char HitGetPlaneId();
     void HitGetHitInfo();
+    void HitPrintErrors();
 
     // Setters
     void SetHitFeb(int value) { HitFeb = value; }
@@ -73,10 +75,8 @@ public:
     void SetHitRawTOTValue(double value) { HitRawTOTValue = value; }
     void SetHitUnixTime(double value) { HitUnixTime = value; }
     void SetHitSampleLength(double value) { HitSampleLength = value; }
-    void SetHitPeakFraction(std::vector<double> value) { HitPeakFraction = value; }
     void SetHitFitSuccess(bool value) { HitFitSuccess = value; }
     void SetHitFitParameter(double value[6]) { for (int i = 0; i < 6; i++) HitFitParameter[i] = value[i]; }
-    void SetHitCfTimeFromFit(std::vector<double> value) { HitCfTimeFromFit = value; }
     void SetHitErrorsList(std::vector<std::string> value) { HitErrorsList = value; }
 
     // Getters
@@ -101,14 +101,8 @@ public:
     double GetHitRawTOTValue() { return HitRawTOTValue; }
     double GetHitUnixTime() { return HitUnixTime; }
     double GetHitSampleLength() { return HitSampleLength; }
-    std::vector <double> GetHitPeakFraction() { return HitPeakFraction; }
     bool GetHitFitSuccess() { return HitFitSuccess; }
     double* GetHitFitParameter() { return HitFitParameter; }
-    std::vector <double> GetHitCfTimeFromFit() { return HitCfTimeFromFit; }
-    std::vector <std::string> GetHitErrorsList() { return HitErrorsList; }
-
-
-
 
 private:
 
@@ -131,7 +125,7 @@ private:
     double HitRawPeak{-1};
     double HitPeak{-1};
     int HitPeakSample{-1};
-    double HitPeakTime{-1};
+    double HitPeakTime{-1}; // for now it's inside readout window
     double HitVoltageIntegral{-1};
 
     // Might remove
@@ -141,10 +135,9 @@ private:
 
     // Fit
     double HitSampleLength{-1}; // taken from run
-    std::vector <double> HitPeakFraction = {}; // taken from run
     bool HitFitSuccess {false};
     double HitFitParameter[6];
-    std::vector <double> HitCfTimeFromFit = {};
+    TF1 HitFitFunction {"HitFitFunction", FitFunction, 0, 0, 6};
 
     std::vector <std::string> HitErrorsList = {}; 
 };

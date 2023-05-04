@@ -36,7 +36,7 @@ TofHit::TofHit(){
 void TofHit::HitFitWaveform(){
 
     HitFitParameter[0] = HitPeak;
-    HitFitParameter[1] = HitPeakSample;
+    HitFitParameter[1] = (double) HitPeakSample;
     HitFitParameter[2] = 0.2; // WidthDep1
     HitFitParameter[3] = 13.; // Width
     HitFitParameter[4] = 0.2; // WidthDep2
@@ -80,8 +80,6 @@ void TofHit::HitFitWaveform(){
         h_waveform->Delete();
         return;
     }
-    
-    HitFitSuccess = true;
 
     fit_peak = TMath::Abs(fit_function.GetParameter(0));
     fit_peakSample = fit_function.GetParameter(1);
@@ -90,25 +88,26 @@ void TofHit::HitFitWaveform(){
     fit_widthDep2 = fit_function.GetParameter(4);
     fit_baseLine = fit_function.GetParameter(5);
 
-
+    // add quality checks
     if (fit_peakSample < HitWaveform.size() && fit_peakSample > 0. && fit_peak > 0.){
-        for (int i = 0; i < HitPeakFraction.size(); i++){
-            
-            // std::cout << "argument of getX " << HitPeakFraction.at(i)*fit_peak + fit_baseLine << std::endl;
-            double fit_value = fit_function.GetX(HitPeakFraction.at(i)*fit_peak + fit_baseLine);
+        
+        HitFitSuccess = true; 
+        HitFitFunction = fit_function;
+        HitPeak = fit_peak;
+        HitPeakTime =  fit_peakSample * HitSampleLength; 
+        // update baseline? maybe not
+    }
+    else{
 
-            if (std::isnan(fit_value) || fit_value < fit_min || fit_value > fit_max){
-                HitFitSuccess = false;
-                // std::cerr << "Error: Grid search failed to find a root. Fit not succesfull, moving to next.\n";
-                return;
-            }
-            else
-                HitCfTimeFromFit.push_back(fit_value * HitSampleLength + HitCell0Time ); // +  HitCell0Time
-        }
+        HitFitSuccess = false;
+        std::string this_error = "Error: Fit failed for HitId " + std::to_string(HitId) + ", Channel " + std::to_string(HitDaqChannel) + "\n";
+        std::cerr << this_error << std::endl;
+        HitErrorsList.push_back(this_error);
     }
 
     // to print on a canvas the fit function, change to true 
     if (false){
+
             gROOT->SetBatch(kFALSE);
             TCanvas *c_appo = new TCanvas("c_appo","c_appo",800,600);
 
@@ -127,6 +126,29 @@ void TofHit::HitFitWaveform(){
 
 }
 
+double TofHit::HitComputeCfTime(double cf){
+    
+    if (cf <= 0. || cf >= 1.){
+        std::string this_error = "Warning: CF requested has incorrect value,  should be between 0 and 1\n";
+        std::cerr << this_error << std::endl;
+        HitErrorsList.push_back(this_error);
+        return -1;
+    }
+
+    double cf_time = HitFitFunction.GetX(cf*HitPeak) * HitSampleLength;
+
+    if (std::isnan(cf_time) || cf_time < 0. || cf_time > HitWaveform.size()){
+        HitFitSuccess = false;
+        std::string this_error = "Error: Fit failed for HitId " + std::to_string(HitId) + " and CF " + std::to_string(cf);
+        std::cerr << this_error << std::endl;
+        HitErrorsList.push_back(this_error);                
+        return -1;
+    }
+    
+    return cf_time + HitCell0Time;
+}
+
+
 void TofHit::HitQualityCheck(){
     
     if (HitEdge != 0 && HitEdge != 1){
@@ -138,6 +160,7 @@ void TofHit::HitQualityCheck(){
 
 }
 
+// maybe move this to shared dictionary
 void TofHit::HitMatchDaqChToTofCh(){
     // bulk bars: all except 0,1,18,19
     // dictionary is U=0, D=1, T=2, B=3, L=4, R=5
@@ -259,23 +282,29 @@ char TofHit::HitGetPlaneId(){
     }
 }
 
-
 void TofHit::HitGetHitInfo(){
 
     // print all other variables
-    std::cout << "This is (daq, feb, sampic, channel): " << HitDaqChannel << HitFebChannel << HitSampic << HitChannelOnPlane << "   ";
-    std::cout << "HitId: " << HitId << "   ";
-    std::cout << "HitEdge: " << HitEdge << "   ";
+    std::cout << "    HitId: " << HitId << "   ";
+    std::cout << "HitDaqChannel: " << HitDaqChannel << "   ";
     std::cout << "HitPlane: " << HitPlane << "   ";
     std::cout << "HitBar: " << HitBar << "   ";
-    std::cout << "HitChannelOnPlane: " << HitChannelOnPlane << "   ";
-    std::cout << "HitDaqChannel: " << HitDaqChannel << "   ";
-    std::cout << "HitFebChannel: " << HitFebChannel << "   ";
-    std::cout << "HitSampic: " << HitSampic << "   ";
-    std::cout << "HitErrorsList: " << HitErrorsList.size() << std::endl;
+    std::cout << "HitEdge: " << HitEdge << "   ";
+    std::cout << "HitErrorsList size: " << HitErrorsList.size() << "   ";
     std::cout << "HitBaseline: " << HitBaseline << "   ";
     std::cout << "HitPeak: " << HitPeak << "   ";
     std::cout << "HitPeakTime: " << HitPeakTime << "   ";
+    std::cout << "HitFitSuccess: " << HitFitSuccess << "   ";
+    HitPrintErrors();
 
+}
 
+void TofHit::HitPrintErrors(){
+    if (HitErrorsList.size() > 0){
+        std::cout << "HitErrorsList: ";
+        for (int i = 0; i < HitErrorsList.size(); i++){
+            std::cout << HitErrorsList[i] << "   ";
+        }
+        std::cout << std::endl;
+    }
 }

@@ -54,6 +54,7 @@ public:
     double GetRunSamplingFrequency() {return RunSamplingFrequency;}
     double GetRunSampleLength() {return RunSampleLength;}
     double GetRunSamplingTime() {return RunSamplingFrequency;}
+    std::vector <TofEvent> GetRunEventsList() {return RunEventsList;}
 
 private:
 

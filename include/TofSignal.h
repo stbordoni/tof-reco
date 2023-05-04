@@ -17,6 +17,7 @@ public:
     // vector of hits or this, choose
        
     // Functions
+    void SignalComputePosition();
     void SignalQualityCheck();
     void SignalGetSignalInfo();
     void SignalPrintErrorsList();
@@ -27,12 +28,21 @@ public:
     void SetSignalHitMax(TofHit value) { SignalHitMax = value; }
     void SetSignalErrorsList(std::vector <std::string> value) { SignalErrorsList = value; }
 
+    // Getters
+    int GetSignalType() {return SignalType;}
+    TofHit GetSignalHitMin() {return SignalHitMin;}
+    TofHit GetSignalHitMax() {return SignalHitMax;}
+    double GetSignalPosition() {return SignalPosition;}
+    std::vector <std::string> GetSignalErrorsList() {return SignalErrorsList;}
+    
+
 private:
 
     // variables
     int SignalType {0}; // 0 = unknown, 1 = left, 2 = right, 3 = both
     TofHit SignalHitMin; 
     TofHit SignalHitMax; 
+    double SignalPosition {-1.};
     std::vector <std::string> SignalErrorsList;
 
 };

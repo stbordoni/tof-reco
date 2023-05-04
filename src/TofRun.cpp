@@ -584,9 +584,21 @@ void TofRun::RunFillHitInfo(TofHit &this_hit){
     // Set HitDaqChannel using setter function
     this_hit.SetHitDaqChannel(nChannelsPerFeb*this_hit.GetHitFeb() + this_hit.GetHitFebChannel());
 
+    std::vector <double> this_wf = this_hit.GetHitWaveform();
+
+    // RawPeak is just max in wf, with no fit
+    double raw_peak = *std::max_element(this_wf.begin() + RunBaselineFirstSample + RunBaselineNSamples, this_wf.end());
+    auto max_it = std::max_element(this_wf.begin() + RunBaselineFirstSample + RunBaselineNSamples, this_wf.end());
+    size_t hit_peak_sample = std::distance(this_wf.begin(), max_it);
+
+    // Set HitRawPeak using setter function
+    this_hit.SetHitRawPeak(raw_peak);
+
+    // Set HitPeakSample using setter function
+    this_hit.SetHitPeakSample(hit_peak_sample);
+
     // Calculate HitBaseline
     double baseline = 0;
-    std::vector <double> this_wf = this_hit.GetHitWaveform();
     for(int sampleit = RunBaselineFirstSample; sampleit < RunBaselineFirstSample + RunBaselineNSamples; sampleit++)
         baseline += this_wf.at(sampleit);
     baseline /= RunBaselineNSamples;
@@ -606,39 +618,25 @@ void TofRun::RunFillHitInfo(TofHit &this_hit){
     //         this_hit.HitWaveform.at(sampleit) *= -1;   
     // }
 
-    // RawPeak is just max in wf, with no fit
-    double raw_peak = *std::max_element(this_wf.begin(), this_wf.end());
-    auto max_it = std::max_element(this_wf.begin(), this_wf.end());
-    size_t max_index = std::distance(this_wf.begin(), max_it);
-
-    // Set HitRawPeak using setter function
-    this_hit.SetHitRawPeak(raw_peak);
-
-    // Set HitPeakSample using setter function
-    this_hit.SetHitPeakSample(max_index);
-
     // Calculate and set HitPeak using setter function
     double peak = raw_peak - baseline;
     this_hit.SetHitPeak(peak);
 
     // Calculate and set HitPeakTime using setter function
-    double peak_time = max_index*RunSampleLength;
+    double peak_time = hit_peak_sample*RunSampleLength; // add Cell0time
     this_hit.SetHitPeakTime(peak_time);
 
     // Calculate HitVoltageIntegral
     double voltage_integral = 0.; // fix
-    // for(int sampleit = RunBaselineFirstSample + RunBaselineNSamples; sampleit < RunNSamplesInWaveform; sampleit++){
-    //     voltage_integral += this_wf.at(sampleit);
-    // }
+    for(int sampleit = RunBaselineFirstSample + RunBaselineNSamples; sampleit < RunNSamplesInWaveform; sampleit++){
+        voltage_integral += this_wf.at(sampleit); // maybe better a method in Tofhit
+    }
 
     // Set HitVoltageIntegral using setter function
     this_hit.SetHitVoltageIntegral(voltage_integral);
 
-    // Set HitPeakFraction using setter function
-    this_hit.SetHitPeakFraction(RunHitPeakFraction);
-
     // Set HitSampleLength using setter function
-    this_hit.SetHitSampleLength(RunSampleLength);
+    this_hit.SetHitSampleLength(RunSampleLength); // give through struct
 
     // Call HitMatchDaqChToTofCh method
     this_hit.HitMatchDaqChToTofCh();
@@ -682,8 +680,8 @@ void TofRun::RunFillHitInfo(TofHit &this_hit){
 //     // RawPeak is just max in wf, with no fit
 //     this_hit.HitRawPeak = *std::max_element(this_hit.HitWaveform.begin(), this_hit.HitWaveform.end());
 //     auto max_it = std::max_element(this_hit.HitWaveform.begin(), this_hit.HitWaveform.end());
-//     size_t max_index = std::distance(this_hit.HitWaveform.begin(), max_it);
-//     this_hit.HitPeakSample = max_index; // not super useful
+//     size_t hit_peak_sample = std::distance(this_hit.HitWaveform.begin(), max_it);
+//     this_hit.HitPeakSample = hit_peak_sample; // not super useful
 
 //     this_hit.HitPeak = this_hit.HitRawPeak - this_hit.HitBaseline; // will be changed to use fit
 
@@ -756,7 +754,7 @@ void TofRun::RunCreateEvents(){
         }
 
         if (RunOrderedHitsList.at(ihit).GetHitCell0Time() - this_hit_time < coincidence_window){
-            new_event.EventHitsList.push_back(RunOrderedHitsList.at(ihit));
+            new_event.AddSignal(RunOrderedHitsList.at(ihit));
             create_new_event = false;
         }
         else{            

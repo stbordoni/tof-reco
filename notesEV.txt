@@ -42,7 +42,6 @@ signal get position in bar and absolute nd280 position of the bar, not signal
 
 change cosntructor of TofSignal to have 2 or 1 tofhit
 
-
 pos reco with amplitudes
 
 double getTime using average of left and right and with correction
@@ -52,3 +51,7 @@ double get time from ext coordinate of TPC
 signal is 1,2,3 
 
 data segment
+
+update baseline after fit? 
+
+make quality check a bool? 
