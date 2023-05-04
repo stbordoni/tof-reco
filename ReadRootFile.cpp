@@ -70,6 +70,13 @@ int main(int argc, char *argv[]){
 
     std::cout << "Now plotting histograms" << std::endl;
 
+    // set labels on histos
+    h_signalBar->GetXaxis()->SetTitle("Bar");
+    h_signalPlane->GetXaxis()->SetTitle("Plane");
+    h_signalPosition->GetXaxis()->SetTitle("Position [cm]");
+    h_hitPeak->GetXaxis()->SetTitle("Peak [V]");
+
+
     // plot histograms
     c_goodSignals->cd(1);
     h_signalBar->Draw("HIST");
