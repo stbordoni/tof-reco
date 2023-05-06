@@ -477,7 +477,8 @@ void TofRun::RunLoadHits(){
                     // std::cout << "Hit added to this run. " ;
                     hitId_counter++;
                 }
-                if (hitId_counter > RunMaxHitsToLoad) break;
+                // if (hitId_counter > RunMaxHitsToLoad) break;
+                if (lineit/2. > RunMaxHitsToLoad) break;
             }
 
             NLinesInFile = 0;
@@ -761,6 +762,7 @@ void TofRun::RunCreateEvents(){
             // more operations on EventHits
             // std::cout << "Event " << RunEventsList.size() << " has " << new_event.EventHitsList.size() << " hits." << std::endl;
             new_event.EventCreateSignals();
+            new_event.EventComputeTimeOfFlight();
             RunEventsList.push_back(new_event);
             create_new_event = true;
         }
@@ -782,7 +784,7 @@ void TofRun::RunSetAnalysisOptions (){
         RunNSamplesToExclude = 1; // first is not to consider
         RunBaselineNSamples = 5;
         RunDeleteHitsList = false;
-        RunMaxHitsToLoad = 1000;
+        RunMaxHitsToLoad = 10000;
         return;
     }    
 

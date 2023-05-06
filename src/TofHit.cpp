@@ -101,7 +101,7 @@ void TofHit::HitFitWaveform(){
 
         HitFitSuccess = false;
         std::string this_error = "Error: Fit failed for HitId " + std::to_string(HitId) + ", Channel " + std::to_string(HitDaqChannel) + "\n";
-        std::cerr << this_error << std::endl;
+        // std::cerr << this_error << std::endl;
         HitErrorsList.push_back(this_error);
     }
 

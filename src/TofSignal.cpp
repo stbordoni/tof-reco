@@ -47,7 +47,7 @@ TofSignal::TofSignal(TofHit first_hit, TofHit second_hit){
         std::cerr << "Error in TofSignal constructor, hits have no edges 0 and 1\n";
     
     SignalComputePosition();
-    SignalGetSignalInfo();
+    // SignalGetSignalInfo();
 }
 
 void TofSignal::SignalComputePosition(){
@@ -75,6 +75,23 @@ void TofSignal::SignalComputePosition(){
             // std::cerr << this_error;
             return;
         }
+    }
+}
+
+
+void TofSignal::SignalComputeTime(){
+    if (SignalPosition == -1 || SignalPosition < 0. || SignalPosition > 220.) {
+        // std::string this_error = "Error: in SignalComputeTime, this Signal only has one edge \n";
+        // SignalErrorsList.push_back(this_error);
+        // std::cerr << this_error;
+        return; // no valid position estimate. Will change when having info from TPC
+    }
+    else {
+
+        double light_velocity = 16; // cm/ns MOVE TO CONSTANTS
+        
+        SignalTime = SignalHitMin.HitComputeCfTime(0.1) - SignalPosition/light_velocity;
+        std::cout << "  Computed SignalTime: " << SignalTime << std::endl;
     }
 }
 

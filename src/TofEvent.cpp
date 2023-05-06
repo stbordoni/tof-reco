@@ -23,7 +23,7 @@ void TofEvent::EventCreateSignals(){
 
         this_hit_bar = EventHitsList.at(ihit).GetHitBar();
         this_hit_plane = EventHitsList.at(ihit).GetHitPlane();
-        std::cout << "New signal for bar " << this_hit_bar << std::endl;
+        // std::cout << "New signal for bar " << this_hit_bar << std::endl;
 
         for (int ihit2 = ihit+1; ihit2 < EventHitsList.size(); ihit2++){
             
@@ -53,6 +53,16 @@ void TofEvent::EventCreateSignals(){
     // std::cout << "Created " << EventSignalsList.size() << " signals" << std::endl;
 
 }
+
+void TofEvent::EventComputeTimeOfFlight(){
+
+    // doing this only when the event contains exactly 2 signals 
+    if (EventSize != 2) return;
+
+    EventTimeOfFlight = abs(EventSignalsList.at(1).GetSignalTime() - EventSignalsList.at(0).GetSignalTime());
+
+}
+
 
 void TofEvent::EventGetEventInfo(){
     std::cout << "Event size: " << EventSize << std::endl;

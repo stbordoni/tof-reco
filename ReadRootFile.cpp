@@ -14,14 +14,12 @@ int main(int argc, char *argv[]){
     std::cout << "Run path " << run_full_path << std::endl;
 
     TApplication *app = new TApplication("myapp", &argc, argv);
-    TCanvas *c_goodSignals = new TCanvas("c_goodSignals", "GoodSignals", 900, 900);
-    c_goodSignals->Divide(2,2);
     TH1F *h_signalBar = new TH1F("h_signalBar", "SignalBar", 20, -0.5, 19.5);
     TH1F *h_signalPlane = new TH1F("h_signalPlane", "SignalPlane", 6, -0.5, 5.5);
-    TH1F *h_signalPosition = new TH1F("h_signalPosition", "SignalPosition", 50, 0., 220.);
+    TH1F *h_signalPosition = new TH1F("h_signalPosition", "SignalPosition", 50, -50, 270.);
     TH1F *h_hitPeak = new TH1F("h_hitPeak", "HitPeak", 50, -0.1,1.1 );
 
-    // extract run number from run_full_path, could remove
+    // extract run number from run_full_path, could remove?
     std::string run_number_string = run_full_path.substr(run_full_path.find_last_of("/")+1);
     run_number_string = run_number_string.substr(3, run_number_string.find_last_of("."));
     std::cout << "Run number " << run_number_string << std::endl;
@@ -50,34 +48,52 @@ int main(int argc, char *argv[]){
     std::cout << "Run address: " << run->GetRunAddress() << std::endl;
     std::cout << "Number of events: " << run->GetRunEventsList().size() << std::endl;
     
-    for (int i = 0; i < run->RunEventsList.size(); i++){
+    for (int eventit = 0; eventit < run->RunEventsList.size(); eventit++){
 
-
-        for (int j = 0; j < run->RunEventsList.at(i).GetEventSignalsList().size(); j++){
+        for (int signalit = 0; signalit < run->RunEventsList.at(eventit).GetEventSize(); signalit++){
             
+            if (signalit % 100 == 0){
+                std::cout << "Reading through Events, currently at " << (double)eventit/(run->RunEventsList.size())*100 << " %\r";
+                std::cout << std::flush;
+            }
+
+            // print signal type
+            // std::cout << "   Signal " << signalit << " has type: " << run->RunEventsList.at(i).GetEventSignalsList().at(signalit).GetSignalType() << std::endl;
             // consider only signals having two hits
-            if (run->RunEventsList.at(i).GetEventSignalsList().at(j).GetSignalType() != 3) continue;
+            if (run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalType() != 3) continue;
             
-            std::cout << " Event " << i << " has number of signals: " << run->RunEventsList.at(i).GetEventSignalsList().size() << std::endl;            
-            std::cout << "   Signal " << j << " has both hits" << std::endl;
-            h_signalPosition->Fill(run->RunEventsList.at(i).GetEventSignalsList().at(j).GetSignalPosition());
-            h_signalBar->Fill(run->RunEventsList.at(i).GetEventSignalsList().at(j).GetSignalHitMin().GetHitBar());
-            h_signalPlane->Fill(run->RunEventsList.at(i).GetEventSignalsList().at(j).GetSignalHitMin().GetHitPlane());
-            h_hitPeak->Fill(run->RunEventsList.at(i).GetEventSignalsList().at(j).GetSignalHitMin().GetHitPeak());
+            // std::cout << " Event " << eventit << " has number of signals: " << run->RunEventsList.at(eventit).GetEventSignalsList().size() << std::endl;            
+            // std::cout << "   Signal " << signalit << " has both hits" << std::endl;
+            h_signalPosition->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalPosition());
+            h_signalBar->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalHitMin().GetHitBar());
+            h_signalPlane->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalHitMin().GetHitPlane());
+            h_hitPeak->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalHitMin().GetHitPeak());
 
         }
+        if (run->RunEventsList.at(eventit).GetEventTimeOfFlight() != 0) 
+            std::cout << "Event " << eventit << " has time of flight: " << run->RunEventsList.at(eventit).GetEventTimeOfFlight() << std::endl;
+        
+        // if (eventit = 10000) break;
     }
 
-    std::cout << "Now plotting histograms" << std::endl;
+    std::cout << "\nNow plotting histograms" << std::endl;
 
     // set labels on histos
     h_signalBar->GetXaxis()->SetTitle("Bar");
     h_signalPlane->GetXaxis()->SetTitle("Plane");
     h_signalPosition->GetXaxis()->SetTitle("Position [cm]");
     h_hitPeak->GetXaxis()->SetTitle("Peak [V]");
+    // set y min to 0 for all histos
+    h_signalBar->SetMinimum(0);
+    h_signalPlane->SetMinimum(0);
+    h_signalPosition->SetMinimum(0);
+    h_hitPeak->SetMinimum(0);
+
 
 
     // plot histograms
+    TCanvas *c_goodSignals = new TCanvas("c_goodSignals", "GoodSignals", 900, 900);
+    c_goodSignals->Divide(2,2);
     c_goodSignals->cd(1);
     h_signalBar->Draw("HIST");
     c_goodSignals->cd(2);

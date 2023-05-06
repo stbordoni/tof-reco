@@ -28,7 +28,7 @@ for ((runit = $firstRun; runit <= $lastRun; runit++ ))
 do
   echo "runit: "$runit
   echo "inputDirectory: "$inputDirectory
-  ls $inputDirectory
+  # ls $inputDirectory
   runFullPath=$(find $inputDirectory$"run"$runit".root")
   echo "runFullPath: "$runFullPath
 

@@ -18,6 +18,7 @@ public:
        
     // Functions
     void SignalComputePosition();
+    void SignalComputeTime();
     void SignalQualityCheck();
     void SignalGetSignalInfo();
     void SignalPrintErrorsList();
@@ -33,8 +34,9 @@ public:
     TofHit GetSignalHitMin() {return SignalHitMin;}
     TofHit GetSignalHitMax() {return SignalHitMax;}
     double GetSignalPosition() {return SignalPosition;}
+    double GetSignalTime() {return SignalTime;}
     std::vector <std::string> GetSignalErrorsList() {return SignalErrorsList;}
-    
+
 
 private:
 
@@ -43,6 +45,7 @@ private:
     TofHit SignalHitMin; 
     TofHit SignalHitMax; 
     double SignalPosition {-1.};
+    double SignalTime {-1.};
     std::vector <std::string> SignalErrorsList;
 
 };
