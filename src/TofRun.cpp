@@ -347,11 +347,6 @@ void TofRun::RunGetInfo (){
 
     std::cout << "RunVerboseMode: " << RunVerboseMode << std::endl;
     std::cout << "RunSelectedAnalysisOptions: " << RunSelectedAnalysisOptions << std::endl;
-    std::cout << "RunHitPeakFraction: ";
-    for (const auto& fraction : RunHitPeakFraction) {
-        std::cout << fraction << " ";
-    }
-    std::cout << std::endl;
     std::cout << "RunNSamplesInWaveform: " << RunNSamplesInWaveform << std::endl;
     std::cout << "RunNSamplesToExclude: " << RunNSamplesToExclude << std::endl;
     std::cout << "RunBaselineFirstSample: " << RunBaselineFirstSample << std::endl;

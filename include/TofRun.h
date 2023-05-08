@@ -90,7 +90,6 @@ private:
     // Settings for analysis
     bool RunVerboseMode {false};
     bool RunSelectedAnalysisOptions {false}; // false in constructor, set to true when SetAnalysisOptions is called succesfully
-    std::vector<double> RunHitPeakFraction = {0.05,0.10,0.20,0.30,0.40,0.50,0.60,0.70,0.80,0.90};
     int RunNSamplesInWaveform {0}; // actual samples used, different for windows and linux
     int RunNSamplesToExclude {0}; // default is 1
     int RunBaselineFirstSample {0}; // default, this is already after removing bad samples

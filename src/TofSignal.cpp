@@ -36,7 +36,7 @@ TofSignal::TofSignal(TofHit first_hit, TofHit second_hit){
     }
     else if (first_hit.GetHitEdge() == 1 && second_hit.GetHitEdge() == 0){ 
         std::string this_error = "Warning: calling TofSignal(hit_max, hit_min) instead of TofSignal(hit_min, hit_max) \n";
-        std::cerr << this_error;
+        // std::cerr << this_error;
         SignalErrorsList.push_back(this_error);
 
         SignalHitMin = second_hit;
@@ -47,6 +47,7 @@ TofSignal::TofSignal(TofHit first_hit, TofHit second_hit){
         std::cerr << "Error in TofSignal constructor, hits have no edges 0 and 1\n";
     
     SignalComputePosition();
+    SignalComputeTime();
     // SignalGetSignalInfo();
 }
 
@@ -54,19 +55,19 @@ void TofSignal::SignalComputePosition(){
     if (SignalType != 3) {
         std::string this_error = "Error: in SignalComputePosition, this Signal only has one edge \n";
         SignalErrorsList.push_back(this_error);
-        std::cerr << this_error;
+        // std::cerr << this_error;
         return;
     }
     else {
         // this is done with max - min
-        std::cout << "this signal has two edges, computing position \n";
+        // std::cout << "this signal has two edges, computing position \n";
         if (SignalHitMax.GetHitFitSuccess() == true && SignalHitMin.GetHitFitSuccess() == true){
             
             double constant_fraction = 0.1; // 10% of the signal
             double light_velocity = 16; // cm/ns
             double delta_time = SignalHitMax.HitComputeCfTime(constant_fraction) - SignalHitMin.HitComputeCfTime(constant_fraction);
             SignalPosition = (220. - delta_time*light_velocity)/2.;
-            std::cout << "  Computed SignalPosition: " << SignalPosition << std::endl;
+            // std::cout << "  Computed SignalPosition: " << SignalPosition << std::endl;
         }
         else {
 
@@ -81,6 +82,7 @@ void TofSignal::SignalComputePosition(){
 
 void TofSignal::SignalComputeTime(){
     if (SignalPosition == -1 || SignalPosition < 0. || SignalPosition > 220.) {
+        // std::cout << "not computing time, position is not valid: " << SignalPosition << std::endl;
         // std::string this_error = "Error: in SignalComputeTime, this Signal only has one edge \n";
         // SignalErrorsList.push_back(this_error);
         // std::cerr << this_error;
@@ -88,10 +90,10 @@ void TofSignal::SignalComputeTime(){
     }
     else {
 
-        double light_velocity = 16; // cm/ns MOVE TO CONSTANTS
+        double light_velocity = 16.; // cm/ns MOVE TO CONSTANTS
         
         SignalTime = SignalHitMin.HitComputeCfTime(0.1) - SignalPosition/light_velocity;
-        std::cout << "  Computed SignalTime: " << SignalTime << std::endl;
+        // std::cout << "  Computed SignalTime: " << SignalTime << std::endl;
     }
 }
 

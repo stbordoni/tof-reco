@@ -3,7 +3,7 @@
     "RunNSamplesToExclude":0,
     "RunDeleteHitsList":false,
     "RunVerboseMode":false,
-    "RunMaxHitsToLoad":1000,
+    "RunMaxHitsToLoad":2000,
 
     "EventVerboseMode":false,
 
