@@ -514,15 +514,16 @@ void TofRun::RunLoadHits(){
                 int hit_feb_channel = -1;
                 double hit_feb = -1;
                 double hit_cell0time = -1;
+                double hit_tot_value = -1;
                 RunHitsFileStream >> dump >> hit_feb_channel
                         >> dump >> hit_feb
-                        >> dump >> hit_cell0time;
-                        // >> dump >> new_Hit.HitRawTOTValue // should add
-                        // >> dump >> new_Hit.HitTOTValue // should add
+                        >> dump >> hit_cell0time
+                        >> dump >> hit_tot_value;
                 // std::cout << "New hit channel " << new_Hit.HitFebChannel << " time " << new_Hit.HitCell0Time << std::endl;
                 new_Hit.SetHitFebChannel(hit_feb_channel);
                 new_Hit.SetHitFeb(hit_feb);
                 new_Hit.SetHitCell0Time(hit_cell0time);
+                new_Hit.SetHitTOTValue(hit_tot_value);
             } 
             else{
                 RunHitsFileStream >> dump; // before the waveform, there is a string "DataSamples"
