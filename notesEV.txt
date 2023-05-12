@@ -55,3 +55,5 @@ data segment
 update baseline after fit? 
 
 make quality check a bool? 
+
+add info about directories

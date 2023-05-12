@@ -351,7 +351,6 @@ void TofRun::RunGetInfo (){
     std::cout << "RunNSamplesToExclude: " << RunNSamplesToExclude << std::endl;
     std::cout << "RunBaselineFirstSample: " << RunBaselineFirstSample << std::endl;
     std::cout << "RunBaselineNSamples: " << RunBaselineNSamples << std::endl;
-    std::cout << "RunDeleteHitsList: " << RunDeleteHitsList << std::endl;
     std::cout << std::endl;
 
 };
@@ -473,7 +472,7 @@ void TofRun::RunLoadHits(){
                     hitId_counter++;
                 }
                 // if (hitId_counter > RunMaxHitsToLoad) break;
-                if (lineit/2. > RunMaxHitsToLoad) break;
+                if (lineit/2. > RunMaxHitsToLoad/RunNFebs) break;
             }
 
             NLinesInFile = 0;
@@ -773,15 +772,6 @@ void TofRun::RunSetAnalysisOptions (){
 
     if (RunSelectedAnalysisOptions == true) return; // avoid double calls
 
-    // for Linux as of april
-    if (RunSoftware == "linux"){ 
-        RunNSamplesInWaveform = 63;
-        RunNSamplesToExclude = 1; // first is not to consider
-        RunBaselineNSamples = 5;
-        RunDeleteHitsList = false;
-        RunMaxHitsToLoad = 10000;
-        return;
-    }    
 
     std::string RunAnalysisSettingsFile = "../AnalysisSettings.json"; // has to be in same folder for now
     std::ifstream RunAnalysisSettingsStream(RunAnalysisSettingsFile.c_str());
@@ -801,7 +791,7 @@ void TofRun::RunSetAnalysisOptions (){
     RunAnalysisSettingsStream >> analysis_settings_file;
     RunBaselineNSamples = analysis_settings_file["RunBaselineNSamples"];
     RunNSamplesToExclude = analysis_settings_file["RunNSamplesToExclude"];
-    RunDeleteHitsList = analysis_settings_file["RunDeleteHitsList"];
+    // RunDeleteHitsList = analysis_settings_file["RunDeleteHitsList"];
     RunVerboseMode = analysis_settings_file["RunVerboseMode"];
     RunMaxHitsToLoad = analysis_settings_file["RunMaxHitsToLoad"];
     
@@ -812,6 +802,12 @@ void TofRun::RunSetAnalysisOptions (){
 
     RunSelectedAnalysisOptions = true;
 
+
+    // for Linux as of april
+    if (RunSoftware == "linux"){ 
+        RunNSamplesInWaveform = 63;
+        RunNSamplesToExclude = 1; // first is not to consider
+    }   
 
 }
 

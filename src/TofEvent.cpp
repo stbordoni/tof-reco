@@ -8,14 +8,20 @@ TofEvent::TofEvent(){
 }
 
 void TofEvent::EventCreateSignals(){
-    TofSignal new_signal;
-    bool new_signal_created = true;
+
+    bool created_new_signal = true;
     int this_hit_bar = -1, this_hit_plane = -1;
     std::vector <int> skip_elements;
+    bool print = false;
 
+    // set print to true if size is 4
+    // if (EventHitsList.size() == 4) print = true;
+
+    if (print) std::cout << "\nCreating signals for event with " << EventHitsList.size() << " hits" << std::endl;
     for (int ihit = 0; ihit < EventHitsList.size(); ihit++){
         
-        new_signal_created = false;
+        created_new_signal = false;
+        if (print)std::cout << "ihit " << ihit << std::endl;
 
         for (int iskip = 0; iskip < skip_elements.size(); iskip++){
             if (ihit == skip_elements.at(iskip)) continue;
@@ -29,23 +35,31 @@ void TofEvent::EventCreateSignals(){
             
             if (skip_elements.size() > 0){
                 for (int iskip = 0; iskip < skip_elements.size(); iskip++){
-                    if (ihit2 == skip_elements.at(iskip)) continue;
+                    if (ihit2 == skip_elements.at(iskip)){
+                        if (print)std::cout << "ihit2 " << ihit2 << " is in skip_elements, skipping" << std::endl;
+                        continue;
+                    }
                 }
             }
+            if (print)std::cout << "ihit2 " << ihit2 << std::endl;
+
 
             if (EventHitsList.at(ihit2).GetHitBar() == this_hit_bar && EventHitsList.at(ihit2).GetHitPlane() == this_hit_plane){
 
                 skip_elements.push_back(ihit2);
                 EventSignalsList.push_back(TofSignal(EventHitsList.at(ihit), EventHitsList.at(ihit2)));
-                new_signal_created = true;
+                created_new_signal = true;
+                if (print)std::cout << "Created new signal with hits " << ihit << " and " << ihit2 << std::endl;
                 break;
             }
         }
         
-        if  (new_signal_created == false)
+        if  (created_new_signal == false){
             EventSignalsList.push_back(TofSignal(EventHitsList.at(ihit)));
+            if (print)std::cout << "Created new signal with hit " << ihit << std::endl;
+        }
 
-        new_signal_created = true;
+        created_new_signal = true;
     
     }
 
@@ -61,7 +75,7 @@ void TofEvent::EventComputeTimeOfFlight(){
     std::cout << "this event has size 2 and signals have time " << EventSignalsList.at(0).GetSignalTime() << " and " << EventSignalsList.at(1).GetSignalTime() << std::endl;
     if ( EventSignalsList.at(1).GetSignalTime() == -1){
         // print signalposition of the signal
-        std::cout << "Signal position: " << EventSignalsList.at(1).GetSignalPosition() << std::endl;
+        std::cout << "SignalTime not computed. Signal position: " << EventSignalsList.at(1).GetSignalPosition() << std::endl;
         
 
     }

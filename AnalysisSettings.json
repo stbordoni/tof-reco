@@ -1,9 +1,9 @@
 {
+    "RunMaxHitsToLoad":5000,
+
     "RunBaselineNSamples":5,
     "RunNSamplesToExclude":0,
-    "RunDeleteHitsList":false,
     "RunVerboseMode":false,
-    "RunMaxHitsToLoad":2000,
 
     "EventVerboseMode":false,
 
