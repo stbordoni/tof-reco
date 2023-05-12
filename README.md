@@ -10,6 +10,9 @@ An easy way to generate the ROOT file for a run is by running `./GenerateRootFil
 The standard folder where the run is is `../TofData`, and the results are in `../TofRootFiles`.
 If you want to set different folders, change the path in `GenerateRootFile.sh`.
 
+In `AnalysisSettings.json` there are some parameters to be changed during the analysis. 
+For now, the only one to care about is `RunMaxHitsToLoad`, since some runs are very long.
+
 ## Read ROOT file
 To read the ROOT file the method is basically the same:
 run `./ReadRootFile.sh run_number`. 
