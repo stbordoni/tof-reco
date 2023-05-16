@@ -13,8 +13,6 @@ JUST NOTES WHILE DEVELOPING THE CODE
 
 - int to say how many edges
 
-- add getters for 
-
 - later, change TofRun to TofGate or smth
 set private
 
