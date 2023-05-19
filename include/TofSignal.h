@@ -3,7 +3,6 @@
 
 #include "TofHit.h"
 
-
 class TofSignal{
 public:
 

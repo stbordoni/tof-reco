@@ -3,6 +3,7 @@
 
 #include "TofSignal.h"
 #include "TofEvent.h"
+#include "../submodules/sampic_256ch_linux/include_lib/SAMPIC_256Ch_Type.h"
 
 
 // TofRun includes the Run settings and all the elements
@@ -11,8 +12,7 @@ public:
 
     // Constructors
     TofRun(){}; // empty constructor, just to be able to create objects
-    TofRun(std::string, std::string);  // true constructor
-    // TofRun(std::string)
+    TofRun(std::string, std::string);  // true constructor, change
     ~TofRun(){};
 
     // Actual events, that are added only after creating the objects
@@ -35,6 +35,12 @@ public:
     void RunGetAnalysisOptions ();
     std::vector <std::string> RunErrorsList; // maybe not nice, learn about better methods
     void RunPrintErrors(); // set different ranks: Info, warning, error, fatal?
+
+    // Setters
+    void RunSetInputFilePath(const std::string & run_full_path){RunPath = run_full_path;};
+    void RunSetSoftwareType(std::string software){RunSoftware = software;};
+    void RunSetRunNumber(int run_number){RunNumber = run_number;};
+    void RunDecodeMidasBank(struct HitStruct*){}; // from MIDAS banks
 
     // Getters
     std::string GetRunSoftware() {return RunSoftware;}
