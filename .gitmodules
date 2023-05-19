@@ -8,3 +8,6 @@
 [submodule "submodules/sampic_256ch_linux"]
 	path = submodules/sampic_256ch_linux
 	url = https://git.t2k.org/tof_utils/daq/sampic_256ch_linux.git
+[submodule "submodule/tof-data-format"]
+	path = submodule/tof-data-format
+	url = https://git.t2k.org/tof_utils/daq/tof-data-format.git
