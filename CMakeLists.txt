@@ -9,6 +9,9 @@ find_package(ROOT REQUIRED COMPONENTS RIO Net)
 message(STATUS "The current source directory is ${CMAKE_CURRENT_SOURCE_DIR}")
 
 # set the include directories
+
+include( ${CMAKE_SOURCE_DIR}/cmake/submoduleLibs.cmake )
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${ROOT_INCLUDE_DIRS})
 
 # Add header files

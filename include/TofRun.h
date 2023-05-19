@@ -12,6 +12,7 @@ public:
     // Constructors
     TofRun(){}; // empty constructor, just to be able to create objects
     TofRun(std::string, std::string);  // true constructor
+    // TofRun(std::string)
     ~TofRun(){};
 
     // Actual events, that are added only after creating the objects
