@@ -19,6 +19,49 @@ run `./ReadRootFile.sh run_number`.
 You can change what is printed or do other operations changing `ReadRootFile.cpp`.
 
 
+# Description of the classes
+
+There are getters for all the variablesm which are set to private. 
+To know in detail what they do, check in `include/` and `src/`, but here there are some words about the key points.
+
+## TofHit
+This contains all the information about the hit. 
+
+In particular note that the mapping for HitPlane is U=0, D=1, T=2, B=3, L=4, R=5, while HitBar = 0,...,19 and HitEdge=0,1, where for the moment 0 is left and 1 is right.
+
+In ReadRootFile, use as condition `if(GetHitFitSuccess)`, to be sure that the waveform was good and the fit was successful. 
+For the TOT, use `GetTOTValue`.
+To get the time associated to a certain CF, use `HitComputeCfTime()`.
+
+
+## TofSignal
+This contains either one or two hits, called HitMin and HitMax (for the moment, HitMin is the L edge and HitMax is the R edge). 
+
+There is a variable `SignalType`:
+= 1: only HitMin 
+
+= 2: only HitMax
+
+= 3: both 
+
+If `SignalType = 3` and `HitFitSuccess =  true` for both hits, a `SignalPosition` is computed. 
+If `SignalPosition` falls within 0 and 220 cm, then also a `SignalTime`  is computed as         
+``SignalTime = SignalHitMin.HitComputeCfTime(0.1) - SignalPosition/light_velocity;``. 
+Inizialitation values are -1.
+
+## TofEvent
+This is a collection of Signals that fall within a 50ns coincidence window, matching the physics calculation and the DAQ features.
+
+If the Event contains two Signals and for both there is a valid `SignalTime`, then `EventTimeOfFlight` is computed as the difference between the two SignalTimes. 
+Inizialitation value is 0.
+
+## TofRun
+TofRun contains all the information regarding a run and does all the operations in the analysis process. 
+
+There is a method `GetRunInfo()` that prints out the information about the run, if needed.
+
+The output file contains a `TofRun` object itself. 
+
 <!-- 
 THE FOLLOWING OPTIONS ARE NOT HERE YET FOR THE NEW FORMAT, BUT WILL BE
 

@@ -40,7 +40,7 @@ public:
     void RunSetInputFilePath(const std::string & run_full_path){RunPath = run_full_path;};
     void RunSetSoftwareType(std::string software){RunSoftware = software;};
     void RunSetRunNumber(int run_number){RunNumber = run_number;};
-    void RunDecodeMidasBank(struct HitStruct*){}; // from MIDAS banks
+    // void RunDecodeMidasBank(struct HitStruct*){}; // from MIDAS banks
 
     // Getters
     std::string GetRunSoftware() {return RunSoftware;}

@@ -17,6 +17,7 @@ TofSignal::TofSignal(TofHit one_hit){
     else
         std::cerr << "Error in TofSignal constructor, hit has no edge 0 or 1\n";
 
+    SignalComputePosition();
     // SignalGetSignalInfo();
 }
 
@@ -56,6 +57,13 @@ void TofSignal::SignalComputePosition(){
         std::string this_error = "Error: in SignalComputePosition, this Signal only has one edge \n";
         SignalErrorsList.push_back(this_error);
         // std::cerr << this_error;
+        // if signal type is 1 print the peak amplitude of hit min, if it's 2 print the peak amplitude of hit max
+        // if (SignalType == 1){
+        //     std::cout << "  Peak amplitude of hit min: " << SignalHitMin.GetHitPeak() << std::endl;
+        // }
+        // else if (SignalType == 2){
+        //     std::cout << "  Peak amplitude of hit max: " << SignalHitMax.GetHitPeak() << std::endl;
+        // }
         return;
     }
     else {
