@@ -3,7 +3,7 @@
 ## Instructions to set up the environment
 
 After cloning this repository in your machine, do `mkdir build; cd build; cmake ..; make`, to see if your system meets the requirements.
-You need to have ROOT installed in the standard location, meaning `/usr/local/`, and cmake and c++ meeting the requirements. 
+You need to have ROOT installed in the standard location, meaning `/usr/local/`, and cmake (minimum 3.20) and c++ (gcc version at least 11) meeting the requirements. 
 If that's not the case, update them or create an environment.
 You also need to have nlohmann/json installed, instructions \hyperlink{https://github.com/nlohmann/json}.
 
