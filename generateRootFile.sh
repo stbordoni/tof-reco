@@ -3,6 +3,7 @@
 inputDirectory="../../TofData/" # CHANGE LATER
 outputDirectory="../../TofRootFiles/"
 
+mkdir -p build
 echo "Moving into build directory"
 cd build;
 

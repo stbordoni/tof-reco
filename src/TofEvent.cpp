@@ -72,11 +72,11 @@ void TofEvent::EventComputeTimeOfFlight(){
 
     // doing this only when the event contains exactly 2 signals 
     if (EventSize != 2) return;
-    std::cout << "this event has size 2 and signals have time " << EventSignalsList.at(0).GetSignalTime() << " and " << EventSignalsList.at(1).GetSignalTime();
+    // std::cout << "this event has size 2 and signals have time " << EventSignalsList.at(0).GetSignalTime() << " and " << EventSignalsList.at(1).GetSignalTime();
     if ( EventSignalsList.at(1).GetSignalTime() == -1){
         // print signalposition of the signal
         // std::cout << "SignalTime not computed. Signal position: " << EventSignalsList.at(1).GetSignalPosition() << std::endl;
-        std::cout << ". No TOF computed." << std::endl;
+        // std::cout << ". No TOF computed." << std::endl;
 
     }
 

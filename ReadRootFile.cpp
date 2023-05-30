@@ -12,41 +12,56 @@ int main(int argc, char *argv[]){
     std::cout  << "Software " << software << std::endl;
     std::string run_full_path = argv[2];
     std::cout << "Run path " << run_full_path << std::endl;
+    std::string run_number_string = SplitString(run_full_path.substr(run_full_path.find_last_of("/")+1), '.').at(0);
+    run_number_string = run_number_string.substr(run_number_string.find_first_of("n")+1);
+    int run_number = std::stoi(run_number_string);
+    std::cout << "Run number " << run_number << std::endl;
 
+    //////////////////////////////////////////////////////////////
     // ROOT app and objects
     TApplication *app = new TApplication("myapp", &argc, argv);
 
-    TH1F *h_signalBar = new TH1F("h_signalBar", "SignalBar", 20, -0.5, 19.5);
+    TH1F *h_signalBar = new TH1F("h_signalBar", Form("SignalBar, run%i",run_number), 20, -0.5, 19.5);
     h_signalBar->GetXaxis()->SetTitle("Bar");
     h_signalBar->SetMinimum(0);
 
-    TH1F *h_signalPlane = new TH1F("h_signalPlane", "SignalPlane", 6, -0.5, 5.5);
+    TH1F *h_signalPlane = new TH1F("h_signalPlane", Form("SignalPlane, run%i", run_number), 6, -0.5, 5.5);
     h_signalPlane->GetXaxis()->SetTitle("Plane");
     h_signalPlane->SetMinimum(0);
 
-    TH1F *h_signalPosition = new TH1F("h_signalPosition", "SignalPosition", 50, -50, 270.);
+    TH1F *h_signalPosition = new TH1F("h_signalPosition", Form("SignalPosition, run%i", run_number), 50, -50, 270.);
     h_signalPosition->GetXaxis()->SetTitle("Position [cm]");
     h_signalPosition->SetMinimum(0);
 
-    TH1F *h_hitPeak = new TH1F("h_hitPeak", "HitPeak", 50, -0.1,1.1 );
+    TH1F *h_hitPeak = new TH1F("h_hitPeak", Form("HitPeak, run%i", run_number), 50, -0.1,1.1 );
     h_hitPeak->GetXaxis()->SetTitle("Peak [V]");
     h_hitPeak->SetMinimum(0);
 
-    TH1F *h_singleHitPeak = new TH1F("h_singleHitPeak", "SingleHitPeak", 50, -0.1,1.1 );
+    TH1F *h_singleHitPeak = new TH1F("h_singleHitPeak", Form("SingleHitPeak, run%i", run_number), 50, -0.1,1.1 );
     h_singleHitPeak->GetXaxis()->SetTitle("Peak [V]");
     h_singleHitPeak->SetMinimum(0);
 
-    // TH1F *h_saturatedHits
+    // TH1F to plot channels firing in a run. On x axis channel number, on y axis number of times that channel fired
+    TH1F *h_channelsFiring = new TH1F("h_channelsFiring", Form("ChannelsFiring, run%i", run_number), 256, -0.5, 255.5);
+    h_channelsFiring->GetXaxis()->SetTitle("Channel");
+    h_channelsFiring->SetMinimum(0);
 
+    TH1F *h_saturatedHits = new TH1F("h_saturatedHits", Form("SaturatedHits, run%i", run_number), 256, -0.5, 255.5);
+    h_saturatedHits->GetXaxis()->SetTitle("Channel");
+    h_saturatedHits->SetMinimum(0);
+    h_saturatedHits->SetFillColor(kRed);
+    h_saturatedHits->SetLineColor(kRed);
+    h_saturatedHits->SetFillStyle(3004);
+    
+    TH1F * h_saturatedOtherEdge = new TH1F("h_saturatedOtherEdge", Form("SaturatedOtherEdge, run%i", run_number), 256, -0.5, 255.5);
+    h_saturatedOtherEdge->GetXaxis()->SetTitle("Channel");
+    h_saturatedOtherEdge->SetMinimum(0); 
 
-    // extract run number from run_full_path, could remove?
-    std::string run_number_string = run_full_path.substr(run_full_path.find_last_of("/")+1);
-    run_number_string = run_number_string.substr(3, run_number_string.find_last_of("."));
-    std::cout << "Run number " << run_number_string << std::endl;
-    int run_number = std::stoi(run_number_string);
+    //////////////////////////////////////////////////////////////
 
+    // Open file    
     std::string input_file = run_full_path;
-    std::cout << "reading file: " << input_file << std::endl;
+    std::cout << "Reading file: " << input_file << std::endl;
     TFile *f = new TFile(input_file.c_str(), "READ");
     if (f->IsZombie()) {
         std::cerr << "Error: failed to open file " << input_file << std::endl;
@@ -68,51 +83,56 @@ int main(int argc, char *argv[]){
     std::cout << "Run number: " << run->GetRunNumber() << std::endl;
     std::cout << "Run address: " << run->GetRunAddress() << std::endl;
     std::cout << "Number of events: " << run->GetRunEventsList().size() << std::endl;
-    
-    // rewrite loop here below using auto
-    for (int eventit = 0; eventit < run->RunEventsList.size(); eventit++){
 
-        for (int signalit = 0; signalit < run->RunEventsList.at(eventit).GetEventSize(); signalit++){
-            
-            if (signalit % 100 == 0){
-                std::cout << "Reading through Events, currently at " << (double)eventit/(run->RunEventsList.size())*100 << " %\r";
+    int event_counter = 0;
+    for (auto  eventit : run->GetRunEventsList()) {
+        // std::cout << "enter event loop" << std::endl;
+        for (auto  signalit : eventit.GetEventSignalsList()) {
+            if (event_counter % 100 == 0) {
+                std::cout << "Reading through Events, currently at " << event_counter / (double)(run->RunEventsList.size()) * 100 << " %\r";
                 std::cout << std::flush;
             }
 
-            // print signal type
-            // std::cout << "   Signal " << signalit << " has type: " << run->RunEventsList.at(i).GetEventSignalsList().at(signalit).GetSignalType() << std::endl;
-            // consider only signals having two hits
-            if (run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalType() == 3){
-                
-                // std::cout << " Event " << eventit << " has number of signals: " << run->RunEventsList.at(eventit).GetEventSignalsList().size() << std::endl;            
-                // std::cout << "   Signal " << signalit << " has both hits" << std::endl;
-                h_signalPosition->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalPosition());
-                h_signalBar->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalHitMin().GetHitBar());
-                h_signalPlane->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalHitMin().GetHitPlane());
-                h_hitPeak->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalHitMin().GetHitPeak());
+            if (signalit.GetSignalType() == 3) {
+                h_signalPosition->Fill(signalit.GetSignalPosition());
+                h_signalBar->Fill(signalit.GetSignalHitMin().GetHitBar());
+                h_signalPlane->Fill(signalit.GetSignalHitMin().GetHitPlane());
+                h_hitPeak->Fill(signalit.GetSignalHitMin().GetHitPeak());
+                h_channelsFiring->Fill(signalit.GetSignalHitMin().GetHitDaqChannel());
+                h_channelsFiring->Fill(signalit.GetSignalHitMax().GetHitDaqChannel());
+                if (signalit.GetSignalHitMin().GetHitIsSaturated()){
+                    h_saturatedHits->Fill(signalit.GetSignalHitMin().GetHitDaqChannel());
+                    if (signalit.GetSignalHitMax().GetHitIsSaturated()) h_saturatedOtherEdge->Fill(signalit.GetSignalHitMax().GetHitDaqChannel());
+                } 
+                if (signalit.GetSignalHitMax().GetHitIsSaturated()){ 
+                    h_saturatedHits->Fill(signalit.GetSignalHitMax().GetHitDaqChannel());
+                    if (signalit.GetSignalHitMin().GetHitIsSaturated()) h_saturatedOtherEdge->Fill(signalit.GetSignalHitMin().GetHitDaqChannel());
+                }
             }
-            else if (run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalType() == 1){
-                h_singleHitPeak->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalHitMin().GetHitPeak());
+            else if (signalit.GetSignalType() == 1) {
+                h_singleHitPeak->Fill(signalit.GetSignalHitMin().GetHitPeak());
+                h_channelsFiring->Fill(signalit.GetSignalHitMin().GetHitDaqChannel());
+                if (signalit.GetSignalHitMin().GetHitIsSaturated()) h_saturatedHits->Fill(signalit.GetSignalHitMin().GetHitDaqChannel());
             }
-            else if (run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalType() == 2){
-                h_singleHitPeak->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalHitMin().GetHitPeak());
+            else if (signalit.GetSignalType() == 2) {
+                h_singleHitPeak->Fill(signalit.GetSignalHitMax().GetHitPeak());
+                h_channelsFiring->Fill(signalit.GetSignalHitMax().GetHitDaqChannel());
+                if (signalit.GetSignalHitMax().GetHitIsSaturated()) h_saturatedHits->Fill(signalit.GetSignalHitMax().GetHitDaqChannel());
             }
-
         }
-        if (run->RunEventsList.at(eventit).GetEventTimeOfFlight() != 0) 
-            std::cout << "Event " << eventit << " has time of flight: " << run->RunEventsList.at(eventit).GetEventTimeOfFlight() << std::endl;
-        
-        // if (eventit = 10000) break;
+
+        if (eventit.GetEventTimeOfFlight() != 0) {
+            std::cout << "Event has time of flight: " << eventit.GetEventTimeOfFlight() << std::endl;
+        }
+
+        event_counter++;
     }
 
     std::cout << "\nNow plotting histograms" << std::endl;
 
-
-
-
-    // plot histograms
+    // plot histograms for good channels
     TCanvas *c_goodSignals = new TCanvas("c_goodSignals", "GoodSignals", 900, 900);
-    c_goodSignals->Divide(2,2);
+    c_goodSignals->Divide(3,2);
     c_goodSignals->cd(1);
     h_signalBar->Draw("HIST");
     c_goodSignals->cd(2);
@@ -121,12 +141,21 @@ int main(int argc, char *argv[]){
     h_signalPosition->Draw("HIST");
     c_goodSignals->cd(4);
     h_hitPeak->Draw("HIST");
+    c_goodSignals->cd(5);
+    h_channelsFiring->Draw("HIST");
 
-    // plot bad signals
-    TCanvas *c_badSignals = new TCanvas("c_badSignals", "BadSignals", 900, 900);
+    // plot bad signals in some way
+    TCanvas *c_badSignals = new TCanvas("c_badSignals", "'Bad' Signals", 900, 900);
     c_badSignals->Divide(2,2);
     c_badSignals->cd(1);
     h_singleHitPeak->Draw("HIST");
+    c_badSignals->cd(2);
+    h_channelsFiring->Draw("HIST");
+    h_saturatedHits->Draw("SAMES");
+    c_badSignals->cd(3);
+    h_saturatedHits->Draw("HIST");
+    h_saturatedOtherEdge->Draw("SAMES");
+
 
     app->Run();
 

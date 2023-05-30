@@ -35,6 +35,10 @@ TofHit::TofHit(){
 
 void TofHit::HitFitWaveform(){
 
+    // will be moved
+    if (HitRawPeak > 1.) HitIsSaturated = true;
+    else HitIsSaturated = false;
+
     HitFitParameter[0] = HitPeak;
     HitFitParameter[1] = (double) HitPeakSample;
     HitFitParameter[2] = 0.2; // WidthDep1

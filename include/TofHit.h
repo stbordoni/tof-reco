@@ -59,7 +59,7 @@ public:
     void SetHitFeb(int value) { HitFeb = value; }
     void SetHitFebChannel(int value) { HitFebChannel = value; }
     void SetHitCell0Time(double value) { HitCell0Time = value; }
-    void SetHitTOTValue(double value) { HitTOTValue = value; }
+    void SetHitTotValue(double value) { HitTotValue = value; }
     void SetHitWaveform(std::vector<double> value) { HitWaveform = value; }
     void SetHitId(int value) { HitId = value; }
     void SetHitSampic(int value) { HitSampic = value; }
@@ -70,11 +70,12 @@ public:
     void SetHitBaseline(double value) { HitBaseline = value; }
     void SetHitRawPeak(double value) { HitRawPeak = value; }
     void SetHitPeak(double value) { HitPeak = value; }
+    void SetHitIsSaturated(bool value) { HitIsSaturated = value; }
     void SetHitPeakSample(int value) { HitPeakSample = value; }
     void SetHitPeakTime(double value) { HitPeakTime = value; }
     void SetHitVoltageIntegral(double value) { HitVoltageIntegral = value; }
     void SetHitChannelOnPlane(int value) { HitChannelOnPlane = value; }
-    void SetHitRawTOTValue(double value) { HitRawTOTValue = value; }
+    void SetHitRawTotValue(double value) { HitRawTotValue = value; }
     void SetHitUnixTime(double value) { HitUnixTime = value; }
     void SetHitSampleLength(double value) { HitSampleLength = value; }
     void SetHitFitSuccess(bool value) { HitFitSuccess = value; }
@@ -85,7 +86,7 @@ public:
     int GetHitFeb() { return HitFeb; }
     int GetHitFebChannel() { return HitFebChannel; }
     double GetHitCell0Time() { return HitCell0Time; }
-    double GetHitTOTValue() { return HitTOTValue; }
+    double GetHitTotValue() { return HitTotValue; }
     std::vector<double> GetHitWaveform() { return HitWaveform; }
     int GetHitID() { return HitId; }
     int GetHitSampic() { return HitSampic; }
@@ -96,11 +97,12 @@ public:
     double GetHitBaseline() { return HitBaseline; }
     double GetHitRawPeak() { return HitRawPeak; }
     double GetHitPeak() { return HitPeak; }
+    bool GetHitIsSaturated() { return HitIsSaturated; }
     int GetHitPeakSample() { return HitPeakSample; }
     double GetHitPeakTime() { return HitPeakTime; }
     double GetHitVoltageIntegral() { return HitVoltageIntegral; }
     int GetHitChannelOnPlane() { return HitChannelOnPlane; }
-    double GetHitRawTOTValue() { return HitRawTOTValue; }
+    double GetHitRawTotValue() { return HitRawTotValue; }
     double GetHitUnixTime() { return HitUnixTime; }
     double GetHitSampleLength() { return HitSampleLength; }
     bool GetHitFitSuccess() { return HitFitSuccess; }
@@ -113,7 +115,7 @@ private:
     int HitFeb {-1};
     int HitFebChannel{-1};
     double HitCell0Time{-1};
-    double HitTOTValue{-1};
+    double HitTotValue{-1};
     std::vector<double> HitWaveform = {};
 
     // Computed
@@ -129,10 +131,11 @@ private:
     int HitPeakSample{-1};
     double HitPeakTime{-1}; // for now it's inside readout window
     double HitVoltageIntegral{-1};
+    bool HitIsSaturated{false};
 
     // Might remove
     int HitChannelOnPlane{-1};
-    double HitRawTOTValue{-1};
+    double HitRawTotValue{-1};
     double HitUnixTime{-1};
 
     // Fit

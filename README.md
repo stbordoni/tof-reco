@@ -38,8 +38,9 @@ This contains all the information about the hit.
 In particular note that the mapping for HitPlane is U=0, D=1, T=2, B=3, L=4, R=5, while HitBar = 0,...,19 and HitEdge=0,1, where for the moment 0 is left and 1 is right.
 
 In ReadRootFile, use as condition `if(GetHitFitSuccess)`, to be sure that the waveform was good and the fit was successful. 
-For the TOT, use `GetTOTValue`.
+For the TOT, use `GetTotValue`.
 To get the time associated to a certain CF, use `HitComputeCfTime()`.
+To select saturated hits, use `GetHitIsSaturated()`.
 
 
 ## TofSignal

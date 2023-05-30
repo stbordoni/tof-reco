@@ -40,6 +40,7 @@ public:
     void RunSetInputFilePath(const std::string & run_full_path){RunPath = run_full_path;};
     void RunSetSoftwareType(std::string software){RunSoftware = software;};
     void RunSetRunNumber(int run_number){RunNumber = run_number;};
+    void RunSetCoincWindow(double coinc_window){RunCoincWindow = coinc_window;};
     // void RunDecodeMidasBank(struct HitStruct*){}; // from MIDAS banks
 
     // Getters
@@ -62,6 +63,7 @@ public:
     double GetRunSampleLength() {return RunSampleLength;}
     double GetRunSamplingTime() {return RunSamplingFrequency;}
     std::vector <TofEvent> GetRunEventsList() {return RunEventsList;}
+    double GetRunCoincWindow() {return RunCoincWindow;}
 
 private:
 
@@ -97,6 +99,7 @@ private:
     // Settings for analysis
     bool RunVerboseMode {false};
     bool RunSelectedAnalysisOptions {false}; // false in constructor, set to true when SetAnalysisOptions is called succesfully
+    double RunCoincWindow {0}; // ns
     int RunNSamplesInWaveform {0}; // actual samples used, different for windows and linux
     int RunNSamplesToExclude {0}; // default is 1
     int RunBaselineFirstSample {0}; // default, this is already after removing bad samples
