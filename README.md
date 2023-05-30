@@ -7,6 +7,8 @@ You need to have ROOT installed in the standard location, meaning `/usr/local/`,
 If that's not the case, update them or create an environment.
 You also need to have nlohmann/json installed, instructions \hyperlink{https://github.com/nlohmann/json}.
 
+The first time you use the code, you have to initialize the use of the submodules with `git submodule init` and `git submodule update`.
+
 To update the code to the latest version, do `git pull origin master` in the main folder. 
 Also regularly update the submodules with `git submodule update --init --recursive --remote`.
 

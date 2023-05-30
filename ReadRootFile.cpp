@@ -36,7 +36,7 @@ int main(int argc, char *argv[]){
     h_singleHitPeak->GetXaxis()->SetTitle("Peak [V]");
     h_singleHitPeak->SetMinimum(0);
 
-    TH1F *h_saturatedHits
+    // TH1F *h_saturatedHits
 
 
     // extract run number from run_full_path, could remove?
