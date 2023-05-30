@@ -25,6 +25,7 @@ For now, the only one to care about is `RunMaxHitsToLoad`, since some runs are v
 To read the ROOT file the method is basically the same:
 run `./ReadRootFile.sh run_number`. 
 You can change what is printed or do other operations changing `ReadRootFile.cpp`.
+A file `run*_plots.root` is generated, containing all the histograms produced in the code.
 
 
 # Description of the classes

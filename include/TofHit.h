@@ -48,6 +48,7 @@ public:
     // Functions
     // void HitComputeVariables();
     void HitFitWaveform();
+    double HitLinearInterpolation(double);
     double HitComputeCfTime(double);
     void HitQualityCheck();
     void HitMatchDaqChToTofCh();

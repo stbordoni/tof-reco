@@ -130,6 +130,35 @@ void TofHit::HitFitWaveform(){
 
 }
 
+double TofHit::HitLinearInterpolation(double cf) {
+    double amp0 = 0, amp1 = 0, amp2 = 0;
+    double samp0 = 0, samp1 = 0, samp2 = 0;
+    // loop over wf, when passing the cf, return the sample
+    for (int i = 0; i < HitWaveform.size(); i++) {
+        if (HitWaveform[i] > cf){
+            amp1 = HitWaveform[i];
+            samp1 = i;
+            break;
+        }
+    }
+    amp0 = HitWaveform[samp1-1];
+    samp0 = samp1-1;
+    amp2 = HitWaveform[samp1+1];
+    samp2 = samp1+1;
+
+    double Sxy = amp0*samp0+amp1*samp1+amp2*samp2;
+    double Sxx = amp0*amp0+amp1*amp1+amp2*amp2;
+    double Sx =  amp0+amp1+amp2;
+    double Sy =  samp0+samp1+samp2;
+    double Ss  = 3;
+    double slope = -(Ss*Sxy - Sx*Sy)/(Sx*Sx-Sxx*Ss);
+    double offset  = (Sx*Sxy - Sy*Sxx)/(Sx*Sx-Sxx*Ss);
+    double exact_sample = slope*cf+offset; // double value for amplitude corresponding to thr
+
+    return exact_sample*HitSampleLength + HitCell0Time;
+}
+
+
 double TofHit::HitComputeCfTime(double cf){
     
     if (cf <= 0. || cf >= 1.){

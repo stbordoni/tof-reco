@@ -20,31 +20,44 @@ int main(int argc, char *argv[]){
     //////////////////////////////////////////////////////////////
     // ROOT app and objects
     TApplication *app = new TApplication("myapp", &argc, argv);
+    TObjArray *hist_list = new TObjArray();
 
     TH1F *h_signalBar = new TH1F("h_signalBar", Form("SignalBar, run%i",run_number), 20, -0.5, 19.5);
     h_signalBar->GetXaxis()->SetTitle("Bar");
     h_signalBar->SetMinimum(0);
+    hist_list->Add(h_signalBar);
 
     TH1F *h_signalPlane = new TH1F("h_signalPlane", Form("SignalPlane, run%i", run_number), 6, -0.5, 5.5);
     h_signalPlane->GetXaxis()->SetTitle("Plane");
     h_signalPlane->SetMinimum(0);
+    hist_list->Add(h_signalPlane);
 
     TH1F *h_signalPosition = new TH1F("h_signalPosition", Form("SignalPosition, run%i", run_number), 50, -50, 270.);
     h_signalPosition->GetXaxis()->SetTitle("Position [cm]");
     h_signalPosition->SetMinimum(0);
+    hist_list->Add(h_signalPosition);
 
     TH1F *h_hitPeak = new TH1F("h_hitPeak", Form("HitPeak, run%i", run_number), 50, -0.1,1.1 );
     h_hitPeak->GetXaxis()->SetTitle("Peak [V]");
     h_hitPeak->SetMinimum(0);
+    hist_list->Add(h_hitPeak);
 
     TH1F *h_singleHitPeak = new TH1F("h_singleHitPeak", Form("SingleHitPeak, run%i", run_number), 50, -0.1,1.1 );
     h_singleHitPeak->GetXaxis()->SetTitle("Peak [V]");
     h_singleHitPeak->SetMinimum(0);
+    hist_list->Add(h_singleHitPeak);
 
     // TH1F to plot channels firing in a run. On x axis channel number, on y axis number of times that channel fired
     TH1F *h_channelsFiring = new TH1F("h_channelsFiring", Form("ChannelsFiring, run%i", run_number), 256, -0.5, 255.5);
     h_channelsFiring->GetXaxis()->SetTitle("Channel");
     h_channelsFiring->SetMinimum(0);
+    hist_list->Add(h_channelsFiring);
+
+    // TH1F to plot time of flight
+    TH1F *h_timeOfFlight = new TH1F("h_timeOfFlight", Form("TimeOfFlight, run%i", run_number), 40, -0.5, 55.5);
+    h_timeOfFlight->GetXaxis()->SetTitle("Time of Flight [ns]");
+    h_timeOfFlight->SetMinimum(0);
+    hist_list->Add(h_timeOfFlight);
 
     TH1F *h_saturatedHits = new TH1F("h_saturatedHits", Form("SaturatedHits, run%i", run_number), 256, -0.5, 255.5);
     h_saturatedHits->GetXaxis()->SetTitle("Channel");
@@ -52,10 +65,14 @@ int main(int argc, char *argv[]){
     h_saturatedHits->SetFillColor(kRed);
     h_saturatedHits->SetLineColor(kRed);
     h_saturatedHits->SetFillStyle(3004);
-    
+    hist_list->Add(h_saturatedHits);
+
     TH1F * h_saturatedOtherEdge = new TH1F("h_saturatedOtherEdge", Form("SaturatedOtherEdge, run%i", run_number), 256, -0.5, 255.5);
     h_saturatedOtherEdge->GetXaxis()->SetTitle("Channel");
     h_saturatedOtherEdge->SetMinimum(0); 
+    h_saturatedOtherEdge->SetLineColor(kGreen);
+    h_saturatedOtherEdge->SetFillStyle(3004);
+    hist_list->Add(h_saturatedOtherEdge);
 
     //////////////////////////////////////////////////////////////
 
@@ -122,7 +139,8 @@ int main(int argc, char *argv[]){
         }
 
         if (eventit.GetEventTimeOfFlight() != 0) {
-            std::cout << "Event has time of flight: " << eventit.GetEventTimeOfFlight() << std::endl;
+            // std::cout << "Event has time of flight: " << eventit.GetEventTimeOfFlight() << std::endl;
+            h_timeOfFlight->Fill(eventit.GetEventTimeOfFlight());
         }
 
         event_counter++;
@@ -143,6 +161,8 @@ int main(int argc, char *argv[]){
     h_hitPeak->Draw("HIST");
     c_goodSignals->cd(5);
     h_channelsFiring->Draw("HIST");
+    c_goodSignals->cd(6);
+    h_timeOfFlight->Draw("HIST");
 
     // plot bad signals in some way
     TCanvas *c_badSignals = new TCanvas("c_badSignals", "'Bad' Signals", 900, 900);
@@ -156,6 +176,11 @@ int main(int argc, char *argv[]){
     h_saturatedHits->Draw("HIST");
     h_saturatedOtherEdge->Draw("SAMES");
 
+    // save all files in a histogram list  and output to a root file
+    TFile *f_out = new TFile(Form("../../TofRootFiles/run%i_plots.root", run_number), "RECREATE");
+    f_out->cd();
+    hist_list->Write();
+    f_out->Close();
 
     app->Run();
 

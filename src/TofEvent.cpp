@@ -70,20 +70,32 @@ void TofEvent::EventCreateSignals(){
 
 void TofEvent::EventComputeTimeOfFlight(){
 
-    // doing this only when the event contains exactly 2 signals 
-    if (EventSize != 2) return;
-    // std::cout << "this event has size 2 and signals have time " << EventSignalsList.at(0).GetSignalTime() << " and " << EventSignalsList.at(1).GetSignalTime();
-    if ( EventSignalsList.at(1).GetSignalTime() == -1){
-        // print signalposition of the signal
-        // std::cout << "SignalTime not computed. Signal position: " << EventSignalsList.at(1).GetSignalPosition() << std::endl;
-        // std::cout << ". No TOF computed." << std::endl;
+    // if there are exactly two signals having SignalType == 3, then compute the time of flight
+    int good_signals = 0;
+    TofSignal first_signal, second_signal;
+    for (auto signalit : EventSignalsList){
+        if (signalit.GetSignalType() == 3) {
+            if (good_signals == 2) return;
+            good_signals++;
+            if (good_signals == 1) first_signal = signalit;
+            else second_signal = signalit;
+        }
 
     }
+    if (good_signals != 2) return;
 
-    if (EventSignalsList.at(0).GetSignalTime() != -1 && EventSignalsList.at(1).GetSignalTime() != -1){
-
-        EventTimeOfFlight = abs(EventSignalsList.at(1).GetSignalTime() - EventSignalsList.at(0).GetSignalTime());
-        std::cout << "Computed time of flight: " << EventTimeOfFlight << std::endl;
+    // doing this only when the event contains exactly 2 signals 
+    // std::cout << "this event has size 2 and signals have time " << EventSignalsList.at(0).GetSignalTime() << " and " << EventSignalsList.at(1).GetSignalTime();
+    if (first_signal.GetSignalTime() == -1 || second_signal.GetSignalTime() == -1){
+        // print signalposition of the signal
+        std::cout << " No TOF computed." << std::endl;
+    }
+    else{
+        EventTimeOfFlight = abs(first_signal.GetSignalTime() - second_signal.GetSignalTime());
+        // print signal times
+        // std::cout << "First signal time: " << first_signal.GetSignalTime();
+        // std::cout << ". Second signal time: " << second_signal.GetSignalTime() << std::endl;
+        // std::cout << " Computed time of flight: " << EventTimeOfFlight << std::endl;
     }
 
 }

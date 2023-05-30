@@ -17,7 +17,7 @@ TofSignal::TofSignal(TofHit one_hit){
     else
         std::cerr << "Error in TofSignal constructor, hit has no edge 0 or 1\n";
 
-    SignalComputePosition();
+    // SignalComputePosition();
     // SignalGetSignalInfo();
 }
 
@@ -53,6 +53,10 @@ TofSignal::TofSignal(TofHit first_hit, TofHit second_hit){
 }
 
 void TofSignal::SignalComputePosition(){
+ 
+    double constant_fraction = 0.1; // 10% of the signal
+    double light_velocity = 16; // cm/ns
+ 
     if (SignalType != 3) {
         std::string this_error = "Error: in SignalComputePosition, this Signal only has one edge \n";
         SignalErrorsList.push_back(this_error);
@@ -71,8 +75,6 @@ void TofSignal::SignalComputePosition(){
         // std::cout << "this signal has two edges, computing position \n";
         if (SignalHitMax.GetHitFitSuccess() == true && SignalHitMin.GetHitFitSuccess() == true){
             
-            double constant_fraction = 0.1; // 10% of the signal
-            double light_velocity = 16; // cm/ns
             double delta_time = SignalHitMax.HitComputeCfTime(constant_fraction) - SignalHitMin.HitComputeCfTime(constant_fraction);
             SignalPosition = (220. - delta_time*light_velocity)/2.;
             // std::cout << "  Computed SignalPosition: " << SignalPosition << std::endl;
@@ -82,7 +84,11 @@ void TofSignal::SignalComputePosition(){
             std::string this_error = "Error: in SignalComputePosition, one of the hits has no successful fit \n";
             SignalErrorsList.push_back(this_error);
             // std::cerr << this_error;
-            return;
+            // still computing position using linear interpolation
+            double light_velocity = 16; // cm/ns
+            double delta_time = SignalHitMax.HitLinearInterpolation(constant_fraction) - SignalHitMin.HitLinearInterpolation(constant_fraction);
+            SignalPosition = (220. - delta_time*light_velocity)/2.;
+            // std::cout << "  Computed SignalPosition using lin int: " << SignalPosition << std::endl;
         }
     }
 }
@@ -99,9 +105,17 @@ void TofSignal::SignalComputeTime(){
     else {
 
         double light_velocity = 16.; // cm/ns MOVE TO CONSTANTS
-        
-        SignalTime = SignalHitMin.HitComputeCfTime(0.1) - SignalPosition/light_velocity;
-        // std::cout << "  Computed SignalTime: " << SignalTime << std::endl;
+        // if both hits are hitfitsuccess use fit, otherwise lin int
+        if (SignalHitMax.GetHitFitSuccess() == true && SignalHitMin.GetHitFitSuccess() == true){
+            double delta_time = SignalHitMax.HitComputeCfTime(0.1) - SignalHitMin.HitComputeCfTime(0.1);
+            SignalTime = SignalHitMin.HitComputeCfTime(0.1) - SignalPosition/light_velocity;
+            // std::cout << "  Computed SignalTime: " << SignalTime << std::endl;
+        }
+        else {
+            double delta_time = SignalHitMax.HitLinearInterpolation(0.1) - SignalHitMin.HitLinearInterpolation(0.1);
+            SignalTime = SignalHitMin.HitLinearInterpolation(0.1) - SignalPosition/light_velocity;
+            // std::cout << "  Computed SignalTime: " << SignalTime << std::endl;
+        }
     }
 }
 
