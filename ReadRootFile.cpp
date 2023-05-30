@@ -13,11 +13,31 @@ int main(int argc, char *argv[]){
     std::string run_full_path = argv[2];
     std::cout << "Run path " << run_full_path << std::endl;
 
+    // ROOT app and objects
     TApplication *app = new TApplication("myapp", &argc, argv);
+
     TH1F *h_signalBar = new TH1F("h_signalBar", "SignalBar", 20, -0.5, 19.5);
+    h_signalBar->GetXaxis()->SetTitle("Bar");
+    h_signalBar->SetMinimum(0);
+
     TH1F *h_signalPlane = new TH1F("h_signalPlane", "SignalPlane", 6, -0.5, 5.5);
+    h_signalPlane->GetXaxis()->SetTitle("Plane");
+    h_signalPlane->SetMinimum(0);
+
     TH1F *h_signalPosition = new TH1F("h_signalPosition", "SignalPosition", 50, -50, 270.);
+    h_signalPosition->GetXaxis()->SetTitle("Position [cm]");
+    h_signalPosition->SetMinimum(0);
+
     TH1F *h_hitPeak = new TH1F("h_hitPeak", "HitPeak", 50, -0.1,1.1 );
+    h_hitPeak->GetXaxis()->SetTitle("Peak [V]");
+    h_hitPeak->SetMinimum(0);
+
+    TH1F *h_singleHitPeak = new TH1F("h_singleHitPeak", "SingleHitPeak", 50, -0.1,1.1 );
+    h_singleHitPeak->GetXaxis()->SetTitle("Peak [V]");
+    h_singleHitPeak->SetMinimum(0);
+
+    TH1F *h_saturatedHits
+
 
     // extract run number from run_full_path, could remove?
     std::string run_number_string = run_full_path.substr(run_full_path.find_last_of("/")+1);
@@ -33,6 +53,7 @@ int main(int argc, char *argv[]){
         return 1;
     }
 
+    // Get tree and set branch address
     TTree *t = (TTree*)f->Get(Form("TreeTofRun%i", run_number));
     TofRun *run = new TofRun(); // empty constructor
     int status = t->SetBranchAddress("TofRun", &run);
@@ -48,6 +69,7 @@ int main(int argc, char *argv[]){
     std::cout << "Run address: " << run->GetRunAddress() << std::endl;
     std::cout << "Number of events: " << run->GetRunEventsList().size() << std::endl;
     
+    // rewrite loop here below using auto
     for (int eventit = 0; eventit < run->RunEventsList.size(); eventit++){
 
         for (int signalit = 0; signalit < run->RunEventsList.at(eventit).GetEventSize(); signalit++){
@@ -60,14 +82,21 @@ int main(int argc, char *argv[]){
             // print signal type
             // std::cout << "   Signal " << signalit << " has type: " << run->RunEventsList.at(i).GetEventSignalsList().at(signalit).GetSignalType() << std::endl;
             // consider only signals having two hits
-            if (run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalType() != 3) continue;
-            
-            // std::cout << " Event " << eventit << " has number of signals: " << run->RunEventsList.at(eventit).GetEventSignalsList().size() << std::endl;            
-            // std::cout << "   Signal " << signalit << " has both hits" << std::endl;
-            h_signalPosition->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalPosition());
-            h_signalBar->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalHitMin().GetHitBar());
-            h_signalPlane->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalHitMin().GetHitPlane());
-            h_hitPeak->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalHitMin().GetHitPeak());
+            if (run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalType() == 3){
+                
+                // std::cout << " Event " << eventit << " has number of signals: " << run->RunEventsList.at(eventit).GetEventSignalsList().size() << std::endl;            
+                // std::cout << "   Signal " << signalit << " has both hits" << std::endl;
+                h_signalPosition->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalPosition());
+                h_signalBar->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalHitMin().GetHitBar());
+                h_signalPlane->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalHitMin().GetHitPlane());
+                h_hitPeak->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalHitMin().GetHitPeak());
+            }
+            else if (run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalType() == 1){
+                h_singleHitPeak->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalHitMin().GetHitPeak());
+            }
+            else if (run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalType() == 2){
+                h_singleHitPeak->Fill(run->RunEventsList.at(eventit).GetEventSignalsList().at(signalit).GetSignalHitMin().GetHitPeak());
+            }
 
         }
         if (run->RunEventsList.at(eventit).GetEventTimeOfFlight() != 0) 
@@ -78,16 +107,6 @@ int main(int argc, char *argv[]){
 
     std::cout << "\nNow plotting histograms" << std::endl;
 
-    // set labels on histos
-    h_signalBar->GetXaxis()->SetTitle("Bar");
-    h_signalPlane->GetXaxis()->SetTitle("Plane");
-    h_signalPosition->GetXaxis()->SetTitle("Position [cm]");
-    h_hitPeak->GetXaxis()->SetTitle("Peak [V]");
-    // set y min to 0 for all histos
-    h_signalBar->SetMinimum(0);
-    h_signalPlane->SetMinimum(0);
-    h_signalPosition->SetMinimum(0);
-    h_hitPeak->SetMinimum(0);
 
 
 
@@ -102,7 +121,13 @@ int main(int argc, char *argv[]){
     h_signalPosition->Draw("HIST");
     c_goodSignals->cd(4);
     h_hitPeak->Draw("HIST");
-    // c_goodSignals->Update();
+
+    // plot bad signals
+    TCanvas *c_badSignals = new TCanvas("c_badSignals", "BadSignals", 900, 900);
+    c_badSignals->Divide(2,2);
+    c_badSignals->cd(1);
+    h_singleHitPeak->Draw("HIST");
+
     app->Run();
 
     return 0;
