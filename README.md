@@ -1,9 +1,15 @@
 # NEW Reconstruction code for SAMPIC data
 
-We are now using a proper framework. 
+## Instructions to set up the environment
+
 After cloning this repository in your machine, do `mkdir build; cd build; cmake ..; make`, to see if your system meets the requirements.
 You need to have ROOT installed in the standard location, meaning `/usr/local/`, and cmake and c++ meeting the requirements. 
-If that's not the case, update them. 
+If that's not the case, update them or create an environment.
+You also need to have nlohmann/json installed, instructions \hyperlink{https://github.com/nlohmann/json}.
+
+To update the code to the latest version, do `git pull origin master` in the main folder. 
+Also regularly update the submodules with `git submodule update --init --recursive --remote`.
+
 
 ## Generate ROOT file
 An easy way to generate the ROOT file for a run is by running `./GenerateRootFile.sh run_number`, where `run_number` clearly is the number of the run to analyze.
