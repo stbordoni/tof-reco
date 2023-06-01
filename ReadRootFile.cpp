@@ -81,12 +81,6 @@ int main(int argc, char *argv[]){
     std::map<std::string, int> PlaneNumbers;
     for (int i= 0; i < 6; i++) PlaneNumbers[PlaneLabels[i]] = i; 
 
-    int hitBar, planeNumber;
-    char hitPlane;
-
-    // Set up the canvas and the histograms
-    TCanvas* c_planes = new TCanvas("c_eventDisplay", Form("EventDisplay, run%i", run_number), 600, 800);
-    c_planes->Divide(3,4);
     std::vector <TH2F*> h_planes; // better static?
     h_planes.reserve(6);
     for (int i = 0; i < 6; i++){
@@ -222,7 +216,28 @@ int main(int argc, char *argv[]){
     h_saturatedHits->Draw("HIST");
     h_saturatedOtherEdge->Draw("SAMES");
 
-    // plot event display
+    // plot event display, first adjust color palette
+
+    float max_value_hist = 0.;
+    for (int i = 0; i < 6; i++) {
+        float this_hist_max = h_planes[i]->GetMaximum();
+        if (this_hist_max > max_value_hist) {
+            max_value_hist = this_hist_max;
+        }
+    }
+
+    // Create a color palette based on the maximum value
+    int numColors = 100; // Adjust the number of colors as needed
+    TColor::InitializeColors(); // Initialize the color palette
+    gStyle->SetNumberContours(numColors); // Set the number of color levels
+    for (int i = 0; i < 6; i++) {
+        h_planes[i]->SetMaximum(max_value_hist);
+        h_planes[i]->SetMinimum(0.);
+        h_planes[i]->SetContour(numColors); // Set the number of contours for color mapping
+    }
+
+    TCanvas* c_planes = new TCanvas("c_eventDisplay", Form("EventDisplay, run%i", run_number), 600, 800);
+    c_planes->Divide(3,4);
     c_planes->cd(1);
     h_planes[PlaneNumbers["T"]]->Draw("COLZ");
     if (g_hits[PlaneNumbers["T"]]->GetN() > 0) g_hits[PlaneNumbers["T"]]->Draw("Psame");
