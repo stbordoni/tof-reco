@@ -19,6 +19,10 @@
 #include <TH1D.h>
 #include <TCanvas.h>
 #include <TROOT.h>
+#include <TH2F.h>
+#include <TGraphErrors.h>
+#include <TStyle.h>
+#include <TLine.h>
 
 #include "TofObjectsDict.h"
 

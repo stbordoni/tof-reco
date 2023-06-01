@@ -74,6 +74,50 @@ int main(int argc, char *argv[]){
     h_saturatedOtherEdge->SetFillStyle(3004);
     hist_list->Add(h_saturatedOtherEdge);
 
+    // display the events
+
+    // not elegant, temporary solution
+    std::vector <std::string> PlaneLabels = {"U","D","T","B","L","R"}; // use map instead!
+    std::map<std::string, int> PlaneNumbers;
+    for (int i= 0; i < 6; i++) PlaneNumbers[PlaneLabels[i]] = i; 
+
+    int hitBar, planeNumber;
+    char hitPlane;
+
+    // Set up the canvas and the histograms
+    TCanvas* c_planes = new TCanvas("c_eventDisplay", Form("EventDisplay, run%i", run_number), 600, 800);
+    c_planes->Divide(3,4);
+    std::vector <TH2F*> h_planes; // better static?
+    h_planes.reserve(6);
+    for (int i = 0; i < 6; i++){
+        h_planes[i] = new TH2F(Form("plane%s", PlaneLabels[i].c_str()), Form("plane%s", PlaneLabels[i].c_str()), 1, 0, 220, 20, -0.5, 19.5);
+        h_planes[i]->SetStats(false);
+        // h_planes[i]->GetXaxis()->SetTickLength(0);
+        // h_planes[i]->GetXaxis()->SetLabelOffset(999);
+        h_planes[i]->GetYaxis()->SetTickLength(0);
+        h_planes[i]->GetYaxis()->SetTitle("Bar number");
+        h_planes[i]->GetXaxis()->SetTitle("Position [cm]");
+        // horizontal lines for better visualization
+        for (int j = 1; j <= 20; j++) {
+            TLine* line = new TLine(0, j - 0.5, 220, j - 0.5); 
+            h_planes[i]->GetListOfFunctions()->Add(line); 
+        }
+        hist_list->Add(h_planes[i]);
+    }
+    std::vector <TGraphErrors*> g_hits;
+    g_hits.reserve(6);
+    for (int i = 0; i < 6; i++){
+        g_hits[i] = new TGraphErrors();
+        g_hits[i]->SetTitle(Form("hits_plane%s", PlaneLabels[i].c_str()));
+        g_hits[i]->SetMarkerStyle(22);
+        g_hits[i]->SetMarkerSize(0.6);
+        g_hits[i]->SetMarkerColor(2);
+        // g_hits[i]->SetStats(false);
+        // g_hits[i]->GetXaxis()->SetTickLength(0);
+        // g_hits[i]->GetXaxis()->SetLabelOffset(999);
+        // g_hits[i]->GetYaxis()->SetTickLength(0);
+    }
+
     //////////////////////////////////////////////////////////////
 
     // Open file    
@@ -125,6 +169,8 @@ int main(int argc, char *argv[]){
                     h_saturatedHits->Fill(signalit.GetSignalHitMax().GetHitDaqChannel());
                     if (signalit.GetSignalHitMin().GetHitIsSaturated()) h_saturatedOtherEdge->Fill(signalit.GetSignalHitMin().GetHitDaqChannel());
                 }
+                h_planes[signalit.GetSignalHitMin().GetHitPlane()]->Fill(signalit.GetSignalPosition(), signalit.GetSignalHitMin().GetHitBar());
+                g_hits[signalit.GetSignalHitMin().GetHitPlane()]->SetPoint(g_hits[signalit.GetSignalHitMin().GetHitPlane()]->GetN(), signalit.GetSignalPosition(), signalit.GetSignalHitMin().GetHitBar());
             }
             else if (signalit.GetSignalType() == 1) {
                 h_singleHitPeak->Fill(signalit.GetSignalHitMin().GetHitPeak());
@@ -175,6 +221,27 @@ int main(int argc, char *argv[]){
     c_badSignals->cd(3);
     h_saturatedHits->Draw("HIST");
     h_saturatedOtherEdge->Draw("SAMES");
+
+    // plot event display
+    c_planes->cd(1);
+    h_planes[PlaneNumbers["T"]]->Draw("COLZ");
+    if (g_hits[PlaneNumbers["T"]]->GetN() > 0) g_hits[PlaneNumbers["T"]]->Draw("Psame");
+    c_planes->cd(6);
+    h_planes[PlaneNumbers["R"]]->Draw("COLZ");
+    if (g_hits[PlaneNumbers["R"]]->GetN() > 0) g_hits[PlaneNumbers["R"]]->Draw("Psame");
+    c_planes->cd(2);
+    h_planes[PlaneNumbers["U"]]->Draw("COLZ");
+    if (g_hits[PlaneNumbers["U"]]->GetN() > 0) g_hits[PlaneNumbers["U"]]->Draw("Psame");
+    c_planes->cd(3);
+    h_planes[PlaneNumbers["L"]]->Draw("COLZ");
+    if (g_hits[PlaneNumbers["L"]]->GetN() > 0) g_hits[PlaneNumbers["L"]]->Draw("Psame");
+    c_planes->cd(4);
+    h_planes[PlaneNumbers["B"]]->Draw("COLZ");
+    if (g_hits[PlaneNumbers["B"]]->GetN() > 0) g_hits[PlaneNumbers["B"]]->Draw("Psame");
+    c_planes->cd(5);
+    h_planes[PlaneNumbers["D"]]->Draw("COLZ");
+    if (g_hits[PlaneNumbers["D"]]->GetN() > 0) g_hits[PlaneNumbers["D"]]->Draw("Psame");
+
 
     // save all files in a histogram list  and output to a root file
     TFile *f_out = new TFile(Form("../../TofRootFiles/run%i_plots.root", run_number), "RECREATE");
