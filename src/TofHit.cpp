@@ -173,7 +173,7 @@ double TofHit::HitComputeCfTime(double cf){
     if (std::isnan(cf_time) || cf_time < 0. || cf_time > HitWaveform.size()){
         HitFitSuccess = false;
         std::string this_error = "Error: Fit failed for HitId " + std::to_string(HitId) + " and CF " + std::to_string(cf);
-        std::cerr << this_error << std::endl;
+        // std::cerr << this_error << std::endl;
         HitErrorsList.push_back(this_error);                
         return -1;
     }
