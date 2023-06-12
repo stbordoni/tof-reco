@@ -3,6 +3,8 @@
 
 #include "TofSignal.h"
 
+#include "SAMPIC_256Ch_Type.h"
+
 
 
 class TofEvent{
