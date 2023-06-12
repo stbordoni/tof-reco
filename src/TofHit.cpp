@@ -65,16 +65,6 @@ void TofHit::HitFitWaveform(){
 
     // TH1D * h_waveform = new TH1D(Form("Channel%i, HitId%i",HitDaqChannel, HitId),Form("Waveform Ch%i", HitDaqChannel),HitWaveform.size(),-0.5,HitWaveform.size()-0.5);
     TH1D * h_waveform = new TH1D(Form("Channel%i, HitId%i",HitDaqChannel, HitId),Form("Waveform Ch%i", HitDaqChannel),HitWaveform.size(),-0.5,HitWaveform.size()-0.5);
-    
-    // h_waveform = new TH1D("h_waveform", "h_waveform", 5, 0, 5);
-    // h_waveform->SetName(Form("Channel%i, HitId%i",HitDaqChannel, HitId));
-    // h_waveform->SetTitle(Form("Waveform Ch%i", HitDaqChannel));
-    // set number of bins
-    // h_waveform->SetBins(HitWaveform.size(),-0.5,HitWaveform.size()-0.5);
-
-    // h_waveform(Form("Channel%i, HitId%i",HitDaqChannel, HitId),Form("Waveform Ch%i", HitDaqChannel),HitWaveform.size(),-0.5,HitWaveform.size()-0.5);
-    // instead of above line, set names with the correspondent functions
-    // h_waveform->SetName
     h_waveform->GetXaxis()->SetTitle("Sample");
     h_waveform->GetYaxis()->SetTitle("Amplitude(V)"); 
     for(int j =0; j < HitWaveform.size();j++ ) {
@@ -84,8 +74,8 @@ void TofHit::HitFitWaveform(){
 
     // disable error messages during execution
     gROOT->ProcessLine("gErrorIgnoreLevel = kFatal;"); // PRETTY EXTEME, ONLY FOR DEBUGGING
-    int fit_min = 2; // HitPeakSample-10;
-    int fit_max = 60; // HitPeakSample+10; // check this
+    int fit_min = 3; // HitPeakSample-10;
+    int fit_max = HitPeakSample+15; // HitPeakSample+10; // check this
     int fit_status = h_waveform->Fit("fit_function","Q","",  fit_min, fit_max);
 
     // continue the loop if fit fails
@@ -310,19 +300,22 @@ char TofHit::HitGetPlaneId(){
 
 void TofHit::HitDisplayWaveform(){
 
-    // gROOT->SetBatch(kFALSE);
-    // TCanvas *c_appo = new TCanvas("c_appo","c_appo",800,600);
-    // TH1D * h_waveform = new TH1D(Form("Channel%i, HitId%i",HitDaqChannel, HitId),Form("Waveform Ch%i", HitDaqChannel),HitWaveform.size(),-0.5,HitWaveform.size()-0.5);
+    gROOT->SetBatch(kFALSE);
+    TCanvas *c_appo = new TCanvas("c_appo","c_appo",800,600);
+    TH1D * h_waveform = new TH1D(Form("Channel %i, HitId %i",HitDaqChannel, HitId),Form("Waveform Ch%i", HitDaqChannel),HitWaveform.size(),-0.5,HitWaveform.size()-0.5);
+    for (int i = 0; i < HitWaveform.size(); i++){
+        h_waveform->SetBinContent(i+1,HitWaveform[i]);
+    }
 
-    // std::cout << "Drawing " << h_waveform->GetName() << std::endl;
-    // c_appo->cd();
-    // h_waveform->Draw();
-    // if (HitFitSuccess) HitFitFunction.Draw("same");
-    // c_appo->Update();
-    // c_appo->Modified();
-    // c_appo->WaitPrimitive();
-    // c_appo->Clear();
-
+    std::cout << "Drawing " << h_waveform->GetName() << std::endl;
+    c_appo->cd();
+    h_waveform->Draw();
+    if (HitFitSuccess) HitFitFunction.Draw("same");
+    c_appo->Update();
+    c_appo->Modified();
+    c_appo->WaitPrimitive();
+    c_appo->Clear();
+    delete c_appo;
 }
 
 void TofHit::HitGetHitInfo(){

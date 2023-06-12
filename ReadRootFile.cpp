@@ -8,6 +8,7 @@
 
 int main(int argc, char *argv[]){
 
+    bool waveform_display = false;
     std::string software = argv[1];
     std::cout  << "Software " << software << std::endl;
     std::string run_full_path = argv[2];
@@ -59,9 +60,29 @@ int main(int argc, char *argv[]){
     TH1F *h_maxAmp[n_channels];
     TH1F *h_peakSample [n_channels];
     TH1F *h_risingTime [n_channels];
-    // for (int i = 0; i < n_channels){
-    //     h_baseline
-    // }
+    TH1F *h_integral [n_channels];
+    for (int i = 0; i < n_channels; i++){
+        h_baseline[i] = new TH1F(Form("h_baseline_%i", i), Form("Baseline, run%i, channel%i", run_number, i), 50, -0.2, 0.2);
+        h_baseline[i]->GetXaxis()->SetTitle("Baseline [V]");
+        hist_list->Add(h_baseline[i]);
+
+        h_maxAmp[i] = new TH1F(Form("h_maxAmp_%i", i), Form("MaxAmp, run%i, channel%i", run_number, i), 50, -0.1, 1.1);
+        h_maxAmp[i]->GetXaxis()->SetTitle("Max Amplitude [V]");
+        hist_list->Add(h_maxAmp[i]);
+
+        h_peakSample[i] = new TH1F(Form("h_peakSample_%i", i), Form("PeakSample, run%i, channel%i", run_number, i), 50, 0, 64);
+        h_peakSample[i]->GetXaxis()->SetTitle("Peak Sample [V]");
+        hist_list->Add(h_peakSample[i]);
+
+        h_risingTime[i] = new TH1F(Form("h_risingTime_%i", i), Form("RisingTime, run%i, channel%i", run_number, i), 50, 0, 20);
+        h_risingTime[i]->GetXaxis()->SetTitle("Rising Time [V]");
+        hist_list->Add(h_risingTime[i]);
+
+        h_integral[i] = new TH1F(Form("h_integral_%i", i), Form("Integral, run%i, channel%i", run_number, i), 50, 0, 500);
+        h_integral[i]->GetXaxis()->SetTitle("Integral [V]");
+        hist_list->Add(h_integral[i]);
+
+    }
 
 
     // TH1F to plot time of flight
@@ -176,16 +197,46 @@ int main(int argc, char *argv[]){
                 }
                 h_planes[signalit.GetSignalHitMin().GetHitPlane()]->Fill(signalit.GetSignalPosition(), signalit.GetSignalHitMin().GetHitBar());
                 g_hits[signalit.GetSignalHitMin().GetHitPlane()]->SetPoint(g_hits[signalit.GetSignalHitMin().GetHitPlane()]->GetN(), signalit.GetSignalPosition(), signalit.GetSignalHitMin().GetHitBar());
+                if (waveform_display) signalit.GetSignalHitMin().HitDisplayWaveform();
+                if (waveform_display)  signalit.GetSignalHitMax().HitDisplayWaveform();
+                
+                h_baseline[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().GetHitBaseline());
+                h_baseline[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().GetHitBaseline());
+                h_maxAmp[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().GetHitPeak());
+                h_maxAmp[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().GetHitPeak());
+                h_peakSample[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().GetHitPeakSample());
+                h_peakSample[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().GetHitPeakSample());
+                // h_risingTime[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().HitComputeCfTime(0.9)-signalit.GetSignalHitMin().HitComputeCfTime(0.1));
+                // h_risingTime[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().HitComputeCfTime(0.9)-signalit.GetSignalHitMin().HitComputeCfTime(0.1));
+                h_integral[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().GetHitVoltageIntegral());
+                h_integral[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().GetHitVoltageIntegral());
+                
             }
             else if (signalit.GetSignalType() == 1) {
                 h_singleHitPeak->Fill(signalit.GetSignalHitMin().GetHitPeak());
                 h_channelsFiring->Fill(signalit.GetSignalHitMin().GetHitDaqChannel());
                 if (signalit.GetSignalHitMin().GetHitIsSaturated()) h_saturatedHits->Fill(signalit.GetSignalHitMin().GetHitDaqChannel());
+                if (waveform_display) signalit.GetSignalHitMin().HitDisplayWaveform();
+
+                h_baseline[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().GetHitBaseline());
+                h_maxAmp[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().GetHitPeak());
+                h_peakSample[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().GetHitPeakSample());
+                // h_risingTime[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().HitComputeCfTime(0.9)-signalit.GetSignalHitMin().HitComputeCfTime(0.1));
+                h_integral[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().GetHitVoltageIntegral());
+                
             }
             else if (signalit.GetSignalType() == 2) {
                 h_singleHitPeak->Fill(signalit.GetSignalHitMax().GetHitPeak());
                 h_channelsFiring->Fill(signalit.GetSignalHitMax().GetHitDaqChannel());
                 if (signalit.GetSignalHitMax().GetHitIsSaturated()) h_saturatedHits->Fill(signalit.GetSignalHitMax().GetHitDaqChannel());
+                if (waveform_display) signalit.GetSignalHitMax().HitDisplayWaveform();
+
+                h_baseline[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().GetHitBaseline());
+                h_maxAmp[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().GetHitPeak());
+                h_peakSample[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().GetHitPeakSample());
+                // h_risingTime[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().HitComputeCfTime(0.9)-signalit.GetSignalHitMin().HitComputeCfTime(0.1));
+                h_integral[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().GetHitVoltageIntegral());
+
             }
         }
 
@@ -268,7 +319,61 @@ int main(int argc, char *argv[]){
     h_planes[PlaneNumbers["D"]]->Draw("COLZ");
     if (g_hits[PlaneNumbers["D"]]->GetN() > 0) g_hits[PlaneNumbers["D"]]->Draw("Psame");
 
-
+    // monitoring plots
+    TCanvas *c_monitoring = new TCanvas("c_monitoring", Form("Monitoring, run %i", run_number), 900, 900);
+    c_monitoring->Divide(3,2);
+    c_monitoring->cd(1);
+    TGraph *g_baseline = new TGraph();
+    for (int i = 0; i < n_channels; i++) {
+        g_baseline->SetPoint(i, i, h_baseline[i]->GetMean());
+    }
+    g_baseline->SetTitle(Form("Baseline, run%i", run_number));
+    g_baseline->SetMarkerStyle(2);
+    g_baseline->SetMarkerSize(1);
+    g_baseline->SetMarkerColor(kRed);
+    g_baseline->Draw("AP");
+    c_monitoring->cd(2);
+    TGraph *g_maxAmp = new TGraph();
+    for (int i = 0; i < n_channels; i++) {
+        g_maxAmp->SetPoint(i, i, h_maxAmp[i]->GetMean());
+    }
+    g_maxAmp->SetTitle(Form("Max Amplitude, run%i", run_number));
+    g_maxAmp->SetMarkerStyle(2);
+    g_maxAmp->SetMarkerSize(1);
+    g_maxAmp->SetMarkerColor(kRed);
+    g_maxAmp->Draw("AP");
+    c_monitoring->cd(3);
+    TGraph *g_peakSample = new TGraph();
+    for (int i = 0; i < n_channels; i++) {
+        g_peakSample->SetPoint(i, i, h_peakSample[i]->GetMean());
+    }
+    g_peakSample->SetTitle(Form("Peak Sample, run%i", run_number));
+    g_peakSample->SetMarkerStyle(2);
+    g_peakSample->SetMarkerSize(1);
+    g_peakSample->SetMarkerColor(kRed);
+    g_peakSample->Draw("AP");
+    c_monitoring->cd(4);
+    TGraph *g_risingTime = new TGraph();
+    for (int i = 0; i < n_channels; i++) {
+        g_risingTime->SetPoint(i, i, h_risingTime[i]->GetMean());
+    }
+    g_risingTime->SetTitle(Form("Rising Time, run%i", run_number));
+    g_risingTime->SetMarkerStyle(2);
+    g_risingTime->SetMarkerSize(1);
+    g_risingTime->SetMarkerColor(kRed);
+    g_risingTime->Draw("AP");
+    c_monitoring->cd(5);
+    TGraph *g_integral = new TGraph();
+    for (int i = 0; i < n_channels; i++) {
+        g_integral->SetPoint(i, i, h_integral[i]->GetMean());
+    }
+    g_integral->SetTitle(Form ("Integral, run%i", run_number));
+    g_integral->SetMarkerStyle(2);
+    g_integral->SetMarkerSize(1);
+    g_integral->SetMarkerColor(kRed);
+    g_integral->Draw("AP");
+    // 6 is empty for now
+    
     // save all files in a histogram list  and output to a root file
     TFile *f_out = new TFile(Form("../../TofRootFiles/run%i_plots.root", run_number), "RECREATE");
     f_out->cd();
