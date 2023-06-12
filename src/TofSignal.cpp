@@ -78,7 +78,7 @@ void TofSignal::SignalComputePosition(){
             double delta_time = SignalHitMax.HitComputeCfTime(constant_fraction) - SignalHitMin.HitComputeCfTime(constant_fraction);
             SignalPosition = (220. - delta_time*light_velocity)/2.;
             // std::cout << "  Computed SignalPosition: " << SignalPosition << std::endl;
-        }
+        }   
         else {
 
             std::string this_error = "Error: in SignalComputePosition, one of the hits has no successful fit \n";

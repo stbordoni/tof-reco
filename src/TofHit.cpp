@@ -63,7 +63,18 @@ void TofHit::HitFitWaveform(){
     
     // create appo canvas just to not create a dedfault one during execution. Look for a workaround
 
+    // TH1D * h_waveform = new TH1D(Form("Channel%i, HitId%i",HitDaqChannel, HitId),Form("Waveform Ch%i", HitDaqChannel),HitWaveform.size(),-0.5,HitWaveform.size()-0.5);
     TH1D * h_waveform = new TH1D(Form("Channel%i, HitId%i",HitDaqChannel, HitId),Form("Waveform Ch%i", HitDaqChannel),HitWaveform.size(),-0.5,HitWaveform.size()-0.5);
+    
+    // h_waveform = new TH1D("h_waveform", "h_waveform", 5, 0, 5);
+    // h_waveform->SetName(Form("Channel%i, HitId%i",HitDaqChannel, HitId));
+    // h_waveform->SetTitle(Form("Waveform Ch%i", HitDaqChannel));
+    // set number of bins
+    // h_waveform->SetBins(HitWaveform.size(),-0.5,HitWaveform.size()-0.5);
+
+    // h_waveform(Form("Channel%i, HitId%i",HitDaqChannel, HitId),Form("Waveform Ch%i", HitDaqChannel),HitWaveform.size(),-0.5,HitWaveform.size()-0.5);
+    // instead of above line, set names with the correspondent functions
+    // h_waveform->SetName
     h_waveform->GetXaxis()->SetTitle("Sample");
     h_waveform->GetYaxis()->SetTitle("Amplitude(V)"); 
     for(int j =0; j < HitWaveform.size();j++ ) {
@@ -109,25 +120,7 @@ void TofHit::HitFitWaveform(){
         HitErrorsList.push_back(this_error);
     }
 
-    // to print on a canvas the fit function, change to true 
-    if (false){
-
-            gROOT->SetBatch(kFALSE);
-            TCanvas *c_appo = new TCanvas("c_appo","c_appo",800,600);
-
-            std::cout << "Drawing " << h_waveform->GetName() << std::endl;
-            c_appo->cd();
-            h_waveform->Draw();
-            fit_function.Draw("same");
-            c_appo->Update();
-            c_appo->Modified();
-            c_appo->WaitPrimitive();
-            c_appo->Clear();
-    }
-
     h_waveform->Delete();
-    // c_appo->Close();
-
 }
 
 double TofHit::HitLinearInterpolation(double cf) {
@@ -313,6 +306,23 @@ char TofHit::HitGetPlaneId(){
         HitErrorsList.push_back(this_error);
         return '!';
     }
+}
+
+void TofHit::HitDisplayWaveform(){
+
+    // gROOT->SetBatch(kFALSE);
+    // TCanvas *c_appo = new TCanvas("c_appo","c_appo",800,600);
+    // TH1D * h_waveform = new TH1D(Form("Channel%i, HitId%i",HitDaqChannel, HitId),Form("Waveform Ch%i", HitDaqChannel),HitWaveform.size(),-0.5,HitWaveform.size()-0.5);
+
+    // std::cout << "Drawing " << h_waveform->GetName() << std::endl;
+    // c_appo->cd();
+    // h_waveform->Draw();
+    // if (HitFitSuccess) HitFitFunction.Draw("same");
+    // c_appo->Update();
+    // c_appo->Modified();
+    // c_appo->WaitPrimitive();
+    // c_appo->Clear();
+
 }
 
 void TofHit::HitGetHitInfo(){

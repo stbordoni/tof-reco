@@ -3,26 +3,10 @@
 #include "../include/TofHit.h"
 #include "../include/TofSignal.h"
 
-// Constructor
-TofRun::TofRun(std::string software, std::string run_full_path){
-    
-    // Save run software
-    RunSoftware = software;
-    if (RunSoftware == "linux"){
-        std::cout << "Linux. Creating TofRun object... ";
-    } else if (RunSoftware == "windows"){
-        std::cout << "Windows. Creating TofRun object... ";
-    } else {
-        std::string this_error;
-        this_error = "Wrong software input, has to be linux or windows. TofRun object not created\n";
-        std::cerr << this_error << std::endl;
-        RunErrorsList.push_back(this_error);
-        RunPrintErrors();
-        exit(1);
-    }
+
+void TofRun::RunReadFilename(){
 
     // Save run number and other info in the run address
-    RunPath = run_full_path;
     std::vector <std::string> split_run_path = SplitString(RunPath, '/');
     std::cout << "RunPath: " << RunPath << std::endl;
     RunAddress = split_run_path.at(split_run_path.size()-1); // filename for linux, folder for windows
@@ -75,10 +59,18 @@ TofRun::TofRun(std::string software, std::string run_full_path){
         std::string run_date_minutes = split_run_address.at(2).substr(3,2);
         RunTime = std::stoi(run_date_hours+run_date_minutes);
 
+    } else {
+            
+        std::string this_error;
+        this_error = "Wrong RunSoftware, has to be windows or linux.\n";
+        std::cerr << this_error << std::endl;
+        RunErrorsList.push_back(this_error);
+        RunPrintErrors();
+        exit(1);
     }
-
-    std::cout << "Built object TofRun for run number " << RunNumber << std::endl;
 }
+
+
 
 void TofRun::RunSaveSettings (){
     
@@ -92,7 +84,7 @@ void TofRun::RunSaveSettings (){
         RunSampleLength = 1e-3 / RunSamplingFrequency; // ns
         for (int i=0; i<nFebsMax; i++) for (int j=0; j<nSampicsPerFeb; j++){
             RunBaseline[i][j] = 0.150; // V
-            RunPostTrig[i][j] = 2;
+            RunPostTrig[i][j] = 1; // we don't have it in Windows
         }
         for (int i=0; i<nChannels; i++) RunTrigThr[i] = 0.020;
         std::cout << "Run parameters saved.\n";
@@ -192,8 +184,15 @@ void TofRun::RunSaveSettings (){
                 std::string Sampic_stringStart = "SAMPIC[";
                 std::string Sampic_string = linedump.substr(linedump.find(Sampic_stringStart) + Sampic_stringStart.length(), 1);
 
+                // extract the number contained between CHANNEL[ and ]
+
                 std::string Channel_stringStart = "CHANNEL[";
-                std::string Channel_string = linedump.substr(linedump.find(Channel_stringStart) + Channel_stringStart.length(), 1);
+                std::string Channel_stringEnd = "]";
+                std::string Channel_string = linedump.substr(linedump.find(Channel_stringStart) + Channel_stringStart.length(),
+                                                                linedump.find(Channel_stringEnd) - linedump.find(Channel_stringStart) - Channel_stringStart.length());
+
+                // std::string Channel_stringStart = "CHANNEL[";
+                // std::string Channel_string = linedump.substr(linedump.find(Channel_stringStart) + Channel_stringStart.length(), 1);
 
                 std::string Enabled_stringStart = "Enabled: ";
                 std::string Enabled_string = linedump.substr(linedump.find(Enabled_stringStart) + Enabled_stringStart.length(), 1);
@@ -212,44 +211,21 @@ void TofRun::RunSaveSettings (){
                 // if the value is negative
                 if (InternalTriggerTreshold_stringV == "-")
                 {
+                    std::cout << "\nThis int trg thr is negative" << std::endl;
                 // then add another digit
                     InternalTriggerTreshold_stringV = linedump.substr(linedump.find(InternalTriggerTreshold_stringStart) + InternalTriggerTreshold_stringStart.length(), 2);
                     length_of_stringV++;
                 }
                 std::string InternalTriggerTreshold_stringmV = linedump.substr(linedump.find(InternalTriggerTreshold_stringStart) + InternalTriggerTreshold_stringStart.length() + length_of_stringV, 3);
-
-                // std::cout << "Feb_string: " << Feb_string << std::endl;
-                // std::cout << "Sampic_string: " << Sampic_string << std::endl;
-                // std::cout << "Channel_string: " << Channel_string << std::endl;
-                // std::cout << "Enabled_string: " << Enabled_string << std::endl;
-                // std::cout << "TriggerMode_string: " << TriggerMode_string << std::endl;
-                // std::cout << "EnabledForCentralTrigger_string: " << EnabledForCentralTrigger_string << std::endl;
-                // std::cout << "InternalTriggerTreshold_stringV: " << InternalTriggerTreshold_stringV << std::endl;
-                // std::cout << "InternalTriggerTreshold_stringmV: " << InternalTriggerTreshold_stringmV << std::endl;
-
                 int feb = std::stoi(Feb_string);
                 int sampic = std::stoi(Sampic_string);
                 int channel = std::stoi(Channel_string);
                 // int enabled = std::stoi(Enabled_string);
                 int enabled_for_central_trigger = std::stoi(EnabledForCentralTrigger_string);
-                double InternalTriggerTreshold_string = std::stoi(InternalTriggerTreshold_stringV) + 1E-3*std::stoi(InternalTriggerTreshold_stringmV);
-
+                double InternalTriggerTreshold_string = std::stoi(InternalTriggerTreshold_stringV) + 1E-3*std::stof(InternalTriggerTreshold_stringmV);
                 RunTrigThr [feb*nChannelsPerFeb + sampic*nChannelsPerSampic + channel] = InternalTriggerTreshold_string;
-                // std::cout << "channel " << feb*RunNFebs*nChannelsPerFeb + sampic*nChannelsPerSampic + channel << RunTrigThr[feb*RunNFebs*nChannelsPerFeb + sampic*nChannelsPerSampic + channel] << std::endl;
-
                 std::string trigger_mode = TriggerMode_string;
                 
-                // print 
-                // std::cout << "Feb: " << feb << std::endl;
-                // std::cout << "Sampic: " << sampic << std::endl;
-                // std::cout << "Channel: " << channel << std::endl;
-                // std::cout << "Enabled: " << enabled_for_central_trigger << std::endl;
-                // std::cout << "TriggerMode: " << trigger_mode << std::endl;
-                // std::cout << "InternalTriggerTreshold: " << InternalTriggerTreshold_string << std::endl;
-
-
-
-
             }
 
             RunNSamplesToRead = 62;
@@ -319,7 +295,7 @@ void TofRun::RunGetInfo (){
         std::cout << std::endl;
     }
 
-    std::cout << "RunPostTrig: " << std::endl;
+    std::cout << "RunPostTrig (not implemented in windows data): " << std::endl;
     for (int i = 0; i < nFebsMax; i++) {
         for (int j = 0; j < nSampicsPerFeb; j++) {
             std::cout << "[" << i << "][" << j << "]: " << RunPostTrig[i][j] << " ";
@@ -328,8 +304,11 @@ void TofRun::RunGetInfo (){
     }
 
     std::cout << "RunTrigThr: ";
+    int counter = 0;
     for (auto tt : RunTrigThr) {
+        if (counter %63 == 0) std::cout << std::endl;
         std::cout << tt << " ";
+        counter++;
     }
     std::cout << std::endl;
 
@@ -402,7 +381,9 @@ void TofRun::RunLoadHits(){
                 if(linedump != "") NLinesInFile++;
                 // std::cout << linedump << std::endl;
             }
-            std::cout << "Hits in Feb[" << febit << "]: " << NLinesInFile/2 << std::endl;
+            RunTotalHits = NLinesInFile/2;
+            std::cout << "Hits in Feb[" << febit << "]: " << RunTotalHits << std::endl;
+
 
             for (int lineit = 0; lineit < NLinesInFile; lineit++){
                 
@@ -500,7 +481,8 @@ void TofRun::RunLoadHits(){
             // std::cout << linedump << std::endl;
 
         }
-        std::cout << "Hits in this Run: " << NLinesInFile/2 << std::endl;
+        RunTotalHits = NLinesInFile/2;
+        std::cout << "Hits in this Run: " << RunTotalHits << std::endl;
 
         for (int lineit = 0; lineit < NLinesInFile; lineit++){
 
@@ -571,15 +553,10 @@ void TofRun::RunLoadHits(){
 
 
 
-
-
 void TofRun::RunFillHitInfo(TofHit &this_hit){
-    // Set HitSampic using setter function
+
     this_hit.SetHitSampic(std::floor(this_hit.GetHitFebChannel()/nChannelsPerSampic));
-
-    // Set HitDaqChannel using setter function
     this_hit.SetHitDaqChannel(nChannelsPerFeb*this_hit.GetHitFeb() + this_hit.GetHitFebChannel());
-
     std::vector <double> this_wf = this_hit.GetHitWaveform();
 
     // RawPeak is just max in wf, with no fit
@@ -589,25 +566,22 @@ void TofRun::RunFillHitInfo(TofHit &this_hit){
     this_hit.SetHitRawPeak(raw_peak);
     this_hit.SetHitPeakSample(hit_peak_sample);
 
-    // Calculate HitBaseline
+    // Calculate HitBaseline, subtract, set wf
     double baseline = 0;
     for(int sampleit = RunBaselineFirstSample; sampleit < RunBaselineFirstSample + RunBaselineNSamples; sampleit++)
         baseline += this_wf.at(sampleit);
     baseline /= RunBaselineNSamples;
-
     this_hit.SetHitBaseline(baseline);
-
-    // Subtract baseline from waveform
     for(int sampleit = 0; sampleit < RunNSamplesInWaveform; sampleit++)
         this_wf.at(sampleit) -= baseline;
-    
     this_hit.SetHitWaveform(this_wf);
 
     // Make waveform positive in case it's negative (pmts). Dirty but ok for now
-    // if (this_hit.HitDaqChannel == 216 || this_hit.HitDaqChannel == 219 || this_hit.HitDaqChannel == 228 || this_hit.HitDaqChannel == 231){
-    //     for(int sampleit = 0; sampleit < RunNSamplesInWaveform; sampleit++)
-    //         this_hit.HitWaveform.at(sampleit) *= -1;   
-    // }
+    if (this_hit.GetHitDaqChannel() == 216 || this_hit.GetHitDaqChannel() == 219 || this_hit.GetHitDaqChannel() == 228 || this_hit.GetHitDaqChannel() == 231){
+        std::vector <double> positive_wf;
+        for (int i = 0; i < RunNSamplesInWaveform; i++) positive_wf[i] = this_wf[i]*-1;
+        this_hit.SetHitWaveform(positive_wf);   
+    }
 
     double peak = raw_peak - baseline;
     this_hit.SetHitPeak(peak);
@@ -639,10 +613,6 @@ void TofRun::RunOrderHits(){
 
     for (int ihit = 0; ihit < RunUnorderedHitsList.size(); ihit++)
         pair_cell0times_hitid.push_back(std::make_pair(RunUnorderedHitsList.at(ihit).GetHitCell0Time(), ihit));
-
-    // for (int ihit = 0; ihit < 200; ihit++)
-    //     std::cout << pair_cell0times_hitid.at(ihit).first << " ";
-
 
     std::cout << "\nSorting hits basing on Cell0Time...";
     sort(pair_cell0times_hitid.begin(), pair_cell0times_hitid.end());

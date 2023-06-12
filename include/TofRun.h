@@ -12,7 +12,6 @@ public:
 
     // Constructors
     TofRun(){}; // empty constructor, just to be able to create objects
-    TofRun(std::string, std::string);  // true constructor, change
     ~TofRun(){};
 
     // Actual events, that are added only after creating the objects
@@ -21,6 +20,7 @@ public:
     std::vector <TofEvent> RunEventsList;
 
     // Functions
+    void RunReadFilename();
     void RunSaveSettings();
     void RunGetInfo ();
     void RunQualityCheck();
@@ -95,6 +95,7 @@ private:
     double RunBaseline[nFebsMax][nSampicsPerFeb] = {}; // V
     double RunPostTrig[nFebsMax][nSampicsPerFeb];
     double RunTrigThr[nChannels];
+    int RunTotalHits {-1};
 
     // Settings for analysis
     bool RunVerboseMode {false};

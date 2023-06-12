@@ -53,6 +53,17 @@ int main(int argc, char *argv[]){
     h_channelsFiring->SetMinimum(0);
     hist_list->Add(h_channelsFiring);
 
+    // array of histos to plot the baseline, rising time, peak sample, max amplitude, for each channel
+    const int n_channels = 256; // maybe read from somewhere instead
+    TH1F *h_baseline[n_channels];  
+    TH1F *h_maxAmp[n_channels];
+    TH1F *h_peakSample [n_channels];
+    TH1F *h_risingTime [n_channels];
+    // for (int i = 0; i < n_channels){
+    //     h_baseline
+    // }
+
+
     // TH1F to plot time of flight
     TH1F *h_timeOfFlight = new TH1F("h_timeOfFlight", Form("TimeOfFlight, run%i", run_number), 40, -0.5, 55.5);
     h_timeOfFlight->GetXaxis()->SetTitle("Time of Flight [ns]");

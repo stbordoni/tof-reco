@@ -19,9 +19,12 @@ int main(int argc, char *argv[]){
     std::string run_full_path = argv[2];
     std::string output_directory = argv[3];
 
-    TofRun thisRun(software, run_full_path);
     std::cout << "Run path " << run_full_path << std::endl;
-    
+
+    TofRun thisRun;    
+    thisRun.RunSetSoftwareType(software);
+    thisRun.RunSetInputFilePath(run_full_path);
+    thisRun.RunReadFilename();
     thisRun.RunSaveSettings();
 
     thisRun.RunQualityCheck();

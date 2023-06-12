@@ -39,9 +39,6 @@ std::vector<std::string> SplitString(const std::string &, char);
 // Adapted gaussian function for fitting
 Double_t FitFunction(Double_t *, Double_t *);
 
-
-
-
 class TofHit{
 public: 
     // Constructor
@@ -57,6 +54,7 @@ public:
     void HitQualityCheck();
     void HitMatchDaqChToTofCh();
     char HitGetPlaneId();
+    void HitDisplayWaveform();
     void HitGetHitInfo();
     void HitPrintErrors();
 
@@ -65,7 +63,7 @@ public:
     void SetHitFebChannel(int value) { HitFebChannel = value; }
     void SetHitCell0Time(double value) { HitCell0Time = value; }
     void SetHitTotValue(double value) { HitTotValue = value; }
-    void SetHitWaveform(std::vector<double> value) { HitWaveform = value; }
+    void SetHitWaveform(std::vector<double> waveform) { HitWaveform = waveform; }
     void SetHitId(int value) { HitId = value; }
     void SetHitSampic(int value) { HitSampic = value; }
     void SetHitDaqChannel(int value) { HitDaqChannel = value; }
@@ -112,6 +110,7 @@ public:
     double GetHitSampleLength() { return HitSampleLength; }
     bool GetHitFitSuccess() { return HitFitSuccess; }
     double* GetHitFitParameter() { return HitFitParameter; }
+    TF1 GetHitFitFunction() { return HitFitFunction; }
 
 private:
 
