@@ -3,8 +3,74 @@ cmake_minimum_required(VERSION 3.20)
 # set the project name
 project(TofReco)
 
+# Options to be triggerd with cmake -D OPTION_NAME=Value
+option( BUILD_ROOT_DICTIONARY "Generate and build ROOT dictionary" OFF )
+
+
+# Detecting compiler
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" )
+  message( STATUS "Detected GCC version: ${CMAKE_CXX_COMPILER_VERSION}" )
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8.5)
+    message( FATAL_ERROR "GCC version must be at least 5.0" )
+  endif()
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang" )
+  message( STATUS "Detected Clang version: ${CMAKE_CXX_COMPILER_VERSION}" )
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.3)
+    message( FATAL_ERROR "Clang version must be at least 3.3" )
+  endif()
+else()
+  message( WARNING "You are using an untested compiler." )
+endif()
+
+
 # find ROOT package
-find_package(ROOT REQUIRED COMPONENTS RIO Net)
+find_package( ROOT REQUIRED COMPONENTS RIO Net )
+
+message( STATUS "[ROOT]: ROOT found" )
+include(${ROOT_USE_FILE})
+# cmessage(STATUS "[ROOT]: ROOT packages found ${ROOT_LIBRARIES}")
+message( STATUS "[ROOT]: ROOT include directory: ${ROOT_INCLUDE_DIRS}")
+message( STATUS "[ROOT]: ROOT C++ Flags: ${ROOT_CXX_FLAGS}")
+
+# inc dir is $ROOTSYS/include/root
+set(CMAKE_ROOTSYS ${ROOT_INCLUDE_DIRS}/..)
+
+
+# CXX standard is required and must match the version ROOT was compiled with.
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+
+# Try to figure out which version of C++ was used to compile ROOT.  ROOT
+# generates header files that depend on the compiler version so we will
+# need to use the same version.
+execute_process(COMMAND root-config --has-cxx14 COMMAND grep yes
+    OUTPUT_VARIABLE ROOT_cxx14_FOUND
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND root-config --has-cxx17 COMMAND grep yes
+    OUTPUT_VARIABLE ROOT_cxx17_FOUND
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND root-config --has-cxx20 COMMAND grep yes
+    OUTPUT_VARIABLE ROOT_cxx20_FOUND
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+# Explicitly set the compiler version so that it will match the
+# compiler that was used to compile ROOT.  Recent ROOT documentation
+# explicitly notes that the appliation needs to use the same C++
+# standard as ROOT.
+if( ROOT_cxx14_FOUND )
+  message(STATUS "ROOT compiled with C++14")
+  set(CMAKE_CXX_STANDARD 14)
+elseif( ROOT_cxx17_FOUND )
+  message(STATUS "ROOT compiled with C++17")
+  set(CMAKE_CXX_STANDARD 17)
+elseif( ROOT_cxx20_FOUND )
+  message(STATUS "ROOT compiled with C++20")
+  set(CMAKE_CXX_STANDARD 20)
+else()
+  message(WARNING "ROOT C++ standard not set, use ROOT minimum (C++14)")
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
 
 message(STATUS "The current source directory is ${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -19,33 +85,8 @@ message(STATUS "Adding submodules to the project...")
 set( SAMPIC_FOLDER ${CMAKE_SOURCE_DIR}/submodules/sampic_256ch_linux )
 # message(STATUS "SAMPIC_FOLDER = ${SAMPIC_FOLDER}")
 set( SAMPIC_INCLUDE_DIR ${SAMPIC_FOLDER}/include_lib )
-set( SAMPIC_SRC_FILES
-    ${SAMPIC_FOLDER}/sources_lib/SAMPIC_256Ch_lib.c
-    ${SAMPIC_FOLDER}/sources_lib/SAMPIC_256Ch_hardware_core.c
-    )
-add_definitions( -D USE_OFFICIAL_SAMPIC_REPO )
 include_directories( ${SAMPIC_INCLUDE_DIR} )
-
-#add_library( ftd2xx STATIC IMPORTED )
-#set_target_properties( ftd2xx PROPERTIES IMPORTED_LOCATION /root/repo/tof_midas_fe/external/libftd2xx-x86_64-1.4.27/release/build/libftd2xx.a )
-
-#link_directories( ${CMAKE_SOURCE_DIR}/external/libftd2xx-x86_64-1.4.27/release/build/ )
-#link_directories( ${CMAKE_SOURCE_DIR}/submodules/sampic/Sampic_Linux/lpdevclib-install/ubuntu/lib/ )
-
-add_library( ftd2xx SHARED IMPORTED )
-set_target_properties( ftd2xx PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/submodules/sampic/Sampic_Linux/lpdevclib-install/libftd2xx.so.1.4.8 )
-
-add_library( lpdev SHARED IMPORTED )
-set_target_properties( lpdev PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/submodules/sampic/Sampic_Linux/lpdevclib-install/ubuntu/lib/liblpdev.so )
-
-add_library( lpdevC SHARED IMPORTED )
-set_target_properties( lpdevC PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/submodules/sampic/Sampic_Linux/lpdevclib-install/ubuntu/lib/liblpdevC.so )
-
 add_definitions( -D __LINUX_BUILD )
-add_library( sampic256ch STATIC ${SAMPIC_SRC_FILES} )
-target_link_libraries( sampic256ch PRIVATE lpdevC lpdev ftd2xx )
-
-install( TARGETS sampic256ch DESTINATION lib )
 
 ###################################
 # Add the TOF common lib
@@ -67,11 +108,14 @@ set(HEADERS
 
 
 # generate dictionary
-message (STATUS "Generating dictionary...")
-ROOT_GENERATE_DICTIONARY(TofObjectsDict MODULE TofObjectsLinkDef LINKDEF ${HEADERS})
-set_source_files_properties(TofObjectsLinkDef.cxx PROPERTIES GENERATED TRUE)
-set(GENERATED_DICTIONARY ${CMAKE_CURRENT_BINARY_DIR}/TofObjectsDict.cxx)
-message(STATUS "Generated dictionary: ${GENERATED_DICTIONARY}")
+if( BUILD_ROOT_DICTIONARY )
+  message (STATUS "Generating dictionary...")
+  ROOT_GENERATE_DICTIONARY(TofObjectsDict MODULE TofObjectsLinkDef LINKDEF ${HEADERS})
+  set_source_files_properties(TofObjectsLinkDef.cxx PROPERTIES GENERATED TRUE)
+  set(GENERATED_DICTIONARY ${CMAKE_CURRENT_BINARY_DIR}/TofObjectsDict.cxx)
+  message(STATUS "Generated dictionary: ${GENERATED_DICTIONARY}")
+endif( BUILD_ROOT_DICTIONARY )
+
 
 # add the source files
 set(SOURCES
