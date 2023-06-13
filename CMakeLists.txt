@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.20)
 project(TofReco)
 
 # Options to be triggerd with cmake -D OPTION_NAME=Value
-option( BUILD_ROOT_DICTIONARY "Generate and build ROOT dictionary" OFF )
+option( BUILD_ROOT_DICTIONARY "Generate and build ROOT dictionary" ON )
 
 
 # Detecting compiler
@@ -114,7 +114,7 @@ if( BUILD_ROOT_DICTIONARY )
   set_source_files_properties(TofObjectsLinkDef.cxx PROPERTIES GENERATED TRUE)
   set(GENERATED_DICTIONARY ${CMAKE_CURRENT_BINARY_DIR}/TofObjectsDict.cxx)
   message(STATUS "Generated dictionary: ${GENERATED_DICTIONARY}")
-endif( BUILD_ROOT_DICTIONARY )
+endif()
 
 
 # add the source files
@@ -128,14 +128,30 @@ set(SOURCES
   # ${CMAKE_CURRENT_SOURCE_DIR}/ReadHits.cpp
 )
 
+message( STATUS "Defining lib: TofRecoClasses" )
+
+add_library(
+    TofRecoClasses
+    STATIC
+    ${SOURCES}
+)
+
+target_link_libraries(
+    TofRecoClasses
+    PUBLIC
+    ${ROOT_LIBRARIES}
+)
+
+
+
 # create the executables
 message(STATUS "Creating executables...")
-add_executable(GenerateRootFile ${SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/GenerateRootFile.cpp)
-add_executable(ReadRootFile ${SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/ReadRootFile.cpp)
+add_executable(GenerateRootFile ${GENERATED_DICTIONARY} ${CMAKE_CURRENT_SOURCE_DIR}/GenerateRootFile.cpp)
+add_executable(ReadRootFile ${GENERATED_DICTIONARY} ${CMAKE_CURRENT_SOURCE_DIR}/ReadRootFile.cpp)
 message(STATUS "Created executables.")
 
 # link the ROOT libraries
 message(STATUS "Linking ROOT libraries...")
-target_link_libraries(GenerateRootFile ${ROOT_LIBRARIES})
-target_link_libraries(ReadRootFile ${ROOT_LIBRARIES})
+target_link_libraries(GenerateRootFile TofRecoClasses)
+target_link_libraries(ReadRootFile TofRecoClasses)
 message(STATUS "Linked ROOT libraries.")

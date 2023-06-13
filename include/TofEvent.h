@@ -37,7 +37,6 @@ private:
     std::vector <TofHit> EventHitsList; // remove?
     double EventTimeOfFlight {0}; // can be more than one element
 
-
 };
 
 #endif

@@ -53,7 +53,7 @@ public:
     std::string GetRunPath() {return RunPath;}
     std::string GetRunAddress() {return RunAddress;}
     std::vector<std::string> GetRunFebSerialNumber() {return RunFebSerialNumber;}
-    std::vector<std::string> GetRunFebFirmwareVersion() {return RunFebFirmwareVersion;}
+    std::string GetRunFebFirmwareVersion() {return RunFebFirmwareVersion;}
     std::string GetRunControllerBoardSerialNumber() {return RunControllerBoardSerialNumber;}
     std::string GetRunControllerBoardFirmwareVersion() {return RunControllerBoardFirmwareVersion;}
     double GetRunUnixTime() {return RunUnixTime;}
@@ -84,17 +84,17 @@ private:
     std::string RunPath; // this will be dependent on the local machine
     std::string RunAddress; // for linux its currently a file, for windows a folder
     std::vector<std::string> RunFebSerialNumber; // = {"1.12", "1.13", "1.18", "1.19"}; // when a board is missign what happens?
-    std::vector<std::string> RunFebFirmwareVersion; // 
-    std::string RunControllerBoardSerialNumber {""};
-    std::string RunControllerBoardFirmwareVersion {""};
+    std::string RunFebFirmwareVersion {}; // 
+    std::string RunControllerBoardSerialNumber {};
+    std::string RunControllerBoardFirmwareVersion {};
     double RunUnixTime {-1};
     int RunNFebs {0};
     int RunNSamplesToRead {0};
     double RunSamplingFrequency {-1}; // MHz
     double RunSampleLength {-1}; // ns
-    double RunBaseline[nFebsMax][nSampicsPerFeb] = {}; // V
-    double RunPostTrig[nFebsMax][nSampicsPerFeb];
-    double RunTrigThr[nChannels];
+    double RunBaseline[nFebsMax][nSampicsPerFeb] {}; // V
+    double RunPostTrig[nFebsMax][nSampicsPerFeb] {}; 
+    double RunTrigThr[nChannels] {};
     int RunTotalHits {-1};
 
     // Settings for analysis
