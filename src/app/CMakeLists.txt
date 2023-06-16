@@ -1,6 +1,6 @@
 
 
-cmessage( STATUS "Creating GenerateRootFile app..." )
+cmessage( STATUS "Creating readTofData app..." )
 add_executable(
     readTofData
     ${CMAKE_CURRENT_SOURCE_DIR}/src/readTofData.cpp
