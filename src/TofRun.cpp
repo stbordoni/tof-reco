@@ -513,9 +513,10 @@ void TofRun::RunLoadHits(){
 
                 for (int sampleit = 0; sampleit < RunNSamplesToExclude; sampleit++) RunHitsFileStream >> dump;
                 std::vector <double> this_wf;
+              this_wf.reserve(RunNSamplesInWaveform);
                 for(int sampleit = 0; sampleit < RunNSamplesInWaveform; sampleit++){
                     RunHitsFileStream >> new_sample;
-                    this_wf.push_back(new_sample);
+                    this_wf.emplace_back(new_sample);
                     // std::cout << new_sample << std::endl;
                 }
                 new_Hit.SetHitWaveform(this_wf);
@@ -533,7 +534,7 @@ void TofRun::RunLoadHits(){
                 previous_cell0time = new_Hit.GetHitCell0Time();
 
                 RunFillHitInfo(new_Hit);    // can do elsewhere
-                if (RunVerboseMode == true) new_Hit.HitGetHitInfo();
+                if (RunVerboseMode) new_Hit.HitGetHitInfo();
                 // std::cout << "Filled hit info. \n";
 
                 RunUnorderedHitsList.push_back(new_Hit);
@@ -615,7 +616,10 @@ void TofRun::RunOrderHits(){
         pair_cell0times_hitid.push_back(std::make_pair(RunUnorderedHitsList.at(ihit).GetHitCell0Time(), ihit));
 
     std::cout << "\nSorting hits basing on Cell0Time...";
-    sort(pair_cell0times_hitid.begin(), pair_cell0times_hitid.end());
+    std::sort(pair_cell0times_hitid.begin(), pair_cell0times_hitid.end(), [](const std::pair<double, int>& a_, const std::pair<double, int>& b_){
+      if( a_.first < b_.first ) return true;
+      return false;
+    });
     // for (int ihit = 0; ihit < 200; ihit++)
     //     std::cout << pair_cell0times_hitid.at(ihit).first << " ";
     std::cout << "Done!";
