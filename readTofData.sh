@@ -17,7 +17,7 @@ make
 if [ $# -eq 0 ]
 then
   echo "Please select a run number (or an interval) from command line to convert the data into ROOT format. Usage: 
-  $ ./GenerateRootFile.sh run_number. or $ ./GenerateRootFile.sh first_run_number last_run_number."
+  $ ./readTofData.sh run_number. or $ ./readTofData.sh first_run_number last_run_number."
   exit 0
 elif [ $# -eq 1 ]
 then
@@ -29,7 +29,7 @@ then
   lastRun=$2
 else
   echo "Please select a run number (or an interval) from command line to convert the data into ROOT format. Usage:
-  $ ./GenerateRootFile.sh run_number. or $ ./GenerateRootFile.sh first_run_number last_run_number."
+  $ ./readTofData.sh run_number. or $ ./readTofData.sh first_run_number last_run_number."
   exit 0
 fi
 
@@ -68,6 +68,6 @@ do
   pwd
   echo ""
   
-  ./GenerateRootFile $software $runFullPath $outputDirectory
+  ./readTofData $software $runFullPath $outputDirectory
 
 done

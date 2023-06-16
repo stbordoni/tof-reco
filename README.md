@@ -14,18 +14,14 @@ Also regularly update the submodules with `git submodule update --init --recursi
 
 
 ## Generate ROOT file
-An easy way to generate the ROOT file for a run is by running `./GenerateRootFile.sh run_number`, where `run_number` clearly is the number of the run to analyze.
-The standard folder where the run is is `../TofData`, and the results are in `../TofRootFiles`.
-If you want to set different folders, change the path in `GenerateRootFile.sh`.
+An easy way to generate the ROOT file for a run is by running `./readTofData.sh run_number`,
+where `run_number` clearly is the number of the run to analyze.
+The standard folder where the run is `../TofData`, and the results are in
+`../TofRootFiles`.
+If you want to set different folders, change the path in `readTofData.sh`.
 
 In `AnalysisSettings.json` there are some parameters to be changed during the analysis. 
 For now, the only one to care about is `RunMaxHitsToLoad`, since some runs are very long.
-
-## Read ROOT file
-To read the ROOT file the method is basically the same:
-run `./ReadRootFile.sh run_number`. 
-You can change what is printed or do other operations changing `ReadRootFile.cpp`.
-A file `run*_plots.root` is generated, containing all the histograms produced in the code.
 
 
 # Description of the classes
