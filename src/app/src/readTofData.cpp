@@ -22,6 +22,12 @@
 // int main(std::string software, std::string run_full_path, std::string output_directory){
 int main(int argc, char *argv[]){
 
+  if( argc < 4 ){
+    std::cout << "usage:" << std::endl;
+    std::cout << "readTofData <windows/linux> /path/to/run/file /output/path" << std::endl;
+    throw std::logic_error("no option provided.");
+  }
+
   std::string software = argv[1];
   std::string run_full_path = argv[2];
   std::string output_directory = argv[3];
