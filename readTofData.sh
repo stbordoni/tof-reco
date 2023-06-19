@@ -68,6 +68,6 @@ do
   pwd
   echo ""
   
-  ./readTofData $software $runFullPath $outputDirectory
+  ./readTofData -s $software -r $runFullPath -o $outputDirectory
 
 done

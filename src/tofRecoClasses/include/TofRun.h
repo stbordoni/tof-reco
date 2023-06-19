@@ -11,8 +11,8 @@ class TofRun{
 public:
 
     // Constructors
-    TofRun(){}; // empty constructor, just to be able to create objects
-    ~TofRun(){};
+    TofRun() = default;
+    virtual ~TofRun() = default;
 
     // Actual events, that are added only after creating the objects
     std::vector <TofHit> RunUnorderedHitsList;
