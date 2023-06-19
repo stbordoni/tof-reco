@@ -3,7 +3,7 @@
 
 #include "TofSignal.h"
 #include "TofEvent.h"
-#include "../submodules/sampic_256ch_linux/include_lib/SAMPIC_256Ch_Type.h"
+#include "SAMPIC_256Ch_Type.h"
 
 
 // TofRun includes the Run settings and all the elements
