@@ -26,6 +26,9 @@ long MidasInterface::getCurrentEntry() const {
 const TMEvent* MidasInterface::getCurrentEvent() const{
   return _currentEvent_.get();
 }
+const EventStruct &MidasInterface::getSampicEventBuffer() const {
+  return _sampicEventBuffer_;
+}
 
 // non-const getters
 TMEvent* MidasInterface::getCurrentEvent(){
@@ -47,15 +50,53 @@ void MidasInterface::initialize() {
 // core
 void MidasInterface::rewind(){
   LogThrowIf(not _isInitialized_);
-  LogTrace << __METHOD_NAME__ << std::endl;
+  LogDebug << __METHOD_NAME__ << std::endl;
 
   _currentEntry_ = -1;
   _midasReaderInterface_->Close();
 
-  LogInfo << "Reopening file..." << std::endl;
+  LogInfo << "Reopening " << _filePath_ << "..." << std::endl;
   _midasReaderInterface_ = std::shared_ptr<TMReaderInterface>( TMNewReader( _filePath_.c_str() ) );
+  LogInfo << "File reopened." << std::endl;
 }
-bool MidasInterface::isEventValid(TMEvent *eventPtr_) const {
+void MidasInterface::fillSampicEvent(){
+
+  // array of [NbOfHitsInEvent]
+  auto boardIndices = this->getBankDataArray<int>("TFBI");
+  auto channelIndices = this->getBankDataArray<int>("TFCI");
+  auto hitNumberList = this->getBankDataArray<int>("TFHN");
+  auto sampicIndexList = this->getBankDataArray<int>("TFSI");
+  auto channelIndexList = this->getBankDataArray<int>("TFCI");
+
+  // array of [NbOfHitsInEvent][nSamples]
+  auto rawSampleList = this->getBankDataArray<unsigned short>("TFRS");
+  auto orderedSampleList = this->getBankDataArray<unsigned short>("TFOS");
+  auto correctedSampleList = this->getBankDataArray<float>("TFCS");
+
+  // filling struct
+  _sampicEventBuffer_.NbOfHitsInEvent = this->getBankDataArray<int>("TFNH")[0];
+
+  int sampleGlobalIndex{-1};
+  for( int iHit = 0 ; iHit < _sampicEventBuffer_.NbOfHitsInEvent ; iHit++ ){
+
+    if( not boardIndices.empty() ) _sampicEventBuffer_.Hit[iHit].FeBoardIndex = boardIndices[iHit];
+    if( not channelIndices.empty() ) _sampicEventBuffer_.Hit[iHit].Channel = channelIndices[iHit];
+    if( not hitNumberList.empty() ) _sampicEventBuffer_.Hit[iHit].HitNumber = hitNumberList[iHit];
+    if( not sampicIndexList.empty() ) _sampicEventBuffer_.Hit[iHit].SampicIndex = sampicIndexList[iHit];
+    if( not channelIndexList.empty() ) _sampicEventBuffer_.Hit[iHit].ChannelIndex = channelIndexList[iHit];
+
+    for( int iSample = 0 ; iSample < MAX_NB_OF_SAMPLES ; iSample++ ){
+      sampleGlobalIndex++;
+      if( not rawSampleList.empty() ){ _sampicEventBuffer_.Hit[iHit].RawDataSamples[iSample] = rawSampleList[sampleGlobalIndex]; }
+      if( not orderedSampleList.empty() ){ _sampicEventBuffer_.Hit[iHit].OrderedRawDataSamples[iSample] = orderedSampleList[sampleGlobalIndex]; }
+      if( not correctedSampleList.empty() ){ _sampicEventBuffer_.Hit[iHit].CorrectedDataSamples[iSample] = correctedSampleList[sampleGlobalIndex]; }
+    }
+
+  }
+
+
+}
+bool MidasInterface::isEventValid(TMEvent *eventPtr_) {
   if( eventPtr_ == nullptr ){ return false; }
   if( eventPtr_->error ){
     LogAlert << "Event " << eventPtr_ << " contains an error." << std::endl;
@@ -87,18 +128,4 @@ TMEvent* MidasInterface::nextEvent() {
   _currentEvent_ = std::unique_ptr<TMEvent>( TMReadEvent(_midasReaderInterface_.get()) );
   return this->getCurrentEvent();
 }
-
-template<> std::vector<int> MidasInterface::getBankDataArray(const std::string& bankName_){
-  LogThrowIf( _currentEntry_ < 0, "No event loaded" );
-  LogThrowIf( not this->isEventValid( this->getCurrentEvent() ), "event is not valid" );
-  std::vector<int> out;
-
-  auto* bank = _currentEvent_->FindBank( bankName_.c_str() );
-  LogThrowIf( bank == nullptr, "Could not find bank with name " << bankName_ );
-  LogThrowIf( bank->type != TID_INT, "Bank type id is not an INT" );
-
-  out = GenericToolbox::getTypedArray<int>(bank->data_size, _currentEvent_->GetBankData( bank ));
-  return out;
-}
-
 

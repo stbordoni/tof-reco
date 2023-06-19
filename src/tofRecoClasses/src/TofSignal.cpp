@@ -1,7 +1,7 @@
-#include "../include/TofRun.h"
-#include "../include/TofEvent.h"
-#include "../include/TofHit.h"
-#include "../include/TofSignal.h"
+#include "TofRun.h"
+#include "TofEvent.h"
+#include "TofHit.h"
+#include "TofSignal.h"
 
 
 TofSignal::TofSignal(TofHit one_hit){

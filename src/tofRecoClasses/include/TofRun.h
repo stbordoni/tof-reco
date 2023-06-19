@@ -1,10 +1,23 @@
 #ifndef TofRun_h
 #define TofRun_h
 
+#include <utility>
+
 #include "TofSignal.h"
 #include "TofEvent.h"
+
 #include "SAMPIC_256Ch_Type.h"
 
+#include "string"
+#include "vector"
+
+namespace TofRunParameters{
+  const int nFebsMax{4};
+  const int nSampicsPerFeb{4};
+  const int nChannelsPerSampic{16};
+  const int nChannelsPerFeb{nSampicsPerFeb * nChannelsPerSampic};
+  const int nChannels{nChannelsPerFeb * nFebsMax};
+}
 
 // TofRun includes the Run settings and all the elements
 class TofRun{
@@ -13,11 +26,6 @@ public:
     // Constructors
     TofRun() = default;
     virtual ~TofRun() = default;
-
-    // Actual events, that are added only after creating the objects
-    std::vector <TofHit> RunUnorderedHitsList;
-    std::vector <TofHit> RunOrderedHitsList;
-    std::vector <TofEvent> RunEventsList;
 
     // Functions
     void RunReadFilename();
@@ -38,7 +46,7 @@ public:
 
     // Setters
     void RunSetInputFilePath(const std::string & run_full_path){RunPath = run_full_path;};
-    void RunSetSoftwareType(std::string software){RunSoftware = software;};
+    void RunSetSoftwareType(std::string software){RunSoftware = std::move(software);};
     void RunSetRunNumber(int run_number){RunNumber = run_number;};
     void RunSetCoincWindow(double coinc_window){RunCoincWindow = coinc_window;};
     // void RunDecodeMidasBank(struct HitStruct*){}; // from MIDAS banks
@@ -65,20 +73,17 @@ public:
     std::vector <TofEvent> GetRunEventsList() {return RunEventsList;}
     double GetRunCoincWindow() {return RunCoincWindow;}
 
+  // Actual events, that are added only after creating the objects
+  std::vector <TofHit> RunUnorderedHitsList;
+  std::vector <TofHit> RunOrderedHitsList;
+  std::vector <TofEvent> RunEventsList;
+
 private:
-
-    // Sampic hardware details
-    static const int nFebsMax = 4;               
-    static const int nSampicsPerFeb = 4;         
-    static const int nChannelsPerSampic = 16;    
-    static const int nChannelsPerFeb = nSampicsPerFeb*nChannelsPerSampic;
-    static const int nChannels = nChannelsPerFeb*nFebsMax;
-
     // Run details
     std::string RunSoftware;
-    int RunNumber;
-    int RunDate; // format YearMonthDay
-    int RunTime; // format HoursMinutes
+    int RunNumber{};
+    int RunDate{}; // format YearMonthDay
+    int RunTime{}; // format HoursMinutes
     bool RunSinglebarType {false};
     int RunMaxHitsToLoad {1000000}; // just for safety
     std::string RunPath; // this will be dependent on the local machine
@@ -92,9 +97,9 @@ private:
     int RunNSamplesToRead {0};
     double RunSamplingFrequency {-1}; // MHz
     double RunSampleLength {-1}; // ns
-    double RunBaseline[nFebsMax][nSampicsPerFeb] {}; // V
-    double RunPostTrig[nFebsMax][nSampicsPerFeb] {}; 
-    double RunTrigThr[nChannels] {};
+    double RunBaseline[TofRunParameters::nFebsMax][TofRunParameters::nSampicsPerFeb] {}; // V
+    double RunPostTrig[TofRunParameters::nFebsMax][TofRunParameters::nSampicsPerFeb] {};
+    double RunTrigThr[TofRunParameters::nChannels] {};
     int RunTotalHits {-1};
 
     // Settings for analysis

@@ -2,9 +2,9 @@
 set( LIB_NAME "TofRecoClasses" )
 
 set( SRC_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/TofRun.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/TofEvent.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/TofHit.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/TofRun.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/TofSignal.cpp
     )
 
@@ -23,6 +23,7 @@ target_include_directories(
 
 target_link_libraries(
     ${LIB_NAME} PUBLIC
+    MidasReader
     ${ROOT_LIBRARIES}
 )
 

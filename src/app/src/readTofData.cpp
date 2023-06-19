@@ -3,11 +3,7 @@
 // emanuele.villa@cern.ch
 // 
 
-// #include "TofObjects.h"
-// #include "TofObjects.C"
 #include "TofHit.h"
-#include "TofSignal.h"
-#include "TofEvent.h"
 #include "TofRun.h"
 #include "TofObjectsDict.h"
 
