@@ -104,10 +104,10 @@ set( MIDASIO_SRC_FILES
     ${MIDASIO_FOLDER}/xxhash.cxx
     )
 
-if( USE_SHARED_LINKS )
-  add_library( MidasIO SHARED ${MIDASIO_SRC_FILES})
-else()
+if( USE_STATIC_LINKS )
   add_library( MidasIO STATIC ${MIDASIO_SRC_FILES})
+else()
+  add_library( MidasIO SHARED ${MIDASIO_SRC_FILES})
 endif()
 
 target_include_directories( MidasIO PUBLIC ${MIDASIO_FOLDER} )

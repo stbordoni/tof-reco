@@ -62,7 +62,7 @@ do
   fi
 
   mkdir -p $outputDirectory
-  
+  cd src/app;
   echo ""
   echo "Currently we are in"
   pwd

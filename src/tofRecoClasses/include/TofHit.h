@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <vector>
 #include <string>
-#include <nlohmann/json.hpp>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
