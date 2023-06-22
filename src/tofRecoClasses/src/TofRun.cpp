@@ -115,10 +115,15 @@ void TofRun::RunSaveSettings (){
         std::string RunSettingsFile = RunPath + "/Run_Settings.txt";
         std::ifstream RunSettingsStream;
         RunSettingsStream.open(RunSettingsFile.c_str());
-    
+        if (!RunSettingsStream.is_open()) {
+            std::string this_error = "Error opening file " + RunSettingsFile;
+            LogError << this_error << std::endl;
+            RunErrorsList.push_back(this_error);
+            return;
+        }
+
         std::string linedump;
         LogInfo << "enter runsettingstream\n";
-
 
         while(!RunSettingsStream.eof())
         {
@@ -406,10 +411,11 @@ void TofRun::RunLoadHits(){
 
             for (int lineit = 0; lineit < NLinesInFile; lineit++){
                 
-                // print progression of this ciycle in %
-                if (lineit % (NLinesInFile/1000) == 0) {
-                    LogInfo << "Loading hits from file " << full_filename << " " << lineit/(NLinesInFile/100) << "%\r";
-                }
+                // print progression of this cycle in %
+                // if (lineit % (NLinesInFile/1000) == 0) {
+                    // LogInfo << "Loading hits from file " << full_filename << " " << lineit/(NLinesInFile/100) << "%" << std::endl;
+                    // std::cout.flush();
+                // }
 
                 new_Hit.SetHitFeb(febit);
 
@@ -765,7 +771,7 @@ void TofRun::RunSetAnalysisOptions (){
     if (RunSelectedAnalysisOptions == true) return; // avoid double calls
 
 
-    std::string RunAnalysisSettingsFile = "../AnalysisSettings.json"; // has to be in same folder for now
+    std::string RunAnalysisSettingsFile = "../../../AnalysisSettings.json"; // has to be in same folder for now
     std::ifstream RunAnalysisSettingsStream(RunAnalysisSettingsFile.c_str());
     if (RunAnalysisSettingsStream.good()) RunSelectedAnalysisOptions = true;
 
