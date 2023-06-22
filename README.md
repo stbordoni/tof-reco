@@ -28,6 +28,8 @@ The standard folder where the run is `../TofData`, and the results are in
 `../TofRootFiles`.
 If you want to set different folders (not recommended), change the path in `readTofData.sh`.
 
+The data can be found at this link: https://cernbox.cern.ch/s/4G9V1T8z8YgbUdE, you can just download the whole folder or just some runs.
+
 In `AnalysisSettings.json` there are some parameters to be changed during the analysis, names should be self-explicative.
 
 The output will be in the format `runXXX_plots.root`, containing histos per channel and some plots for the whole run. 
