@@ -61,3 +61,25 @@ else()
   message(WARNING "ROOT C++ standard not set, use ROOT minimum (C++14)")
   set(CMAKE_CXX_STANDARD 14)
 endif()
+
+
+# JSON
+# NLOHMANN JSON
+find_package( nlohmann_json )
+
+find_path(NLOHMANN_JSON_INCLUDE_DIR NAMES nlohmann/json.hpp)
+if (nlohmann_json_FOUND)
+  cmessage( STATUS "nlohmann JSON library found: ${NLOHMANN_JSON_INCLUDE_DIR}")
+  # Additional actions for when the library is found
+else()
+  if (NLOHMANN_JSON_INCLUDE_DIR)
+    cmessage( STATUS "nlohmann JSON header found: ${NLOHMANN_JSON_INCLUDE_DIR}/nlohmann/json.hpp")
+    # Additional actions for when the library is found
+  else()
+    cmessage( FATAL_ERROR "nlohmann JSON library not found")
+    # Additional actions for when the library is not found
+  endif()
+endif()
+include_directories( ${NLOHMANN_JSON_INCLUDE_DIR} )
+
+

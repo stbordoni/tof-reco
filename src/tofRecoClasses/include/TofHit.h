@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <vector>
 #include <string>
-#include <nlohmann/json.hpp>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -90,7 +89,7 @@ public:
     int GetHitFebChannel() { return HitFebChannel; }
     double GetHitCell0Time() { return HitCell0Time; }
     double GetHitTotValue() { return HitTotValue; }
-    std::vector<double> GetHitWaveform() { return HitWaveform; }
+    std::vector<double>& GetHitWaveform() { return HitWaveform; }
     int GetHitID() { return HitId; }
     int GetHitSampic() { return HitSampic; }
     int GetHitDaqChannel() { return HitDaqChannel; }

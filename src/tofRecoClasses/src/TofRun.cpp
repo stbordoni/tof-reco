@@ -1,69 +1,88 @@
-#include "../include/TofRun.h"
-#include "../include/TofEvent.h"
-#include "../include/TofHit.h"
-#include "../include/TofSignal.h"
+
+
+#include "TofRun.h"
+
+#include "TofEvent.h"
+#include "TofHit.h"
+#include "MidasInterface.h"
+
+#include "Logger.h"
+
+#include "nlohmann/json.hpp"
+
+#include "vector"
+#include "string"
+
+LoggerInit([]{
+  Logger::getUserHeader() << "[" << FILENAME << "]";
+});
 
 
 void TofRun::RunReadFilename(){
-
-    // Save run number and other info in the run address
-    std::vector <std::string> split_run_path = SplitString(RunPath, '/');
-    std::cout << "RunPath: " << RunPath << std::endl;
-    RunAddress = split_run_path.at(split_run_path.size()-1); // filename for linux, folder for windows
-    std::vector <std::string> split_run_address = SplitString(RunAddress, '_');
-
-    size_t start, end;
-    start = RunAddress.find("run") + 3;
-    if (start != std::string::npos) {
-
-        std::string run_number_and_extension = RunAddress.substr(start);
-        end = run_number_and_extension.find(".txt");
-        if (end != std::string::npos) {
-            std::cout << run_number_and_extension.substr(0, end) << std::endl;
-            RunNumber = std::stoi(run_number_and_extension.substr(0, end)); // linux
-        } else {
-            RunNumber = std::stoi(run_number_and_extension); // windows, no extension
-        }
-
-    } else {
-
-        std::string this_error;
-        this_error = "Wrong input filename, Run number not found.\n";
-        std::cerr << this_error << std::endl;
-        RunErrorsList.push_back(this_error);
-        RunPrintErrors();
-        exit(1);
-
-    }
 
     // This can be uncommented to read the date from the filename
     // Declare the following string variables in one line
     std::string run_date_day, run_date_month, run_date_year, run_date_hours, run_date_minutes;
     
-    if (RunSoftware == "linux"){
-        
-        // in linux the format is sampic_YYYYMMDD_HHMM_runX.txt
-        RunDate = std::stoi(split_run_address.at(1));
-        RunTime = std::stoi(split_run_address.at(2));
+    if     ( RunSoftware == "linux" ) {
+      // in linux the format is sampic_YYYYMMDD_HHMM_runX.txt -> not anymore? Create a midas mode?
 
-    } else if (RunSoftware == "windows"){
+      RunNumber = 0;
+
+      RunDate = 20220101;
+      RunTime = 0000;
+    }
+    else if( RunSoftware == "windows" ){
+
+      // Save run number and other info in the run address
+      std::vector <std::string> split_run_path = GenericToolbox::splitString(RunPath, "/");
+      LogInfo << "RunPath: " << RunPath << std::endl;
+      RunAddress = split_run_path.at(split_run_path.size()-1); // filename for linux, folder for windows
+      std::vector <std::string> split_run_address = SplitString(RunAddress, '_');
+
+      size_t start, end;
+      start = RunAddress.find("run") + 3;
+      if (start != std::string::npos) {
+
+        std::string run_number_and_extension = RunAddress.substr(start);
+        end = run_number_and_extension.find(".txt");
+        if (end != std::string::npos) {
+          LogInfo << run_number_and_extension.substr(0, end) << std::endl;
+          RunNumber = std::stoi(run_number_and_extension.substr(0, end)); // linux
+        }
+        else {
+          RunNumber = std::stoi(run_number_and_extension); // windows, no extension
+        }
+
+      }
+      else {
+
+        std::string this_error;
+        this_error = "Wrong input filename, Run number not found.\n";
+        LogError << this_error << std::endl;
+        RunErrorsList.push_back(this_error);
+        RunPrintErrors();
+        exit(1);
+
+      }
 
         // in windows the format is sampic_MMDDYYYY_HHhMMm_runX  
         std::string run_date_month = split_run_address.at(1).substr(0,2);
         std::string run_date_day = split_run_address.at(1).substr(2,2);
         std::string run_date_year = split_run_address.at(1).substr(4,4);
-        std::cout << run_date_year + run_date_month + run_date_day << std::endl;
+        LogInfo << run_date_year + run_date_month + run_date_day << std::endl;
         RunDate = std::stoi(run_date_year + run_date_month + run_date_day);
 
         std::string run_date_hours = split_run_address.at(2).substr(0,2);
         std::string run_date_minutes = split_run_address.at(2).substr(3,2);
         RunTime = std::stoi(run_date_hours+run_date_minutes);
 
-    } else {
+    }
+    else {
             
         std::string this_error;
         this_error = "Wrong RunSoftware, has to be windows or linux.\n";
-        std::cerr << this_error << std::endl;
+        LogError << this_error << std::endl;
         RunErrorsList.push_back(this_error);
         RunPrintErrors();
         exit(1);
@@ -75,31 +94,36 @@ void TofRun::RunReadFilename(){
 void TofRun::RunSaveSettings (){
     
     if (RunSoftware == "linux"){
-        std::cout << "Linux. Saving Run parameters... ";
+        LogInfo << "Linux. Saving Run parameters... ";
         
         // hard coding for now, then there should be a settings file dumped from MIDAS
         RunNFebs = 4;
         RunNSamplesToRead = 64;
         RunSamplingFrequency = 3200; // MHz
         RunSampleLength = 1e-3 / RunSamplingFrequency; // ns
-        for (int i=0; i<nFebsMax; i++) for (int j=0; j<nSampicsPerFeb; j++){
+        for (int i=0; i<TofRunParameters::nFebsMax; i++) for (int j=0; j<TofRunParameters::nSampicsPerFeb; j++){
             RunBaseline[i][j] = 0.150; // V
             RunPostTrig[i][j] = 1; // we don't have it in Windows
         }
-        for (int i=0; i<nChannels; i++) RunTrigThr[i] = 0.020;
-        std::cout << "Run parameters saved.\n";
+        for (int i=0; i<TofRunParameters::nChannels; i++) RunTrigThr[i] = 0.020;
+        LogInfo << "Run parameters saved.\n";
     }
     else if (RunSoftware == "windows"){
 
-        std::cout << "Windows. Saving Run parameters... ";
+        LogInfo << "Windows. Saving Run parameters... ";
         // ifstream RunInputFile(RunFile.c_str(), ios_base::in);
         std::string RunSettingsFile = RunPath + "/Run_Settings.txt";
         std::ifstream RunSettingsStream;
         RunSettingsStream.open(RunSettingsFile.c_str());
-    
-        std::string linedump;
-        std::cout << "enter runsettingstream\n";
+        if (!RunSettingsStream.is_open()) {
+            std::string this_error = "Error opening file " + RunSettingsFile;
+            LogError << this_error << std::endl;
+            RunErrorsList.push_back(this_error);
+            return;
+        }
 
+        std::string linedump;
+        LogInfo << "enter runsettingstream\n";
 
         while(!RunSettingsStream.eof())
         {
@@ -123,9 +147,9 @@ void TofRun::RunSaveSettings (){
             int RunNFebs_startPosition = linedump.find(RunNFebs_stringStart) + RunNFebs_stringStart.length();
             int RunNFebs_length = linedump.find(RunNFebs_stringStop) - RunNFebs_startPosition;
             std::string RunNFebs_string = linedump.substr(RunNFebs_startPosition, RunNFebs_length);
-            std::cout << "RunNFebs_string: " << RunNFebs_string << std::endl;
+            LogInfo << "RunNFebs_string: " << RunNFebs_string << std::endl;
             RunNFebs = std::stoi(RunNFebs_string);
-                std::cout << "RunNFebs: " << RunNFebs << std::endl;
+                LogInfo << "RunNFebs: " << RunNFebs << std::endl;
 
             }
             else if(linedump.find("64-ch Front-End Board") != std::string::npos)
@@ -149,11 +173,11 @@ void TofRun::RunSaveSettings (){
             int RunSamplingFrequency_startPosition = linedump.find(RunSamplingFrequency_stringStart) + RunSamplingFrequency_stringStart.length();
             int RunSamplingFrequency_length = linedump.find(RunSamplingFrequency_stringStop) - RunSamplingFrequency_startPosition;
             std::string RunSamplingFrequency_string = linedump.substr(RunSamplingFrequency_startPosition, RunSamplingFrequency_length);
-            std::cout << "RunSamplingFrequency_string: " << RunSamplingFrequency_string << std::endl;
+            LogInfo << "RunSamplingFrequency_string: " << RunSamplingFrequency_string << std::endl;
             RunSamplingFrequency = std::stoi(RunSamplingFrequency_string);
             RunSampleLength = 1e3 / RunSamplingFrequency; // ns
-            std::cout << "RunSamplingFrequency: " << RunSamplingFrequency << std::endl;
-                std::cout << "RunSampleLength: " << RunSampleLength << std::endl;
+            LogInfo << "RunSamplingFrequency: " << RunSamplingFrequency << std::endl;
+                LogInfo << "RunSampleLength: " << RunSampleLength << std::endl;
             }
             else if(linedump.find("Baseline:") != std::string::npos)
             {
@@ -211,7 +235,7 @@ void TofRun::RunSaveSettings (){
                 // if the value is negative
                 if (InternalTriggerTreshold_stringV == "-")
                 {
-                    std::cout << "\nThis int trg thr is negative" << std::endl;
+                    LogInfo << "\nThis int trg thr is negative" << std::endl;
                 // then add another digit
                     InternalTriggerTreshold_stringV = linedump.substr(linedump.find(InternalTriggerTreshold_stringStart) + InternalTriggerTreshold_stringStart.length(), 2);
                     length_of_stringV++;
@@ -223,7 +247,7 @@ void TofRun::RunSaveSettings (){
                 // int enabled = std::stoi(Enabled_string);
                 int enabled_for_central_trigger = std::stoi(EnabledForCentralTrigger_string);
                 double InternalTriggerTreshold_string = std::stoi(InternalTriggerTreshold_stringV) + 1E-3*std::stof(InternalTriggerTreshold_stringmV);
-                RunTrigThr [feb*nChannelsPerFeb + sampic*nChannelsPerSampic + channel] = InternalTriggerTreshold_string;
+                RunTrigThr [feb*TofRunParameters::nChannelsPerFeb + sampic*TofRunParameters::nChannelsPerSampic + channel] = InternalTriggerTreshold_string;
                 std::string trigger_mode = TriggerMode_string;
                 
             }
@@ -231,106 +255,106 @@ void TofRun::RunSaveSettings (){
             RunNSamplesToRead = 62;
         }
     }
-    std::cout << "Run parameters saved.\n";
+    LogInfo << "Run parameters saved.\n";
 
 }
 
 
 void TofRun::RunQualityCheck(){
 
-    if (RunNFebs != nFebsMax){
+    if (RunNFebs != TofRunParameters::nFebsMax){
         std::string this_error;
         this_error = "Instead of 4 Febs, we have "+std::to_string(RunNFebs)+" Febs.";
-        std::cerr << this_error;
+        LogError << this_error;
         RunErrorsList.push_back(this_error);
     }
     if (RunSamplingFrequency != 3200){
         std::string this_error;
         this_error = "Sampling frequency is set to "+std::to_string(RunSamplingFrequency)+" MHz instead of 3200 MHz.";
-        std::cerr << this_error;
+        LogError << this_error;
         RunErrorsList.push_back(this_error);    
     }  
 
-    if (RunErrorsList.size() == 0) std::cout << "No errors were found when generating the TofRun object\n";
+    if (RunErrorsList.size() == 0) LogInfo << "No errors were found when generating the TofRun object\n";
     else{
         for (int i = 0; i < RunErrorsList.size(); i++){
-            std::cout << RunErrorsList.at(i) << std::endl;
+            LogInfo << RunErrorsList.at(i) << std::endl;
         }
     }
 
 }
 
 void TofRun::RunGetInfo (){
-    std::cout << "nFebsMax: " << nFebsMax << std::endl;
-    std::cout << "nSampicsPerFeb: " << nSampicsPerFeb << std::endl;
-    std::cout << "nChannelsPerSampic: " << nChannelsPerSampic << std::endl;
-    std::cout << "nChannelsPerFeb: " << nChannelsPerFeb << std::endl;
-    std::cout << "nChannels: " << nChannels << std::endl;
+    LogInfo << "nFebsMax: " << TofRunParameters::nFebsMax << std::endl;
+    LogInfo << "nSampicsPerFeb: " << TofRunParameters::nSampicsPerFeb << std::endl;
+    LogInfo << "nChannelsPerSampic: " << TofRunParameters::nChannelsPerSampic << std::endl;
+    LogInfo << "nChannelsPerFeb: " << TofRunParameters::nChannelsPerFeb << std::endl;
+    LogInfo << "nChannels: " << TofRunParameters::nChannels << std::endl;
 
-    std::cout << "RunSoftware: " << RunSoftware << std::endl;
-    std::cout << "RunPath: " << RunPath << std::endl;
-    std::cout << "RunAddress: " << RunAddress << std::endl;
-    std::cout << "RunFebSerialNumber: ";
-    for (auto sn : RunFebSerialNumber) std::cout << sn << " ";
-    std::cout << std::endl;
-    std::cout << "RunFebFirmwareVersion: ";
-    for (auto fv : RunFebFirmwareVersion) std::cout << fv << " ";
-    std::cout << std::endl;
-    std::cout << "RunControllerBoardSerialNumber: " << RunControllerBoardSerialNumber << std::endl;
-    std::cout << "RunControllerBoardFirmwareVersion: " << RunControllerBoardFirmwareVersion << std::endl;
-    std::cout << "RunNumber: " << RunNumber << std::endl;
-    std::cout << "RunDate: " << RunDate << std::endl;
-    std::cout << "RunTime: " << RunTime << std::endl;
-    std::cout << "RunUnixTime: " << RunUnixTime << std::endl;
-    std::cout << "RunNFebs: " << RunNFebs << std::endl;
-    std::cout << "RunNSamplesToRead: " << RunNSamplesToRead << std::endl;
-    std::cout << "RunSamplingFrequency: " << RunSamplingFrequency << std::endl;
-    std::cout << "RunSampleLength: " << RunSampleLength << std::endl;
+    LogInfo << "RunSoftware: " << RunSoftware << std::endl;
+    LogInfo << "RunPath: " << RunPath << std::endl;
+    LogInfo << "RunAddress: " << RunAddress << std::endl;
+    LogInfo << "RunFebSerialNumber: ";
+    for (auto sn : RunFebSerialNumber) LogInfo << sn << " ";
+    LogInfo << std::endl;
+    LogInfo << "RunFebFirmwareVersion: ";
+    for (auto fv : RunFebFirmwareVersion) LogInfo << fv << " ";
+    LogInfo << std::endl;
+    LogInfo << "RunControllerBoardSerialNumber: " << RunControllerBoardSerialNumber << std::endl;
+    LogInfo << "RunControllerBoardFirmwareVersion: " << RunControllerBoardFirmwareVersion << std::endl;
+    LogInfo << "RunNumber: " << RunNumber << std::endl;
+    LogInfo << "RunDate: " << RunDate << std::endl;
+    LogInfo << "RunTime: " << RunTime << std::endl;
+    LogInfo << "RunUnixTime: " << RunUnixTime << std::endl;
+    LogInfo << "RunNFebs: " << RunNFebs << std::endl;
+    LogInfo << "RunNSamplesToRead: " << RunNSamplesToRead << std::endl;
+    LogInfo << "RunSamplingFrequency: " << RunSamplingFrequency << std::endl;
+    LogInfo << "RunSampleLength: " << RunSampleLength << std::endl;
 
-    std::cout << "RunBaseline: " << std::endl;
-    for (int i = 0; i < nFebsMax; i++) {
-        for (int j = 0; j < nSampicsPerFeb; j++) {
-            std::cout << "[" << i << "][" << j << "]: " << RunBaseline[i][j] << " ";
+    LogInfo << "RunBaseline: " << std::endl;
+    for (int i = 0; i < TofRunParameters::nFebsMax; i++) {
+        for (int j = 0; j < TofRunParameters::nSampicsPerFeb; j++) {
+            LogInfo << "[" << i << "][" << j << "]: " << RunBaseline[i][j] << " ";
         }
-        std::cout << std::endl;
+        LogInfo << std::endl;
     }
 
-    std::cout << "RunPostTrig (not implemented in windows data): " << std::endl;
-    for (int i = 0; i < nFebsMax; i++) {
-        for (int j = 0; j < nSampicsPerFeb; j++) {
-            std::cout << "[" << i << "][" << j << "]: " << RunPostTrig[i][j] << " ";
+    LogInfo << "RunPostTrig (not implemented in windows data): " << std::endl;
+    for (int i = 0; i < TofRunParameters::nFebsMax; i++) {
+        for (int j = 0; j < TofRunParameters::nSampicsPerFeb; j++) {
+            LogInfo << "[" << i << "][" << j << "]: " << RunPostTrig[i][j] << " ";
         }
-        std::cout << std::endl;
+        LogInfo << std::endl;
     }
 
-    std::cout << "RunTrigThr: ";
+    LogInfo << "RunTrigThr: ";
     int counter = 0;
     for (auto tt : RunTrigThr) {
-        if (counter %63 == 0) std::cout << std::endl;
-        std::cout << tt << " ";
+        if (counter %63 == 0) LogInfo << std::endl;
+        LogInfo << tt << " ";
         counter++;
     }
-    std::cout << std::endl;
+    LogInfo << std::endl;
 
-    std::cout << "RunUnorderedHitsList: ";
+    LogInfo << "RunUnorderedHitsList: ";
     for (auto hit : RunUnorderedHitsList) {
         // print out info about the hit here
     }
-    std::cout << std::endl;
+    LogInfo << std::endl;
 
-    std::cout << "RunEventsList: ";
+    LogInfo << "RunEventsList: ";
     for (auto event : RunEventsList) {
         // print out info about the event here
     }
-    std::cout << std::endl;
+    LogInfo << std::endl;
 
-    std::cout << "RunVerboseMode: " << RunVerboseMode << std::endl;
-    std::cout << "RunSelectedAnalysisOptions: " << RunSelectedAnalysisOptions << std::endl;
-    std::cout << "RunNSamplesInWaveform: " << RunNSamplesInWaveform << std::endl;
-    std::cout << "RunNSamplesToExclude: " << RunNSamplesToExclude << std::endl;
-    std::cout << "RunBaselineFirstSample: " << RunBaselineFirstSample << std::endl;
-    std::cout << "RunBaselineNSamples: " << RunBaselineNSamples << std::endl;
-    std::cout << std::endl;
+    LogInfo << "RunVerboseMode: " << RunVerboseMode << std::endl;
+    LogInfo << "RunSelectedAnalysisOptions: " << RunSelectedAnalysisOptions << std::endl;
+    LogInfo << "RunNSamplesInWaveform: " << RunNSamplesInWaveform << std::endl;
+    LogInfo << "RunNSamplesToExclude: " << RunNSamplesToExclude << std::endl;
+    LogInfo << "RunBaselineFirstSample: " << RunBaselineFirstSample << std::endl;
+    LogInfo << "RunBaselineNSamples: " << RunBaselineNSamples << std::endl;
+    LogInfo << std::endl;
 
 };
 
@@ -356,7 +380,7 @@ void TofRun::RunLoadHits(){
             // print working directory
             // char buffer[FILENAME_MAX];
             // getcwd(buffer, FILENAME_MAX);
-            // std::cout << "Current working directory: " << buffer << std::endl;
+            // LogInfo << "Current working directory: " << buffer << std::endl;
 
             std::string RunFebDataFile = "/feb" + std::to_string(febit) + "/";
             std::string full_filename = RunPath + RunFebDataFile + RunAddress + "_feb"+ std::to_string(febit) + ".txt";
@@ -365,12 +389,12 @@ void TofRun::RunLoadHits(){
 
             if (!RunHitsFileStream.is_open()) {
                 std::string this_error = "Error opening file " + full_filename;
-                std::cerr << this_error << std::endl;
+                LogError << this_error << std::endl;
                 RunErrorsList.push_back(this_error);
                 return;
             }
             
-            std::cout << "Loading hits from file " << full_filename << std::endl;
+            LogInfo << "Loading hits from file " << full_filename << std::endl;
 
             std::ifstream count_lines_stream;
             count_lines_stream.open(full_filename);
@@ -379,19 +403,19 @@ void TofRun::RunLoadHits(){
             {
                 getline(count_lines_stream, linedump);
                 if(linedump != "") NLinesInFile++;
-                // std::cout << linedump << std::endl;
+                // LogInfo << linedump << std::endl;
             }
             RunTotalHits = NLinesInFile/2;
-            std::cout << "Hits in Feb[" << febit << "]: " << RunTotalHits << std::endl;
+            LogInfo << "Hits in Feb[" << febit << "]: " << RunTotalHits << std::endl;
 
 
             for (int lineit = 0; lineit < NLinesInFile; lineit++){
                 
-                // print progression of this ciycle in %
-                if (lineit % (NLinesInFile/1000) == 0) {
-                    std::cout << "Loading hits from file " << full_filename << " " << lineit/(NLinesInFile/100) << "%\r";
-                    std::cout.flush();
-                }
+                // print progression of this cycle in %
+                // if (lineit % (NLinesInFile/1000) == 0) {
+                    // LogInfo << "Loading hits from file " << full_filename << " " << lineit/(NLinesInFile/100) << "%" << std::endl;
+                    // std::cout.flush();
+                // }
 
                 new_Hit.SetHitFeb(febit);
 
@@ -411,7 +435,7 @@ void TofRun::RunLoadHits(){
                             >> dump >> dump //RawPeak // computing from wf
                             >> dump >> dump //Amplitude // computing from wf
                             >> dump >> dump; //DataSize; // not reliable
-                    // std::cout << "Hitch " << new_Hit.HitFebChannel << std::endl;
+                    // LogInfo << "Hitch " << new_Hit.HitFebChannel << std::endl;
                     new_Hit.SetHitFebChannel(hit_feb_channel);
                     new_Hit.SetHitCell0Time(hit_cell0time);
                     new_Hit.SetHitRawTotValue(hit_raw_Tot_value);
@@ -428,28 +452,28 @@ void TofRun::RunLoadHits(){
                     std::vector <double> this_wf;
                     for(int sampleit = 0; sampleit < RunNSamplesToRead; sampleit++){
                         RunHitsFileStream >> new_sample;
-                        // std::cout << new_sample << std::endl;
+                        // LogInfo << new_sample << std::endl;
                         this_wf.push_back(new_sample);
                     }
                     new_Hit.SetHitWaveform(this_wf);
                     new_Hit.SetHitId(hitId_counter);
                     //print hitidcounter
-                    // std::cout << "HitId: " << new_Hit.HitId << " ";
+                    // LogInfo << "HitId: " << new_Hit.HitId << " ";
 
                     if ((previous_cell0time - Cell0TimeCycles*Cell0TimeOffset) - new_Hit.GetHitCell0Time() > 2e13) {
                         Cell0TimeCycles++; 
-                        std::cout << "Feb " << new_Hit.GetHitFeb() << ", Cell0Time cycle" << Cell0TimeCycles << std::endl;
+                        LogInfo << "Feb " << new_Hit.GetHitFeb() << ", Cell0Time cycle" << Cell0TimeCycles << std::endl;
                     }
 
                     new_Hit.SetHitCell0Time(new_Hit.GetHitCell0Time() + Cell0TimeCycles*Cell0TimeOffset);
                     previous_cell0time = new_Hit.GetHitCell0Time();
-                    // std::cout << "Filling hit info... ";
+                    // LogInfo << "Filling hit info... ";
                     
-                    // std::cout << "Filled hit info. ";
+                    // LogInfo << "Filled hit info. ";
 
                     RunFillHitInfo(new_Hit);
                     RunUnorderedHitsList.push_back(new_Hit);
-                    // std::cout << "Hit added to this run. " ;
+                    // LogInfo << "Hit added to this run. " ;
                     hitId_counter++;
                 }
                 // if (hitId_counter > RunMaxHitsToLoad) break;
@@ -462,92 +486,167 @@ void TofRun::RunLoadHits(){
     }
 
 
-    if (RunSoftware == "linux"){
+    if ( RunSoftware == "linux" ){
 
         std::string full_filename = RunPath;
-        std::ifstream RunHitsFileStream; 
-        RunHitsFileStream.open(full_filename);
+      RunTotalHits = 0;
 
+      MidasInterface midasInterface{};
+      midasInterface.setFilePath( RunPath );
 
-        std::cout << "Loading hits from file " << full_filename << std::endl;
+      LogWarning << "Initializing MIDAS interface..." << std::endl;
+      midasInterface.initialize();
 
-        std::ifstream count_lines_stream;
-        count_lines_stream.open(full_filename);
-        std::string linedump;
-        while (!count_lines_stream.eof()){
+      LogWarning << "Fetching nb of entries in file..." << std::endl;
+      long nEntries = midasInterface.fetchNbEvents();
+      LogInfo << "File has " << nEntries << " recorded SAMPIC events." << std::endl;
 
-            getline(count_lines_stream, linedump);
-            if(linedump != "") NLinesInFile++;
-            // std::cout << linedump << std::endl;
+      for(long iEntry = 0 ; iEntry < nEntries ; iEntry++){
+        GenericToolbox::displayProgressBar(iEntry, nEntries, LogWarning.getPrefixString() + "Loading MIDAS entries...");
+        auto* entry = midasInterface.getEntry(iEntry);
+        entry->FindAllBanks(); // fetch banks, otherwise give 0
 
+        if( not MidasInterface::isEventValid(entry) ){
+          LogAlert << "Event #" << iEntry << " contains an error." << std::endl;
+          continue;
         }
-        RunTotalHits = NLinesInFile/2;
-        std::cout << "Hits in this Run: " << RunTotalHits << std::endl;
 
-        for (int lineit = 0; lineit < NLinesInFile; lineit++){
+        midasInterface.fillSampicEvent();
 
-            // print progression of this ciycle in %
-            if (lineit % (NLinesInFile/1000) == 0) {
-                    std::cout << "Loading hits from file " << full_filename << " " << lineit/(NLinesInFile/100) << "%\r";
-                    std::cout.flush();
-            }
+        auto& sampicEvt = midasInterface.getSampicEventBuffer();
 
-            if(lineit%2 == 0){ //even lines
-                int hit_feb_channel = -1;
-                double hit_feb = -1;
-                double hit_cell0time = -1;
-                double hit_tot_value = -1;
-                RunHitsFileStream >> dump >> hit_feb_channel
-                        >> dump >> hit_feb
-                        >> dump >> hit_cell0time
-                        >> dump >> hit_tot_value;
-                // std::cout << "New hit channel " << new_Hit.HitFebChannel << " time " << new_Hit.HitCell0Time << std::endl;
-                new_Hit.SetHitFebChannel(hit_feb_channel);
-                new_Hit.SetHitFeb(hit_feb);
-                new_Hit.SetHitCell0Time(hit_cell0time);
-                new_Hit.SetHitTotValue(hit_tot_value);
-            } 
-            else{
-                RunHitsFileStream >> dump; // before the waveform, there is a string "DataSamples"
-                // new_Hit.HitWaveform.clear(); // necessary?
+        for( int iHit = 0 ; iHit < sampicEvt.NbOfHitsInEvent ; iHit++ ){
+          RunTotalHits++;
+          TofHit newHit;
 
-                for (int sampleit = 0; sampleit < RunNSamplesToExclude; sampleit++) RunHitsFileStream >> dump;
-                std::vector <double> this_wf;
-              this_wf.reserve(RunNSamplesInWaveform);
-                for(int sampleit = 0; sampleit < RunNSamplesInWaveform; sampleit++){
-                    RunHitsFileStream >> new_sample;
-                    this_wf.emplace_back(new_sample);
-                    // std::cout << new_sample << std::endl;
-                }
-                new_Hit.SetHitWaveform(this_wf);
-                new_Hit.SetHitId(hitId_counter);
-                // print hit id counter
-                // std::cout << "HitId: " << new_Hit.HitId << " ";
+          newHit.SetHitFeb( sampicEvt.Hit[iHit].FeBoardIndex );
+          newHit.SetHitFebChannel( sampicEvt.Hit[iHit].Channel );
+          newHit.SetHitCell0Time( sampicEvt.Hit[iHit].FirstCellTimeStamp );
+          newHit.SetHitTotValue( sampicEvt.Hit[iHit].TOTValue );
 
-                if ((previous_cell0time - Cell0TimeCycles*Cell0TimeOffset) - new_Hit.GetHitCell0Time() > 2e13) {
-                    Cell0TimeCycles++; 
-                    std::cout << "Feb " << new_Hit.GetHitFeb() << ", Cell0Time cycle" << Cell0TimeCycles << std::endl;
-                }
+          newHit.GetHitWaveform().clear();
+          newHit.GetHitWaveform().reserve( MAX_NB_OF_SAMPLES );
+          for( float CorrectedDataSample : sampicEvt.Hit[iHit].CorrectedDataSamples ){
+            newHit.GetHitWaveform().emplace_back( double( CorrectedDataSample ) );
+          }
 
-                new_Hit.SetHitCell0Time(new_Hit.GetHitCell0Time() + Cell0TimeCycles*Cell0TimeOffset);
+          newHit.SetHitId(hitId_counter);
+          // print hit id counter
+          // LogInfo << "HitId: " << newHit.HitId << " ";
 
-                previous_cell0time = new_Hit.GetHitCell0Time();
+          if ((previous_cell0time - Cell0TimeCycles*Cell0TimeOffset) - newHit.GetHitCell0Time() > 2e13) {
+            Cell0TimeCycles++;
+            LogInfo << "Feb " << newHit.GetHitFeb() << ", Cell0Time cycle" << Cell0TimeCycles << std::endl;
+          }
 
-                RunFillHitInfo(new_Hit);    // can do elsewhere
-                if (RunVerboseMode) new_Hit.HitGetHitInfo();
-                // std::cout << "Filled hit info. \n";
+          newHit.SetHitCell0Time(newHit.GetHitCell0Time() + Cell0TimeCycles*Cell0TimeOffset);
 
-                RunUnorderedHitsList.push_back(new_Hit);
-                hitId_counter++;
-                // std::cout << "hitid_counter " << hitId_counter << std::endl;
+          previous_cell0time = newHit.GetHitCell0Time();
 
-            }
-            if (hitId_counter > RunMaxHitsToLoad){
-                std::cout << "\nReached max hits set in analysis settings\n";
-                break;
-            } 
+          RunFillHitInfo(newHit);    // can do elsewhere
+          if (RunVerboseMode) newHit.HitGetHitInfo();
+          // LogInfo << "Filled hit info. \n";
 
+          RunUnorderedHitsList.emplace_back( newHit );
+
+          hitId_counter++;
+          if (hitId_counter > RunMaxHitsToLoad){
+            LogInfo << "\nReached max hits set in analysis settings\n";
+            break;
+          }
         }
+
+        if (hitId_counter > RunMaxHitsToLoad){
+          LogInfo << "\nReached max hits set in analysis settings\n";
+          break;
+        }
+      }
+
+      LogInfo << "Hits in this Run: " << RunTotalHits << std::endl;
+
+//        std::ifstream RunHitsFileStream;
+//        RunHitsFileStream.open(full_filename);
+//
+//
+//        LogInfo << "Loading hits from file " << full_filename << std::endl;
+//
+//        std::ifstream count_lines_stream;
+//        count_lines_stream.open(full_filename);
+//        std::string linedump;
+//        while (!count_lines_stream.eof()){
+//
+//            getline(count_lines_stream, linedump);
+//            if(linedump != "") NLinesInFile++;
+//            // LogInfo << linedump << std::endl;
+//
+//        }
+//        RunTotalHits = NLinesInFile/2;
+//        LogInfo << "Hits in this Run: " << RunTotalHits << std::endl;
+//
+//        for (int lineit = 0; lineit < NLinesInFile; lineit++){
+//
+//            // print progression of this ciycle in %
+//            if (lineit % (NLinesInFile/1000) == 0) {
+//                    LogInfo << "Loading hits from file " << full_filename << " " << lineit/(NLinesInFile/100) << "%\r";
+//                    LogInfo.flush();
+//            }
+//
+//            if(lineit%2 == 0){ //even lines
+//                int hit_feb_channel = -1;
+//                double hit_feb = -1;
+//                double hit_cell0time = -1;
+//                double hit_tot_value = -1;
+//                RunHitsFileStream >> dump >> hit_feb_channel
+//                        >> dump >> hit_feb
+//                        >> dump >> hit_cell0time
+//                        >> dump >> hit_tot_value;
+//                // LogInfo << "New hit channel " << new_Hit.HitFebChannel << " time " << new_Hit.HitCell0Time << std::endl;
+//                new_Hit.SetHitFebChannel(hit_feb_channel);
+//                new_Hit.SetHitFeb(hit_feb);
+//                new_Hit.SetHitCell0Time(hit_cell0time);
+//                new_Hit.SetHitTotValue(hit_tot_value);
+//            }
+//            else{
+//                RunHitsFileStream >> dump; // before the waveform, there is a string "DataSamples"
+//                // new_Hit.HitWaveform.clear(); // necessary?
+//
+//                for (int sampleit = 0; sampleit < RunNSamplesToExclude; sampleit++) RunHitsFileStream >> dump;
+//                std::vector <double> this_wf;
+//              this_wf.reserve(RunNSamplesInWaveform);
+//                for(int sampleit = 0; sampleit < RunNSamplesInWaveform; sampleit++){
+//                    RunHitsFileStream >> new_sample;
+//                    this_wf.emplace_back(new_sample);
+//                    // LogInfo << new_sample << std::endl;
+//                }
+//                new_Hit.SetHitWaveform(this_wf);
+//                new_Hit.SetHitId(hitId_counter);
+//                // print hit id counter
+//                // LogInfo << "HitId: " << new_Hit.HitId << " ";
+//
+//                if ((previous_cell0time - Cell0TimeCycles*Cell0TimeOffset) - new_Hit.GetHitCell0Time() > 2e13) {
+//                    Cell0TimeCycles++;
+//                    LogInfo << "Feb " << new_Hit.GetHitFeb() << ", Cell0Time cycle" << Cell0TimeCycles << std::endl;
+//                }
+//
+//                new_Hit.SetHitCell0Time(new_Hit.GetHitCell0Time() + Cell0TimeCycles*Cell0TimeOffset);
+//
+//                previous_cell0time = new_Hit.GetHitCell0Time();
+//
+//                RunFillHitInfo(new_Hit);    // can do elsewhere
+//                if (RunVerboseMode) new_Hit.HitGetHitInfo();
+//                // LogInfo << "Filled hit info. \n";
+//
+//                RunUnorderedHitsList.push_back(new_Hit);
+//                hitId_counter++;
+//                // LogInfo << "hitid_counter " << hitId_counter << std::endl;
+//
+//            }
+//            if (hitId_counter > RunMaxHitsToLoad){
+//                LogInfo << "\nReached max hits set in analysis settings\n";
+//                break;
+//            }
+//
+//        }
 
     }
 }
@@ -556,8 +655,8 @@ void TofRun::RunLoadHits(){
 
 void TofRun::RunFillHitInfo(TofHit &this_hit){
 
-    this_hit.SetHitSampic(std::floor(this_hit.GetHitFebChannel()/nChannelsPerSampic));
-    this_hit.SetHitDaqChannel(nChannelsPerFeb*this_hit.GetHitFeb() + this_hit.GetHitFebChannel());
+    this_hit.SetHitSampic(std::floor(this_hit.GetHitFebChannel()/TofRunParameters::nChannelsPerSampic));
+    this_hit.SetHitDaqChannel(TofRunParameters::nChannelsPerFeb*this_hit.GetHitFeb() + this_hit.GetHitFebChannel());
     std::vector <double> this_wf = this_hit.GetHitWaveform();
 
     // RawPeak is just max in wf, with no fit
@@ -615,20 +714,20 @@ void TofRun::RunOrderHits(){
     for (int ihit = 0; ihit < RunUnorderedHitsList.size(); ihit++)
         pair_cell0times_hitid.push_back(std::make_pair(RunUnorderedHitsList.at(ihit).GetHitCell0Time(), ihit));
 
-    std::cout << "\nSorting hits basing on Cell0Time...";
+    LogInfo << "\nSorting hits basing on Cell0Time...";
     std::sort(pair_cell0times_hitid.begin(), pair_cell0times_hitid.end(), [](const std::pair<double, int>& a_, const std::pair<double, int>& b_){
       if( a_.first < b_.first ) return true;
       return false;
     });
     // for (int ihit = 0; ihit < 200; ihit++)
-    //     std::cout << pair_cell0times_hitid.at(ihit).first << " ";
-    std::cout << "Done!";
+    //     LogInfo << pair_cell0times_hitid.at(ihit).first << " ";
+    LogInfo << "Done!";
 
     for (int ihit = 0; ihit < RunUnorderedHitsList.size(); ihit++)
         RunOrderedHitsList.push_back(RunUnorderedHitsList.at(pair_cell0times_hitid.at(ihit).second));
     
     RunUnorderedHitsList = {}; // free memory
-    std::cout << "\nStored hits in RunOrderedHitsList and emptied RunUnorderedHitsList.\n";
+    LogInfo << "\nStored hits in RunOrderedHitsList and emptied RunUnorderedHitsList.\n";
 
 }
 
@@ -641,10 +740,10 @@ void TofRun::RunCreateEvents(){
     for (int ihit = 0; ihit < RunOrderedHitsList.size(); ihit++){
 
         if (create_new_event) {
-            // std::cout << "Creating new event" << std::endl;
+            // LogInfo << "Creating new event" << std::endl;
             this_hit_time = RunOrderedHitsList.at(ihit).GetHitCell0Time();
             new_event = TofEvent(); // reset
-            // std::cout << "Create new event\n";
+            // LogInfo << "Create new event\n";
         }
 
         if (RunOrderedHitsList.at(ihit).GetHitCell0Time() - this_hit_time < RunCoincWindow){
@@ -653,7 +752,7 @@ void TofRun::RunCreateEvents(){
         }
         else{            
             // more operations on EventHits
-            // std::cout << "Event " << RunEventsList.size() << " has " << new_event.EventHitsList.size() << " hits." << std::endl;
+            // LogInfo << "Event " << RunEventsList.size() << " has " << new_event.EventHitsList.size() << " hits." << std::endl;
             new_event.EventCreateSignals();
             new_event.EventComputeTimeOfFlight();
             RunEventsList.push_back(new_event);
@@ -662,7 +761,7 @@ void TofRun::RunCreateEvents(){
 
     }
     
-    std::cout << "Created " << RunEventsList.size() << " events." << std::endl;
+    LogInfo << "Created " << RunEventsList.size() << " events." << std::endl;
     RunOrderedHitsList = {}; // free memory
 
 }
@@ -672,19 +771,19 @@ void TofRun::RunSetAnalysisOptions (){
     if (RunSelectedAnalysisOptions == true) return; // avoid double calls
 
 
-    std::string RunAnalysisSettingsFile = "../AnalysisSettings.json"; // has to be in same folder for now
+    std::string RunAnalysisSettingsFile = "../../../AnalysisSettings.json"; // has to be in same folder for now
     std::ifstream RunAnalysisSettingsStream(RunAnalysisSettingsFile.c_str());
     if (RunAnalysisSettingsStream.good()) RunSelectedAnalysisOptions = true;
 
     if (!RunAnalysisSettingsStream.is_open()) {
         std::string this_error = "Failed to open " + RunAnalysisSettingsFile;
-        std::cerr << this_error << std::endl;
+        LogError << this_error << std::endl;
         RunErrorsList.push_back(this_error);
         RunSelectedAnalysisOptions = false;
         return;
     }
 
-    std::cout << "Reading analysis settings from " << RunAnalysisSettingsFile << std::endl;
+    LogInfo << "Reading analysis settings from " << RunAnalysisSettingsFile << std::endl;
 
     nlohmann::json analysis_settings_file;
     RunAnalysisSettingsStream >> analysis_settings_file;
@@ -715,13 +814,13 @@ void TofRun::RunGetAnalysisOptions (){}
 
 void TofRun::RunPrintErrors(){
     for (int i = 0; i < RunErrorsList.size(); i++){
-        std::cout << "------------------------------------------\n";
-        std::cout << "Errors encountered:\n";
-        std::cout << RunErrorsList.at(i) << std::endl;
-        std::cout << "------------------------------------------\n";
+        LogInfo << "------------------------------------------\n";
+        LogInfo << "Errors encountered:\n";
+        LogInfo << RunErrorsList.at(i) << std::endl;
+        LogInfo << "------------------------------------------\n";
     }
 
-    if (RunErrorsList.size() == 0) std::cout << "No errors encountered.\n";
+    if (RunErrorsList.size() == 0) LogInfo << "No errors encountered.\n";
     
 }
 
@@ -730,7 +829,7 @@ void TofRun::RunGenerateOutputFile(std::string output_directory){
 
     std::string output_file_name = "run"+ std::to_string(RunNumber) + ".root";
 
-    std::cout << "Generating output file " << output_file_name << " in " << output_directory << std::endl;
+    LogInfo << "Generating output file " << output_file_name << " in " << output_directory << std::endl;
     TFile *output_file = new TFile(Form("%s%s", output_directory.c_str(), output_file_name.c_str()), "RECREATE");
     TTree *output_tree = new TTree(Form("TreeTofRun%d", RunNumber), "Tree contanining all TofRun information");
 

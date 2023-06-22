@@ -8,6 +8,15 @@
 [submodule "submodules/sampic_256ch_linux"]
 	path = submodules/sampic_256ch_linux
 	url = https://git.t2k.org/tof_utils/daq/sampic_256ch_linux.git
-[submodule "submodule/tof-data-format"]
-	path = submodule/tof-data-format
-	url = https://git.t2k.org/tof_utils/daq/tof-data-format.git
+[submodule "submodules/cpp-generic-toolbox"]
+	path = submodules/cpp-generic-toolbox
+	url = https://github.com/nadrino/cpp-generic-toolbox.git
+[submodule "submodules/simple-cpp-logger"]
+	path = submodules/simple-cpp-logger
+	url = https://github.com/nadrino/simple-cpp-logger
+[submodule "submodules/simple-cpp-cmd-line-parser"]
+	path = submodules/simple-cpp-cmd-line-parser
+	url = https://github.com/nadrino/simple-cpp-cmd-line-parser.git
+[submodule "submodules/midasio"]
+	path = submodules/midasio
+	url = https://bitbucket.org/tmidas/midasio.git

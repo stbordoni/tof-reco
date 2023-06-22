@@ -3,40 +3,61 @@
 // emanuele.villa@cern.ch
 // 
 
-// #include "TofObjects.h"
-// #include "TofObjects.C"
 #include "TofHit.h"
-#include "TofSignal.h"
-#include "TofEvent.h"
 #include "TofRun.h"
 #include "TofObjectsDict.h"
 
 #include "TApplication.h"
 #include "TH1F.h"
 
+#include "CmdLineParser.h"
+#include "Logger.h"
+
 #include "string"
 #include "iostream"
 #include "vector"
+
+LoggerInit([]{
+  Logger::getUserHeader() << "[" << FILENAME << "]";
+});
+
 
 
 // int main(std::string software, std::string run_full_path, std::string output_directory){
 int main(int argc, char *argv[]){
 
-  if( argc < 4 ){
-    std::cout << "usage:" << std::endl;
-    std::cout << "readTofData <windows/linux> /path/to/run/file /output/path" << std::endl;
-    throw std::logic_error("no option provided.");
-  }
+  CmdLineParser clp;
 
-  std::string software = argv[1];
-  std::string run_full_path = argv[2];
-  std::string output_directory = argv[3];
+  clp.getDescription() << "> readTofData is the main interface for unfolding TOF data (DAQ format)"<< std::endl;
+  clp.getDescription() << "> and performs a primary event reconstruction." << std::endl;
 
-  std::cout << "Run path " << run_full_path << std::endl;
+  clp.addDummyOption("Main options");
+  clp.addOption("software", {"-s", "--software"}, "Specify weather if the DAQ software was linux or windows.");
+  clp.addOption("runFullPath", {"-r", "--run"}, "Run full path.");
+  clp.addOption("outputDir", {"-o", "--output"}, "Specify output directory path");
+  clp.addDummyOption();
+
+  // usage allways displayed
+  LogInfo << clp.getDescription().str() << std::endl;
+
+  LogInfo << "Usage: " << std::endl;
+  LogInfo << clp.getConfigSummary() << std::endl << std::endl;
+
+  clp.parseCmdLine(argc, argv);
+
+  LogThrowIf( clp.isNoOptionTriggered(), "No option was provided." );
+
+  LogInfo << "Provided arguments: " << std::endl;
+  LogInfo << clp.getValueSummary() << std::endl << std::endl;
+
+  auto run_full_path = clp.getOptionVal<std::string>("runFullPath");
+  auto output_directory = clp.getOptionVal<std::string>("outputDir");
+
+  LogInfo << "Run path " << run_full_path << std::endl;
 
   TofRun thisRun;
-  thisRun.RunSetSoftwareType(software);
-  thisRun.RunSetInputFilePath(run_full_path);
+  thisRun.RunSetSoftwareType( clp.getOptionVal<std::string>("software") );
+  thisRun.RunSetInputFilePath( run_full_path );
   thisRun.RunReadFilename();
   thisRun.RunSaveSettings();
 
@@ -49,59 +70,13 @@ int main(int argc, char *argv[]){
   thisRun.RunPrintErrors();
   // thisRun.RunGenerateOutputFile(output_directory);
 
-  // check output file, meaning open it and print out runnumber
-  // std::string outputfile = output_directory + "run" + std::to_string(thisRun.RunNumber) + ".root";
-  // std::cout << "reading output file: " << outputfile << std::endl;
-  // TFile *f = new TFile(outputfile.c_str(), "READ");
-  // TTree *t = (TTree*)f->Get(Form("TreeTofRun%d", thisRun.RunNumber));
-  // TofRun *run = new TofRun(software);
-  // t->SetBranchAddress("TofRun", &run);
-  // t->GetEntry(0);
-  // std::cout << "Run number: " << thisRun.RunNumber << std::endl;
-  // std::cout << "Run address: " << thisRun.RunAddress << std::endl;
-  // // print all channels inside RunEventslist.EventSignalsList
-  // std::cout << "Number of events: " << thisRun.RunEventsList.size() << std::endl;
-  // // for (int i = 0; i < thisRun.RunEventsList.size(); i++){
-  // for (int i = 0; i < 10; i++){
-  //     std::cout << "----this event has " << thisRun.RunEventsList[i].EventHitsList.size() << " hits" << std::endl;
-  //     for (int j = 0; j < thisRun.RunEventsList[i].EventHitsList.size(); j++){
-  //         // std::cout << "--size of cf array " << thisRun.RunEventsList.at(i).EventHitsList.at(j).HitCfTimeFromFit.size() << std::endl;
-  //         for (int k = 0; k < thisRun.RunEventsList.at(i).EventHitsList.at(j).HitCfTimeFromFit.size(); k++){
-  //             std::cout << "hit " << j << " has " << thisRun.RunEventsList.at(i).EventHitsList.at(j).HitCfTimeFromFit.at(k) << " cf time " <<std::endl;
-  //         }
-
-  //     }
-  // }
-
-
-  // f->Close();
-  // delete f;
-  // delete t;
-  // delete run;
-  // close outputfile
-
-
-  // generate outputfile
-  // std::string outputfile = output_directory + thisRun.RunAddress + ".root";
-  // TFile *f = new TFile(outputfile.c_str(), "RECREATE");
-  // TTree *t = new TTree("T", "TofTree");
-  // TofEvent *event = new TofEvent();
-  // t->Branch("event", &event);
-  // std::cout << "Output file: " << outputfile << std::endl;
-  // close outputfile
-
-
   bool waveform_display = false;
-  // std::string software = argv[1];
-  // std::cout  << "Software " << software << std::endl;
-  // std::string run_full_path = argv[2];
-  // std::cout << "Run path " << run_full_path << std::endl;
   std::string run_number_string = SplitString(run_full_path.substr(run_full_path.find_last_of("/")+1), '.').at(0);
-  std::cout << "run_number_string" << run_number_string << std::endl;
+  LogInfo << "run_number_string" << run_number_string << std::endl;
   run_number_string = run_number_string.substr(run_number_string.find_first_of("run")+5);
-  std::cout << "run_number_string" << run_number_string << std::endl;
+  LogInfo << "run_number_string" << run_number_string << std::endl;
   int run_number = std::stoi(run_number_string);
-  std::cout << "Run number " << run_number << std::endl;
+  LogInfo << "Run number " << run_number << std::endl;
 
   //////////////////////////////////////////////////////////////
   // ROOT app and objects
@@ -231,39 +206,18 @@ int main(int argc, char *argv[]){
 
   //////////////////////////////////////////////////////////////
 
-  // Open file
-  // std::string input_file = run_full_path;
-  // std::cout << "Reading file: " << input_file << std::endl;
-  // TFile *f = new TFile(input_file.c_str(), "READ");
-  // if (f->IsZombie()) {
-  //     std::cerr << "Error: failed to open file " << input_file << std::endl;
-  //     return 1;
-  // }
-
-  // Get tree and set branch address
-  // TTree *t = (TTree*)f->Get(Form("TreeTofRun%i", run_number));
-  // TofRun *run = new TofRun(); // empty constructor
-  // int status = t->SetBranchAddress("TofRun", &run);
-  // if (status != 0) {
-  //     std::cerr << "Error: SetBranchAddress failed with status " << status << std::endl;
-  //     return 1;
-  // }
-
-  // std::cout << "Number of entries: " << t->GetEntries() << std::endl;
-  // t->GetEntry(0); // read first entry, can iterate if more than one run in a file
-
-  std::cout << "Run number: " << thisRun.GetRunNumber() << std::endl;
-  std::cout << "Run address: " << thisRun.GetRunAddress() << std::endl;
-  std::cout << "Number of events: " << thisRun.GetRunEventsList().size() << std::endl;
+  LogInfo << "Run number: " << thisRun.GetRunNumber() << std::endl;
+  LogInfo << "Run address: " << thisRun.GetRunAddress() << std::endl;
+  LogInfo << "Number of events: " << thisRun.GetRunEventsList().size() << std::endl;
 
   int event_counter = 0;
   for (auto  eventit : thisRun.GetRunEventsList()) {
-    // std::cout << "enter event loop" << std::endl;
+    // LogInfo << "enter event loop" << std::endl;
     for (auto  signalit : eventit.GetEventSignalsList()) {
-      if (event_counter % 100 == 0) {
-        std::cout << "Reading through Events, currently at " << event_counter / (double)(thisRun.RunEventsList.size()) * 100 << " %\r";
-        std::cout << std::flush;
-      }
+      // if (event_counter % 100 == 0) {
+      //   LogInfo << "Reading through Events, currently at " << event_counter / (double)(thisRun.RunEventsList.size()) * 100 << " %\r";
+      //   LogInfo << std::flush;
+      // }
 
       if (signalit.GetSignalType() == 3) {
         h_signalPosition->Fill(signalit.GetSignalPosition());
@@ -326,14 +280,14 @@ int main(int argc, char *argv[]){
     }
 
     if (eventit.GetEventTimeOfFlight() != 0) {
-      // std::cout << "Event has time of flight: " << eventit.GetEventTimeOfFlight() << std::endl;
+      // LogInfo << "Event has time of flight: " << eventit.GetEventTimeOfFlight() << std::endl;
       h_timeOfFlight->Fill(eventit.GetEventTimeOfFlight());
     }
 
     event_counter++;
   }
 
-  std::cout << "\nNow plotting histograms" << std::endl;
+  LogInfo << "\nNow plotting histograms" << std::endl;
 
   // plot histograms for good channels
   TCanvas *c_goodSignals = new TCanvas("c_goodSignals", "GoodSignals", 900, 900);

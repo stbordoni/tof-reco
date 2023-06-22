@@ -1,7 +1,7 @@
 #!/bin/bash
 
-inputDirectory="../../TofData/" # CHANGE LATER
-outputDirectory="../../TofRootFiles/"
+inputDirectory="../../../../TofData/" # we are in tof-reco/build/src/app, so we have to go up some levels
+outputDirectory="../../../../TofRootFiles/"
 
 mkdir -p build
 echo "Moving into build directory"
@@ -11,6 +11,7 @@ cd build;
 echo "Compiling the code"
 cmake ..
 make
+cd src/app; # executable is here
 
 
 # Check if the user has selected a run number
@@ -62,12 +63,12 @@ do
   fi
 
   mkdir -p $outputDirectory
-  
+
   echo ""
   echo "Currently we are in"
   pwd
   echo ""
   
-  ./readTofData $software $runFullPath $outputDirectory
+  ./readTofData -s $software -r $runFullPath -o $outputDirectory
 
 done
