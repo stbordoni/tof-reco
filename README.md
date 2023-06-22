@@ -9,7 +9,12 @@ If that's not the case, update them.
 
 ```
 git clone https://git.t2k.org/tof_utils/tof-reco.git
+cd tof-reco
 ./update.sh --up
+```
+Then, these operations are already done in the script to analyze the data, but if you just want to compile the code to check if it's ok on your machine, do:
+
+```
 mkdir build; 
 cd build; 
 cmake ..;

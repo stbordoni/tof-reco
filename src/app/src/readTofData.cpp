@@ -206,27 +206,6 @@ int main(int argc, char *argv[]){
 
   //////////////////////////////////////////////////////////////
 
-  // Open file
-  // std::string input_file = run_full_path;
-  // LogInfo << "Reading file: " << input_file << std::endl;
-  // TFile *f = new TFile(input_file.c_str(), "READ");
-  // if (f->IsZombie()) {
-  //     std::cerr << "Error: failed to open file " << input_file << std::endl;
-  //     return 1;
-  // }
-
-  // Get tree and set branch address
-  // TTree *t = (TTree*)f->Get(Form("TreeTofRun%i", run_number));
-  // TofRun *run = new TofRun(); // empty constructor
-  // int status = t->SetBranchAddress("TofRun", &run);
-  // if (status != 0) {
-  //     std::cerr << "Error: SetBranchAddress failed with status " << status << std::endl;
-  //     return 1;
-  // }
-
-  // LogInfo << "Number of entries: " << t->GetEntries() << std::endl;
-  // t->GetEntry(0); // read first entry, can iterate if more than one run in a file
-
   LogInfo << "Run number: " << thisRun.GetRunNumber() << std::endl;
   LogInfo << "Run address: " << thisRun.GetRunAddress() << std::endl;
   LogInfo << "Number of events: " << thisRun.GetRunEventsList().size() << std::endl;
@@ -235,10 +214,10 @@ int main(int argc, char *argv[]){
   for (auto  eventit : thisRun.GetRunEventsList()) {
     // LogInfo << "enter event loop" << std::endl;
     for (auto  signalit : eventit.GetEventSignalsList()) {
-      if (event_counter % 100 == 0) {
-        LogInfo << "Reading through Events, currently at " << event_counter / (double)(thisRun.RunEventsList.size()) * 100 << " %\r";
-        LogInfo << std::flush;
-      }
+      // if (event_counter % 100 == 0) {
+      //   LogInfo << "Reading through Events, currently at " << event_counter / (double)(thisRun.RunEventsList.size()) * 100 << " %\r";
+      //   LogInfo << std::flush;
+      // }
 
       if (signalit.GetSignalType() == 3) {
         h_signalPosition->Fill(signalit.GetSignalPosition());
