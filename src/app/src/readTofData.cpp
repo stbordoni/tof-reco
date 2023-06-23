@@ -70,53 +70,7 @@ int main(int argc, char *argv[]){
   thisRun.RunPrintErrors();
   // thisRun.RunGenerateOutputFile(output_directory);
 
-  // check output file, meaning open it and print out runnumber
-  // std::string outputfile = output_directory + "run" + std::to_string(thisRun.RunNumber) + ".root";
-  // LogInfo << "reading output file: " << outputfile << std::endl;
-  // TFile *f = new TFile(outputfile.c_str(), "READ");
-  // TTree *t = (TTree*)f->Get(Form("TreeTofRun%d", thisRun.RunNumber));
-  // TofRun *run = new TofRun(software);
-  // t->SetBranchAddress("TofRun", &run);
-  // t->GetEntry(0);
-  // LogInfo << "Run number: " << thisRun.RunNumber << std::endl;
-  // LogInfo << "Run address: " << thisRun.RunAddress << std::endl;
-  // // print all channels inside RunEventslist.EventSignalsList
-  // LogInfo << "Number of events: " << thisRun.RunEventsList.size() << std::endl;
-  // // for (int i = 0; i < thisRun.RunEventsList.size(); i++){
-  // for (int i = 0; i < 10; i++){
-  //     LogInfo << "----this event has " << thisRun.RunEventsList[i].EventHitsList.size() << " hits" << std::endl;
-  //     for (int j = 0; j < thisRun.RunEventsList[i].EventHitsList.size(); j++){
-  //         // LogInfo << "--size of cf array " << thisRun.RunEventsList.at(i).EventHitsList.at(j).HitCfTimeFromFit.size() << std::endl;
-  //         for (int k = 0; k < thisRun.RunEventsList.at(i).EventHitsList.at(j).HitCfTimeFromFit.size(); k++){
-  //             LogInfo << "hit " << j << " has " << thisRun.RunEventsList.at(i).EventHitsList.at(j).HitCfTimeFromFit.at(k) << " cf time " <<std::endl;
-  //         }
-
-  //     }
-  // }
-
-
-  // f->Close();
-  // delete f;
-  // delete t;
-  // delete run;
-  // close outputfile
-
-
-  // generate outputfile
-  // std::string outputfile = output_directory + thisRun.RunAddress + ".root";
-  // TFile *f = new TFile(outputfile.c_str(), "RECREATE");
-  // TTree *t = new TTree("T", "TofTree");
-  // TofEvent *event = new TofEvent();
-  // t->Branch("event", &event);
-  // LogInfo << "Output file: " << outputfile << std::endl;
-  // close outputfile
-
-
   bool waveform_display = false;
-  // std::string software = argv[1];
-  // LogInfo  << "Software " << software << std::endl;
-  // std::string run_full_path = argv[2];
-  // LogInfo << "Run path " << run_full_path << std::endl;
   std::string run_number_string = SplitString(run_full_path.substr(run_full_path.find_last_of("/")+1), '.').at(0);
   LogInfo << "run_number_string" << run_number_string << std::endl;
   run_number_string = run_number_string.substr(run_number_string.find_first_of("run")+5);
@@ -252,27 +206,6 @@ int main(int argc, char *argv[]){
 
   //////////////////////////////////////////////////////////////
 
-  // Open file
-  // std::string input_file = run_full_path;
-  // LogInfo << "Reading file: " << input_file << std::endl;
-  // TFile *f = new TFile(input_file.c_str(), "READ");
-  // if (f->IsZombie()) {
-  //     std::cerr << "Error: failed to open file " << input_file << std::endl;
-  //     return 1;
-  // }
-
-  // Get tree and set branch address
-  // TTree *t = (TTree*)f->Get(Form("TreeTofRun%i", run_number));
-  // TofRun *run = new TofRun(); // empty constructor
-  // int status = t->SetBranchAddress("TofRun", &run);
-  // if (status != 0) {
-  //     std::cerr << "Error: SetBranchAddress failed with status " << status << std::endl;
-  //     return 1;
-  // }
-
-  // LogInfo << "Number of entries: " << t->GetEntries() << std::endl;
-  // t->GetEntry(0); // read first entry, can iterate if more than one run in a file
-
   LogInfo << "Run number: " << thisRun.GetRunNumber() << std::endl;
   LogInfo << "Run address: " << thisRun.GetRunAddress() << std::endl;
   LogInfo << "Number of events: " << thisRun.GetRunEventsList().size() << std::endl;
@@ -281,10 +214,10 @@ int main(int argc, char *argv[]){
   for (auto  eventit : thisRun.GetRunEventsList()) {
     // LogInfo << "enter event loop" << std::endl;
     for (auto  signalit : eventit.GetEventSignalsList()) {
-      if (event_counter % 100 == 0) {
-        LogInfo << "Reading through Events, currently at " << event_counter / (double)(thisRun.RunEventsList.size()) * 100 << " %\r";
-        LogInfo << std::flush;
-      }
+      // if (event_counter % 100 == 0) {
+      //   LogInfo << "Reading through Events, currently at " << event_counter / (double)(thisRun.RunEventsList.size()) * 100 << " %\r";
+      //   LogInfo << std::flush;
+      // }
 
       if (signalit.GetSignalType() == 3) {
         h_signalPosition->Fill(signalit.GetSignalPosition());

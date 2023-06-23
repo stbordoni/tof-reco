@@ -1,28 +1,39 @@
-# NEW Reconstruction code for SAMPIC data
+# Reconstruction code for SAMPIC data
+<!--comment -->
 
 ## Instructions to set up the environment
 
-After cloning this repository in your machine, do `mkdir build; cd build; cmake ..; make`, to see if your system meets the requirements.
-You need to have ROOT installed in the standard location, meaning `/usr/local/`, and cmake (minimum 3.20) and c++ (gcc version at least 11) meeting the requirements. 
-If that's not the case, update them or create an environment.
-You also need to have nlohmann/json installed, instructions \hyperlink{https://github.com/nlohmann/json}.
+Follow these instructions to set up in your local machine. 
+You need to have ROOT installed in the standard location, meaning `/usr/local/`, cmake (minimum 3.20) and c++ (gcc version at least 11, or a recent clang) meeting the requirements. 
+If that's not the case, update them.
 
-The first time you use the code, you have to initialize the use of the submodules with `git submodule init` and `git submodule update`.
+```
+git clone https://git.t2k.org/tof_utils/tof-reco.git
+cd tof-reco
+./update.sh --up
+```
+Then, these operations are already done in the script to analyze the data, but if you just want to compile the code to check if it's ok on your machine, do:
 
-To update the code to the latest version, do `git pull origin master` in the main folder. 
-Also regularly update the submodules with `git submodule update --init --recursive --remote`.
+```
+mkdir build; 
+cd build; 
+cmake ..;
+make;
+```
 
-
-## Generate ROOT file
-An easy way to generate the ROOT file for a run is by running `./readTofData.sh run_number`,
+## Analyze data, create ROOT output file
+Run `./readTofData.sh run_number`
 where `run_number` clearly is the number of the run to analyze.
 The standard folder where the run is `../TofData`, and the results are in
 `../TofRootFiles`.
-If you want to set different folders, change the path in `readTofData.sh`.
+If you want to set different folders (not recommended), change the path in `readTofData.sh`.
 
-In `AnalysisSettings.json` there are some parameters to be changed during the analysis. 
-For now, the only one to care about is `RunMaxHitsToLoad`, since some runs are very long.
+The data can be found at this link: https://cernbox.cern.ch/s/4G9V1T8z8YgbUdE, you can just download the whole folder or just some runs.
 
+In `AnalysisSettings.json` there are some parameters to be changed during the analysis, names should be self-explicative.
+
+The output will be in the format `runXXX_plots.root`, containing histos per channel and some plots for the whole run. 
+To change or add more, go to `src/app/ReadTofData.cpp`.
 
 # Description of the classes
 
@@ -36,14 +47,15 @@ In particular note that the mapping for HitPlane is U=0, D=1, T=2, B=3, L=4, R=5
 
 In ReadRootFile, use as condition `if(GetHitFitSuccess)`, to be sure that the waveform was good and the fit was successful. 
 For the TOT, use `GetTotValue`.
-To get the time associated to a certain CF, use `HitComputeCfTime()`.
+To get the time associated to a certain CF, use `HitComputeCfTime()`. 
+If `GetHitFitSuccess` is false, instead of a fit a linear interpolation is performed.
 To select saturated hits, use `GetHitIsSaturated()`.
-
 
 ## TofSignal
 This contains either one or two hits, called HitMin and HitMax (for the moment, HitMin is the L edge and HitMax is the R edge). 
 
 There is a variable `SignalType`:
+
 = 1: only HitMin 
 
 = 2: only HitMax
@@ -65,37 +77,3 @@ Inizialitation value is 0.
 TofRun contains all the information regarding a run and does all the operations in the analysis process. 
 
 There is a method `GetRunInfo()` that prints out the information about the run, if needed.
-
-The output file contains a `TofRun` object itself. 
-
-<!-- 
-THE FOLLOWING OPTIONS ARE NOT HERE YET FOR THE NEW FORMAT, BUT WILL BE
-
-## Display waveforms
-The program `WFDisplay.C` displays the waveforms of a specific Run, of a specific channel. It can be made smarter to accept more than one channel at the time.
-To run it, there is a simple bash script in this case as well: `DisplayWaveforms.sh`.
-It is necessary to have generated the file `*_events.root`, and to write its mother directory in the script.
-`DisplayWaveforms.sh` accepts two parameters from command line:
-
-- argv[1] is the Run to analyse (`int`)
-- argv[2] is the Channel of which waveforms will be displayed (`int`).
-
-One can also set these two parameters directly inside the script and launch it without parameters passed from command line.
-If the selected channel has triggered in the selected run, all waveforms will be displayed one at the time in a Canvas. 
-The amplitude of the waveforms and the number of hits in that events will be printed out in the terminal.
-The Y range can be set inside `WFDisplay.C`. 
-Once the program is in execution, double click on the Canvas or single click on the axis to go to the following Waveform
-You can also change the value of a bool to avoid having to click to display the following waveform; all will be shown quickly. 
-This is useful to store all the waveforms of a channel in a quick way. They are then stored in `wfs.csv`.
-
-## Display Events
-The program `EventDisplay.C` displays the bars thata are triggered in a specific Run, in a specific Event. 
-The option to display more events changing by clicking on the canvas will be added
-To run it, there is a simple bash script in this case as well: `DisplayEvents.sh`.
-It is necessary to have generated the file `*_events.root`, and to write its mother directory in the script.
-`DisplayEvent.sh` accepts two parameters from command line:
-
-- argv[1] is the Run to analyse (`int`)
-- argv[2] is the Event to displat (`int`).
-
-One can also set these two parameters directly inside the script and launch it without parameters passed from command line. -->
