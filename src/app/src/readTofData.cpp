@@ -71,45 +71,41 @@ int main(int argc, char *argv[]){
   // thisRun.RunGenerateOutputFile(output_directory);
 
   bool waveform_display = false;
-  std::string run_number_string = SplitString(run_full_path.substr(run_full_path.find_last_of("/")+1), '.').at(0);
-  LogInfo << "run_number_string" << run_number_string << std::endl;
-  run_number_string = run_number_string.substr(run_number_string.find_first_of("run")+5);
-  LogInfo << "run_number_string" << run_number_string << std::endl;
-  int run_number = std::stoi(run_number_string);
-  LogInfo << "Run number " << run_number << std::endl;
+  
+  LogInfo << "Run number " << thisRun.GetRunNumber() << std::endl;
 
   //////////////////////////////////////////////////////////////
   // ROOT app and objects
   TApplication *app = new TApplication("myapp", &argc, argv);
   TObjArray *hist_list = new TObjArray();
 
-  TH1F *h_signalBar = new TH1F("h_signalBar", Form("SignalBar, run%i",run_number), 20, -0.5, 19.5);
+  TH1F *h_signalBar = new TH1F("h_signalBar", Form("SignalBar, run%i",thisRun.GetRunNumber()), 20, -0.5, 19.5);
   h_signalBar->GetXaxis()->SetTitle("Bar");
   h_signalBar->SetMinimum(0);
   hist_list->Add(h_signalBar);
 
-  TH1F *h_signalPlane = new TH1F("h_signalPlane", Form("SignalPlane, run%i", run_number), 6, -0.5, 5.5);
+  TH1F *h_signalPlane = new TH1F("h_signalPlane", Form("SignalPlane, run%i", thisRun.GetRunNumber()), 6, -0.5, 5.5);
   h_signalPlane->GetXaxis()->SetTitle("Plane");
   h_signalPlane->SetMinimum(0);
   hist_list->Add(h_signalPlane);
 
-  TH1F *h_signalPosition = new TH1F("h_signalPosition", Form("SignalPosition, run%i", run_number), 50, -50, 270.);
+  TH1F *h_signalPosition = new TH1F("h_signalPosition", Form("SignalPosition, run%i", thisRun.GetRunNumber()), 50, -50, 270.);
   h_signalPosition->GetXaxis()->SetTitle("Position [cm]");
   h_signalPosition->SetMinimum(0);
   hist_list->Add(h_signalPosition);
 
-  TH1F *h_hitPeak = new TH1F("h_hitPeak", Form("HitPeak, run%i", run_number), 50, -0.1,1.1 );
+  TH1F *h_hitPeak = new TH1F("h_hitPeak", Form("HitPeak, run%i", thisRun.GetRunNumber()), 50, -0.1,1.1 );
   h_hitPeak->GetXaxis()->SetTitle("Peak [V]");
   h_hitPeak->SetMinimum(0);
   hist_list->Add(h_hitPeak);
 
-  TH1F *h_singleHitPeak = new TH1F("h_singleHitPeak", Form("SingleHitPeak, run%i", run_number), 50, -0.1,1.1 );
+  TH1F *h_singleHitPeak = new TH1F("h_singleHitPeak", Form("SingleHitPeak, run%i", thisRun.GetRunNumber()), 50, -0.1,1.1 );
   h_singleHitPeak->GetXaxis()->SetTitle("Peak [V]");
   h_singleHitPeak->SetMinimum(0);
   hist_list->Add(h_singleHitPeak);
 
   // TH1F to plot channels firing in a run. On x axis channel number, on y axis number of times that channel fired
-  TH1F *h_channelsFiring = new TH1F("h_channelsFiring", Form("ChannelsFiring, run%i", run_number), 256, -0.5, 255.5);
+  TH1F *h_channelsFiring = new TH1F("h_channelsFiring", Form("ChannelsFiring, run%i", thisRun.GetRunNumber()), 256, -0.5, 255.5);
   h_channelsFiring->GetXaxis()->SetTitle("Channel");
   h_channelsFiring->SetMinimum(0);
   hist_list->Add(h_channelsFiring);
@@ -122,23 +118,23 @@ int main(int argc, char *argv[]){
   TH1F *h_risingTime [n_channels];
   TH1F *h_integral [n_channels];
   for (int i = 0; i < n_channels; i++){
-    h_baseline[i] = new TH1F(Form("h_baseline_%i", i), Form("Baseline, run%i, channel%i", run_number, i), 50, -0.2, 0.2);
+    h_baseline[i] = new TH1F(Form("h_baseline_%i", i), Form("Baseline, run%i, channel%i", thisRun.GetRunNumber(), i), 50, -0.2, 0.2);
     h_baseline[i]->GetXaxis()->SetTitle("Baseline [V]");
     hist_list->Add(h_baseline[i]);
 
-    h_maxAmp[i] = new TH1F(Form("h_maxAmp_%i", i), Form("MaxAmp, run%i, channel%i", run_number, i), 50, -0.1, 1.1);
+    h_maxAmp[i] = new TH1F(Form("h_maxAmp_%i", i), Form("MaxAmp, run%i, channel%i", thisRun.GetRunNumber(), i), 50, -0.1, 1.1);
     h_maxAmp[i]->GetXaxis()->SetTitle("Max Amplitude [V]");
     hist_list->Add(h_maxAmp[i]);
 
-    h_peakSample[i] = new TH1F(Form("h_peakSample_%i", i), Form("PeakSample, run%i, channel%i", run_number, i), 50, 0, 64);
+    h_peakSample[i] = new TH1F(Form("h_peakSample_%i", i), Form("PeakSample, run%i, channel%i", thisRun.GetRunNumber(), i), 50, 0, 64);
     h_peakSample[i]->GetXaxis()->SetTitle("Peak Sample [V]");
     hist_list->Add(h_peakSample[i]);
 
-    h_risingTime[i] = new TH1F(Form("h_risingTime_%i", i), Form("RisingTime, run%i, channel%i", run_number, i), 50, 0, 20);
+    h_risingTime[i] = new TH1F(Form("h_risingTime_%i", i), Form("RisingTime, run%i, channel%i", thisRun.GetRunNumber(), i), 50, 0, 20);
     h_risingTime[i]->GetXaxis()->SetTitle("Rising Time [V]");
     hist_list->Add(h_risingTime[i]);
 
-    h_integral[i] = new TH1F(Form("h_integral_%i", i), Form("Integral, run%i, channel%i", run_number, i), 50, 0, 500);
+    h_integral[i] = new TH1F(Form("h_integral_%i", i), Form("Integral, run%i, channel%i", thisRun.GetRunNumber(), i), 50, 0, 500);
     h_integral[i]->GetXaxis()->SetTitle("Integral [V]");
     hist_list->Add(h_integral[i]);
 
@@ -146,12 +142,12 @@ int main(int argc, char *argv[]){
 
 
   // TH1F to plot time of flight
-  TH1F *h_timeOfFlight = new TH1F("h_timeOfFlight", Form("TimeOfFlight, run%i", run_number), 40, -0.5, 55.5);
+  TH1F *h_timeOfFlight = new TH1F("h_timeOfFlight", Form("TimeOfFlight, run%i", thisRun.GetRunNumber()), 40, -0.5, 55.5);
   h_timeOfFlight->GetXaxis()->SetTitle("Time of Flight [ns]");
   h_timeOfFlight->SetMinimum(0);
   hist_list->Add(h_timeOfFlight);
 
-  TH1F *h_saturatedHits = new TH1F("h_saturatedHits", Form("SaturatedHits, run%i", run_number), 256, -0.5, 255.5);
+  TH1F *h_saturatedHits = new TH1F("h_saturatedHits", Form("SaturatedHits, run%i", thisRun.GetRunNumber()), 256, -0.5, 255.5);
   h_saturatedHits->GetXaxis()->SetTitle("Channel");
   h_saturatedHits->SetMinimum(0);
   h_saturatedHits->SetFillColor(kRed);
@@ -159,7 +155,7 @@ int main(int argc, char *argv[]){
   h_saturatedHits->SetFillStyle(3004);
   hist_list->Add(h_saturatedHits);
 
-  TH1F * h_saturatedOtherEdge = new TH1F("h_saturatedOtherEdge", Form("SaturatedOtherEdge, run%i", run_number), 256, -0.5, 255.5);
+  TH1F * h_saturatedOtherEdge = new TH1F("h_saturatedOtherEdge", Form("SaturatedOtherEdge, run%i", thisRun.GetRunNumber()), 256, -0.5, 255.5);
   h_saturatedOtherEdge->GetXaxis()->SetTitle("Channel");
   h_saturatedOtherEdge->SetMinimum(0);
   h_saturatedOtherEdge->SetLineColor(kGreen);
@@ -337,7 +333,7 @@ int main(int argc, char *argv[]){
     h_planes[i]->SetContour(numColors); // Set the number of contours for color mapping
   }
 
-  TCanvas* c_planes = new TCanvas("c_eventDisplay", Form("EventDisplay, run%i", run_number), 600, 800);
+  TCanvas* c_planes = new TCanvas("c_eventDisplay", Form("EventDisplay, run%i", thisRun.GetRunNumber()), 600, 800);
   c_planes->Divide(3,4);
   c_planes->cd(1);
   h_planes[PlaneNumbers["T"]]->Draw("COLZ");
@@ -359,14 +355,14 @@ int main(int argc, char *argv[]){
   if (g_hits[PlaneNumbers["D"]]->GetN() > 0) g_hits[PlaneNumbers["D"]]->Draw("Psame");
 
   // monitoring plots
-  TCanvas *c_monitoring = new TCanvas("c_monitoring", Form("Monitoring, run %i", run_number), 900, 900);
+  TCanvas *c_monitoring = new TCanvas("c_monitoring", Form("Monitoring, run %i", thisRun.GetRunNumber()), 900, 900);
   c_monitoring->Divide(3,2);
   c_monitoring->cd(1);
   TGraph *g_baseline = new TGraph();
   for (int i = 0; i < n_channels; i++) {
     g_baseline->SetPoint(i, i, h_baseline[i]->GetMean());
   }
-  g_baseline->SetTitle(Form("Baseline, run%i", run_number));
+  g_baseline->SetTitle(Form("Baseline, run%i", thisRun.GetRunNumber()));
   g_baseline->SetMarkerStyle(2);
   g_baseline->SetMarkerSize(1);
   g_baseline->SetMarkerColor(kRed);
@@ -376,7 +372,7 @@ int main(int argc, char *argv[]){
   for (int i = 0; i < n_channels; i++) {
     g_maxAmp->SetPoint(i, i, h_maxAmp[i]->GetMean());
   }
-  g_maxAmp->SetTitle(Form("Max Amplitude, run%i", run_number));
+  g_maxAmp->SetTitle(Form("Max Amplitude, run%i", thisRun.GetRunNumber()));
   g_maxAmp->SetMarkerStyle(2);
   g_maxAmp->SetMarkerSize(1);
   g_maxAmp->SetMarkerColor(kRed);
@@ -386,7 +382,7 @@ int main(int argc, char *argv[]){
   for (int i = 0; i < n_channels; i++) {
     g_peakSample->SetPoint(i, i, h_peakSample[i]->GetMean());
   }
-  g_peakSample->SetTitle(Form("Peak Sample, run%i", run_number));
+  g_peakSample->SetTitle(Form("Peak Sample, run%i", thisRun.GetRunNumber()));
   g_peakSample->SetMarkerStyle(2);
   g_peakSample->SetMarkerSize(1);
   g_peakSample->SetMarkerColor(kRed);
@@ -396,7 +392,7 @@ int main(int argc, char *argv[]){
   for (int i = 0; i < n_channels; i++) {
     g_risingTime->SetPoint(i, i, h_risingTime[i]->GetMean());
   }
-  g_risingTime->SetTitle(Form("Rising Time, run%i", run_number));
+  g_risingTime->SetTitle(Form("Rising Time, run%i", thisRun.GetRunNumber()));
   g_risingTime->SetMarkerStyle(2);
   g_risingTime->SetMarkerSize(1);
   g_risingTime->SetMarkerColor(kRed);
@@ -406,7 +402,7 @@ int main(int argc, char *argv[]){
   for (int i = 0; i < n_channels; i++) {
     g_integral->SetPoint(i, i, h_integral[i]->GetMean());
   }
-  g_integral->SetTitle(Form ("Integral, run%i", run_number));
+  g_integral->SetTitle(Form ("Integral, run%i", thisRun.GetRunNumber()));
   g_integral->SetMarkerStyle(2);
   g_integral->SetMarkerSize(1);
   g_integral->SetMarkerColor(kRed);
@@ -414,12 +410,12 @@ int main(int argc, char *argv[]){
   // 6 is empty for now
 
   // save all files in a histogram list  and output to a root file
-  TFile *f_out = new TFile(Form("../../TofRootFiles/run%i_plots.root", run_number), "RECREATE");
+  TFile *f_out = new TFile(Form("../../../../TofRootFiles/run%i_plots.root", thisRun.GetRunNumber()), "RECREATE");
   f_out->cd();
   hist_list->Write();
   f_out->Close();
 
-  app->Run();
+  // app->Run();
 
   return 0;
 }
