@@ -61,12 +61,19 @@ void MidasInterface::rewind(){
 }
 void MidasInterface::fillSampicEvent(){
 
+  if( this->getBankDataArray<int>("TFNH").empty() ){
+    this->getCurrentEvent()->PrintBanks();
+    LogThrow("Event don't have the expected TFNH bank.");
+  }
+
   // array of [NbOfHitsInEvent]
   auto boardIndices = this->getBankDataArray<int>("TFBI");
   auto channelIndices = this->getBankDataArray<int>("TFCI");
   auto hitNumberList = this->getBankDataArray<int>("TFHN");
   auto sampicIndexList = this->getBankDataArray<int>("TFSI");
   auto channelIndexList = this->getBankDataArray<int>("TFCI");
+  auto FirstCellTimeList = this->getBankDataArray<double>("TFC0");
+  auto TOTValueList = this->getBankDataArray<float>("TFTV");
 
   // array of [NbOfHitsInEvent][nSamples]
   auto rawSampleList = this->getBankDataArray<unsigned short>("TFRS");
@@ -84,6 +91,8 @@ void MidasInterface::fillSampicEvent(){
     if( not hitNumberList.empty() ) _sampicEventBuffer_.Hit[iHit].HitNumber = hitNumberList[iHit];
     if( not sampicIndexList.empty() ) _sampicEventBuffer_.Hit[iHit].SampicIndex = sampicIndexList[iHit];
     if( not channelIndexList.empty() ) _sampicEventBuffer_.Hit[iHit].ChannelIndex = channelIndexList[iHit];
+    if( not FirstCellTimeList.empty() ) _sampicEventBuffer_.Hit[iHit].FirstCellTimeStamp = FirstCellTimeList[iHit];
+    if( not TOTValueList.empty() ) _sampicEventBuffer_.Hit[iHit].TOTValue = TOTValueList[iHit];
 
     for( int iSample = 0 ; iSample < MAX_NB_OF_SAMPLES ; iSample++ ){
       sampleGlobalIndex++;
