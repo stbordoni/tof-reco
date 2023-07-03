@@ -70,23 +70,16 @@ int main(int argc, char *argv[]){
   thisRun.RunOrderHits();
   thisRun.RunCreateEvents();
   thisRun.RunPrintErrors();
-  // thisRun.RunGenerateOutputFile(output_directory);
 
   // read AnalysisSettings.json
   std::string RunAnalysisSettingsFile = "../../../AnalysisSettings.json"; 
     std::ifstream RunAnalysisSettingsStream(RunAnalysisSettingsFile.c_str());
-    // if (RunAnalysisSettingsStream.good()) RunSelectedAnalysisOptions = true;
-  
-    if (!RunAnalysisSettingsStream.is_open()) {
-        std::string this_error = "Failed to open " + RunAnalysisSettingsFile;
-        // return;
-    }
     LogInfo << "Reading analysis settings from " << RunAnalysisSettingsFile << std::endl;
-    
     nlohmann::json analysis_settings_file;
     RunAnalysisSettingsStream >> analysis_settings_file;
     bool waveform_display = analysis_settings_file["HitDisplay"];
     bool run_root_app = analysis_settings_file["PlotsDisplay"];
+    bool save_root_tree = analysis_settings_file["SaveTree"]; // you need dictionary enabled for this
     
 
   // bool waveform_display = false;
@@ -518,6 +511,8 @@ int main(int argc, char *argv[]){
 
   if (run_root_app) app->Run();
   else LogInfo << "Info: Enable PlotsDisplay in AnalysisSettings.json to see plots at end of execution.\n";
+
+  if (save_root_tree) thisRun.RunGenerateOutputFile(output_directory);
 
   return 0;
 }
