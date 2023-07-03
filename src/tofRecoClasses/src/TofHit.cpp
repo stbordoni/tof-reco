@@ -282,7 +282,7 @@ void TofHit::HitMatchDaqChToTofCh(){
     if (HitDaqChannel == 243) {HitPlane = -1; HitBar = -1;}
 }
 
-char TofHit::HitGetPlaneId(){
+char TofHit::HitGetPlaneId() const{
     if (HitPlane == 0) return 'U';
     else if (HitPlane == 1) return 'D';
     else if (HitPlane == 2) return 'T';
@@ -293,12 +293,12 @@ char TofHit::HitGetPlaneId(){
         std::string this_error;
         this_error = "HitPlane variable has incorrect value\n";
         std::cerr << this_error << std::endl;
-        HitErrorsList.push_back(this_error);
+        // HitErrorsList.push_back(this_error);
         return '!';
     }
 }
 
-void TofHit::HitDisplayWaveform(){
+void TofHit::HitDisplayWaveform() {
 
     gROOT->SetBatch(kFALSE);
     TCanvas *c_appo = new TCanvas("c_appo","c_appo",800,600);
@@ -318,7 +318,7 @@ void TofHit::HitDisplayWaveform(){
     delete c_appo;
 }
 
-void TofHit::HitGetHitInfo(){
+void TofHit::HitGetHitInfo() {
 
     // print all other variables
     std::cout << "    HitId: " << HitId << "   ";
@@ -335,7 +335,7 @@ void TofHit::HitGetHitInfo(){
 
 }
 
-void TofHit::HitPrintErrors(){
+void TofHit::HitPrintErrors() {
     if (HitErrorsList.size() > 0){
         std::cout << "HitErrorsList: ";
         for (int i = 0; i < HitErrorsList.size(); i++){

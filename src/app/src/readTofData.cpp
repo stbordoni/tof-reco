@@ -214,6 +214,17 @@ int main(int argc, char *argv[]){
     // g_hits[i]->GetYaxis()->SetTickLength(0);
   }
 
+  // average waveforms per S
+  std::vector <TGraphErrors*> g_aveWf;
+  g_aveWf.reserve(256);
+  for (int i = 0; i < 256; i++){
+    g_aveWf[i] = new TGraphErrors();
+    g_aveWf[i]->SetTitle(Form("baseline_Ch%i", i));
+    g_aveWf[i]->SetMarkerStyle(22);
+    g_aveWf[i]->SetMarkerSize(0.6);
+    g_aveWf[i]->SetMarkerColor(2);
+  }
+
   //////////////////////////////////////////////////////////////
 
   LogInfo << "Run number: " << thisRun.GetRunNumber() << std::endl;
@@ -230,61 +241,71 @@ int main(int argc, char *argv[]){
       // }
 
       if (signalit.GetSignalType() == 3) {
+        auto & thisHitMin = signalit.GetSignalHitMin();
+        auto & thisHitMax = signalit.GetSignalHitMax();
+        auto thisChannel = thisHitMin.GetHitDaqChannel();
         h_signalPosition->Fill(signalit.GetSignalPosition());
-        h_signalBar->Fill(signalit.GetSignalHitMin().GetHitBar());
-        h_signalPlane->Fill(signalit.GetSignalHitMin().GetHitPlane());
-        h_hitPeak->Fill(signalit.GetSignalHitMin().GetHitPeak());
-        h_channelsFiring->Fill(signalit.GetSignalHitMin().GetHitDaqChannel());
-        h_channelsFiring->Fill(signalit.GetSignalHitMax().GetHitDaqChannel());
-        if (signalit.GetSignalHitMin().GetHitIsSaturated()){
-          h_saturatedHits->Fill(signalit.GetSignalHitMin().GetHitDaqChannel());
-          if (signalit.GetSignalHitMax().GetHitIsSaturated()) h_saturatedOtherEdge->Fill(signalit.GetSignalHitMax().GetHitDaqChannel());
+        h_signalBar->Fill(thisHitMin.GetHitBar());
+        h_signalPlane->Fill(thisHitMin.GetHitPlane());
+        h_hitPeak->Fill(thisHitMin.GetHitPeak());
+        h_channelsFiring->Fill(thisChannel);
+        h_channelsFiring->Fill(thisChannel);
+        if (thisHitMin.GetHitIsSaturated()){
+          h_saturatedHits->Fill(thisChannel);
+          if (thisHitMax.GetHitIsSaturated()) h_saturatedOtherEdge->Fill(thisChannel);
         }
-        if (signalit.GetSignalHitMax().GetHitIsSaturated()){
-          h_saturatedHits->Fill(signalit.GetSignalHitMax().GetHitDaqChannel());
-          if (signalit.GetSignalHitMin().GetHitIsSaturated()) h_saturatedOtherEdge->Fill(signalit.GetSignalHitMin().GetHitDaqChannel());
+        if (thisHitMax.GetHitIsSaturated()){
+          h_saturatedHits->Fill(thisChannel);
+          if (thisHitMin.GetHitIsSaturated()) h_saturatedOtherEdge->Fill(thisChannel);
         }
-        h_planes[signalit.GetSignalHitMin().GetHitPlane()]->Fill(signalit.GetSignalPosition(), signalit.GetSignalHitMin().GetHitBar());
-        g_hits[signalit.GetSignalHitMin().GetHitPlane()]->SetPoint(g_hits[signalit.GetSignalHitMin().GetHitPlane()]->GetN(), signalit.GetSignalPosition(), signalit.GetSignalHitMin().GetHitBar());
+        h_planes[thisHitMin.GetHitPlane()]->Fill(signalit.GetSignalPosition(), thisHitMin.GetHitBar());
+        g_hits[thisHitMin.GetHitPlane()]->SetPoint(g_hits[thisHitMin.GetHitPlane()]->GetN(), signalit.GetSignalPosition(), thisHitMin.GetHitBar());
         if (waveform_display) signalit.GetSignalHitMin().HitDisplayWaveform();
         if (waveform_display)  signalit.GetSignalHitMax().HitDisplayWaveform();
 
-        h_baseline[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().GetHitBaseline());
-        h_baseline[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().GetHitBaseline());
-        h_maxAmp[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().GetHitPeak());
-        h_maxAmp[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().GetHitPeak());
-        h_peakSample[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().GetHitPeakSample());
-        h_peakSample[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().GetHitPeakSample());
-        // h_risingTime[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().HitComputeCfTime(0.9)-signalit.GetSignalHitMin().HitComputeCfTime(0.1));
-        // h_risingTime[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().HitComputeCfTime(0.9)-signalit.GetSignalHitMin().HitComputeCfTime(0.1));
-        h_integral[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().GetHitVoltageIntegral());
-        h_integral[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().GetHitVoltageIntegral());
-
+        h_baseline[thisChannel]->Fill(thisHitMin.GetHitBaseline());
+        h_baseline[thisChannel]->Fill(thisHitMax.GetHitBaseline());
+        h_maxAmp[thisChannel]->Fill(thisHitMin.GetHitPeak());
+        h_maxAmp[thisChannel]->Fill(thisHitMax.GetHitPeak());
+        h_peakSample[thisChannel]->Fill(thisHitMin.GetHitPeakSample());
+        h_peakSample[thisChannel]->Fill(thisHitMax.GetHitPeakSample());
+        // h_risingTime[thisChannel]->Fill(thisHitMin.HitComputeCfTime(0.9)-thisHitMin.HitComputeCfTime(0.1));
+        // h_risingTime[thisChannel]->Fill(thisHitMax.HitComputeCfTime(0.9)-thisHitMin.HitComputeCfTime(0.1));
+        h_integral[thisChannel]->Fill(thisHitMin.GetHitVoltageIntegral());
+        h_integral[thisChannel]->Fill(thisHitMax.GetHitVoltageIntegral());
+        // average waveform per channel 
+        g_aveWf[thisChannel]->SetPoint(g_aveWf[thisChannel]->GetN(), thisHitMin.GetHitPeakSample(), thisHitMin.GetHitBaseline());
+        g_aveWf[thisChannel]->SetPoint(g_aveWf[thisChannel]->GetN(), thisHitMax.GetHitPeakSample(), thisHitMax.GetHitBaseline());
       }
       else if (signalit.GetSignalType() == 1) {
-        h_singleHitPeak->Fill(signalit.GetSignalHitMin().GetHitPeak());
-        h_channelsFiring->Fill(signalit.GetSignalHitMin().GetHitDaqChannel());
-        if (signalit.GetSignalHitMin().GetHitIsSaturated()) h_saturatedHits->Fill(signalit.GetSignalHitMin().GetHitDaqChannel());
-        if (waveform_display) signalit.GetSignalHitMin().HitDisplayWaveform();
+        auto & thisHitMin = signalit.GetSignalHitMin();
+        auto thisChannel = thisHitMin.GetHitDaqChannel();
+        h_singleHitPeak->Fill(thisHitMin.GetHitPeak());
+        h_channelsFiring->Fill(thisChannel);
+        if (thisHitMin.GetHitIsSaturated()) h_saturatedHits->Fill(thisChannel);
+        if (waveform_display) thisHitMin.HitDisplayWaveform();
 
-        h_baseline[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().GetHitBaseline());
-        h_maxAmp[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().GetHitPeak());
-        h_peakSample[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().GetHitPeakSample());
-        // h_risingTime[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().HitComputeCfTime(0.9)-signalit.GetSignalHitMin().HitComputeCfTime(0.1));
-        h_integral[signalit.GetSignalHitMin().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMin().GetHitVoltageIntegral());
+        h_baseline[thisChannel]->Fill(thisHitMin.GetHitBaseline());
+        h_maxAmp[thisChannel]->Fill(thisHitMin.GetHitPeak());
+        h_peakSample[thisChannel]->Fill(thisHitMin.GetHitPeakSample());
+        // h_risingTime[thisChannel]->Fill(thisHitMin.HitComputeCfTime(0.9)-thisHitMin.HitComputeCfTime(0.1));
+        h_integral[thisChannel]->Fill(thisHitMin.GetHitVoltageIntegral());
+        g_aveWf[thisChannel]->SetPoint(g_aveWf[thisChannel]->GetN(), thisHitMin.GetHitPeakSample(), thisHitMin.GetHitBaseline());
 
       }
       else if (signalit.GetSignalType() == 2) {
-        h_singleHitPeak->Fill(signalit.GetSignalHitMax().GetHitPeak());
-        h_channelsFiring->Fill(signalit.GetSignalHitMax().GetHitDaqChannel());
-        if (signalit.GetSignalHitMax().GetHitIsSaturated()) h_saturatedHits->Fill(signalit.GetSignalHitMax().GetHitDaqChannel());
-        if (waveform_display) signalit.GetSignalHitMax().HitDisplayWaveform();
+        auto & thisHitMax = signalit.GetSignalHitMax();
+        auto thisChannel = thisHitMax.GetHitDaqChannel();
+        h_singleHitPeak->Fill(thisHitMax.GetHitPeak());
+        h_channelsFiring->Fill(thisChannel);
+        if (thisHitMax.GetHitIsSaturated()) h_saturatedHits->Fill(thisChannel);
+        if (waveform_display) thisHitMax.HitDisplayWaveform();
 
-        h_baseline[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().GetHitBaseline());
-        h_maxAmp[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().GetHitPeak());
-        h_peakSample[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().GetHitPeakSample());
-        // h_risingTime[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().HitComputeCfTime(0.9)-signalit.GetSignalHitMin().HitComputeCfTime(0.1));
-        h_integral[signalit.GetSignalHitMax().GetHitDaqChannel()]->Fill(signalit.GetSignalHitMax().GetHitVoltageIntegral());
+        h_baseline[thisChannel]->Fill(thisHitMax.GetHitBaseline());
+        h_maxAmp[thisChannel]->Fill(thisHitMax.GetHitPeak());
+        h_peakSample[thisChannel]->Fill(thisHitMax.GetHitPeakSample());
+        // h_risingTime[thisChannel]->Fill(thisHitMax.HitComputeCfTime(0.9)-thisHitMin.HitComputeCfTime(0.1));
+        h_integral[thisChannel]->Fill(thisHitMax.GetHitVoltageIntegral());
 
       }
     }
@@ -300,21 +321,22 @@ int main(int argc, char *argv[]){
   LogInfo << "\nNow plotting histograms" << std::endl;
 
   // plot histograms for good channels
-  TCanvas *c_goodSignals = new TCanvas("c_goodSignals", "GoodSignals", 900, 900);
-  c_goodSignals->Divide(3,2);
-  c_goodSignals->cd(1);
+  TCanvas *c_allSignals = new TCanvas("c_allSignals", "allSignals", 900, 900);
+  c_allSignals->Divide(3,2);
+  c_allSignals->cd(1);
   h_signalBar->Draw("HIST");
-  c_goodSignals->cd(2);
+  c_allSignals->cd(2);
   h_signalPlane->Draw("HIST");
-  c_goodSignals->cd(3);
+  c_allSignals->cd(3);
   h_signalPosition->Draw("HIST");
-  c_goodSignals->cd(4);
+  c_allSignals->cd(4);
   h_hitPeak->Draw("HIST");
-  c_goodSignals->cd(5);
+  c_allSignals->cd(5);
   h_channelsFiring->Draw("HIST");
-  c_goodSignals->cd(6);
+  c_allSignals->cd(6);
   h_timeOfFlight->Draw("HIST");
-  c_goodSignals->SaveAs(Form("../../../../TofRootFiles/run%i_goodSignals.C", thisRun.GetRunNumber()));
+  c_allSignals->SaveAs(Form("../../../../TofRootFiles/run%i_allSignals.C", thisRun.GetRunNumber()));
+  c_allSignals->SaveAs(Form("../../../../TofRootFiles/run%i_allSignals.pdf", thisRun.GetRunNumber()));
 
   // plot bad signals in some way
   TCanvas *c_badSignals = new TCanvas("c_badSignals", "'Bad' Signals", 900, 900);
@@ -328,6 +350,7 @@ int main(int argc, char *argv[]){
   h_saturatedHits->Draw("HIST");
   h_saturatedOtherEdge->Draw("SAMES");
   c_badSignals->SaveAs(Form("../../../../TofRootFiles/run%i_badSignals.C", thisRun.GetRunNumber()));
+  c_badSignals->SaveAs(Form("../../../../TofRootFiles/run%i_badSignals.pdf", thisRun.GetRunNumber()));
 
   // plot event display, first adjust color palette
 
@@ -349,8 +372,8 @@ int main(int argc, char *argv[]){
     h_planes[i]->SetContour(numColors); // Set the number of contours for color mapping
   }
 
-  TCanvas* c_planes = new TCanvas("c_eventDisplay", Form("EventDisplay, run%i", thisRun.GetRunNumber()), 600, 800);
-  c_planes->Divide(3,4);
+  TCanvas* c_planes = new TCanvas("c_eventDisplay", Form("EventDisplay, run%i", thisRun.GetRunNumber()), 600, 400);
+  c_planes->Divide(3,2);
   c_planes->cd(1);
   h_planes[PlaneNumbers["T"]]->Draw("COLZ");
   if (g_hits[PlaneNumbers["T"]]->GetN() > 0) g_hits[PlaneNumbers["T"]]->Draw("Psame");
@@ -370,13 +393,17 @@ int main(int argc, char *argv[]){
   h_planes[PlaneNumbers["D"]]->Draw("COLZ");
   if (g_hits[PlaneNumbers["D"]]->GetN() > 0) g_hits[PlaneNumbers["D"]]->Draw("Psame");
   c_planes->SaveAs(Form("../../../../TofRootFiles/run%i_eventDisplay.C", thisRun.GetRunNumber()));
+  c_planes->SaveAs(Form("../../../../TofRootFiles/run%i_eventDisplay.pdf", thisRun.GetRunNumber()));
+
+  // horizontal lines for better visualization
   for (int i = 0; i < 6; i++) {  
-    // horizontal lines for better visualization
     for (int j = 1; j <= 20; j++) {
       TLine* line = new TLine(0, j - 0.5, 220, j - 0.5);
       h_planes[i]->GetListOfFunctions()->Add(line);
     }
   }
+
+
   // monitoring plots
   TCanvas *c_monitoring = new TCanvas("c_monitoring", Form("Monitoring, run %i", thisRun.GetRunNumber()), 900, 900);
   c_monitoring->Divide(3,2);
@@ -432,9 +459,10 @@ int main(int argc, char *argv[]){
   g_integral->Draw("AP");
   // 6 is empty for now
   c_monitoring -> SaveAs(Form("../../../../TofRootFiles/run%i_monitoring.C", thisRun.GetRunNumber()));
+  c_monitoring -> SaveAs(Form("../../../../TofRootFiles/run%i_monitoring.pdf", thisRun.GetRunNumber()));
 
   // save all files in a histogram list  and output to a root file
-  TFile *f_out = new TFile(Form("../../../../TofRootFiles/run%i_plots.root", thisRun.GetRunNumber()), "RECREATE");
+  TFile *f_out = new TFile(Form("../../../../TofRootFiles/run%i_histos.root", thisRun.GetRunNumber()), "RECREATE");
   f_out->cd();
   hist_list->Write();
   f_out->Close();

@@ -31,8 +31,19 @@ If you want to set different folders (not recommended), change the path in `read
 The data can be found at this link: https://cernbox.cern.ch/s/4G9V1T8z8YgbUdE, you can just download the whole folder or just some runs.
 
 In `AnalysisSettings.json` there are some parameters to be changed during the analysis, names should be self-explicative.
+Some parameters affect the display of the plots during the execution of the script.
 
-The output will be in the format `runXXX_plots.root`, containing histos per channel and some plots for the whole run. 
+The output files are:
+
+`runXXX_histos.root`, containing histos per channel and some plots for the whole run. 
+
+`runXXX_allSignals.pdf`, containing some plots for the whole run.
+`runXXX_badSignals.pdf`, containing some plots for channels that saturate or else.
+`runXXX_evtDisplay.pdf`, containing the representation of the planes.
+`runXXX_monitoring.pdf`, containing the monitoring plots.
+
+For these, also the .C version is present, to open them via root: `root -l runXXX_allSignals.C` and `root -l runXXX_badSignals.C`.
+
 To change or add more, go to `src/app/ReadTofData.cpp`.
 
 # Description of the classes

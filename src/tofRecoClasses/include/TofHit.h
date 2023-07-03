@@ -52,10 +52,10 @@ public:
     double HitComputeCfTime(double);
     void HitQualityCheck();
     void HitMatchDaqChToTofCh();
-    char HitGetPlaneId();
+    char HitGetPlaneId() const;
     void HitDisplayWaveform();
-    void HitGetHitInfo();
-    void HitPrintErrors();
+    void HitGetHitInfo() ;
+    void HitPrintErrors() ;
 
     // Setters
     void SetHitFeb(int value) { HitFeb = value; }
@@ -85,31 +85,32 @@ public:
     void SetHitErrorsList(std::vector<std::string> value) { HitErrorsList = value; }
 
     // Getters
-    int GetHitFeb() { return HitFeb; }
-    int GetHitFebChannel() { return HitFebChannel; }
-    double GetHitCell0Time() { return HitCell0Time; }
-    double GetHitTotValue() { return HitTotValue; }
+    const int GetHitFeb() const { return HitFeb; }
+    const int GetHitFebChannel()const  { return HitFebChannel; }
+    const double GetHitCell0Time() const { return HitCell0Time; }
+    const double GetHitTotValue()const  { return HitTotValue; }
+    const std::vector<double>& GetHitWaveform() const { return HitWaveform; }
     std::vector<double>& GetHitWaveform() { return HitWaveform; }
-    int GetHitID() { return HitId; }
-    int GetHitSampic() { return HitSampic; }
-    int GetHitDaqChannel() { return HitDaqChannel; }
-    int GetHitPlane() { return HitPlane; }
-    int GetHitBar() { return HitBar; }
-    int GetHitEdge() { return HitEdge; }
-    double GetHitBaseline() { return HitBaseline; }
-    double GetHitRawPeak() { return HitRawPeak; }
-    double GetHitPeak() { return HitPeak; }
-    bool GetHitIsSaturated() { return HitIsSaturated; }
-    int GetHitPeakSample() { return HitPeakSample; }
-    double GetHitPeakTime() { return HitPeakTime; }
-    double GetHitVoltageIntegral() { return HitVoltageIntegral; }
-    int GetHitChannelOnPlane() { return HitChannelOnPlane; }
-    double GetHitRawTotValue() { return HitRawTotValue; }
-    double GetHitUnixTime() { return HitUnixTime; }
-    double GetHitSampleLength() { return HitSampleLength; }
-    bool GetHitFitSuccess() { return HitFitSuccess; }
-    double* GetHitFitParameter() { return HitFitParameter; }
-    TF1 GetHitFitFunction() { return HitFitFunction; }
+    const int GetHitID()const  { return HitId; }
+    const int GetHitSampic() const { return HitSampic; }
+    const int GetHitDaqChannel() const { return HitDaqChannel; }
+    const int GetHitPlane()const  { return HitPlane; }
+    const int GetHitBar()const  { return HitBar; }
+    const int GetHitEdge() const { return HitEdge; }
+    const double GetHitBaseline() const { return HitBaseline; }
+    const double GetHitRawPeak() const { return HitRawPeak; }
+    const double GetHitPeak() const { return HitPeak; }
+    const bool GetHitIsSaturated() const { return HitIsSaturated; }
+    const int GetHitPeakSample() const { return HitPeakSample; }
+    const double GetHitPeakTime() const { return HitPeakTime; }
+    const double GetHitVoltageIntegral() const { return HitVoltageIntegral; }
+    const int GetHitChannelOnPlane() const { return HitChannelOnPlane; }
+    const double GetHitRawTotValue() const { return HitRawTotValue; }
+    const double GetHitUnixTime() const { return HitUnixTime; }
+    const double GetHitSampleLength() const { return HitSampleLength; }
+    const bool GetHitFitSuccess() const { return HitFitSuccess; }
+    const double* GetHitFitParameter() const { return HitFitParameter; }
+    const TF1 GetHitFitFunction() const { return HitFitFunction; }
 
 private:
 
