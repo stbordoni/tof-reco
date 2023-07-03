@@ -505,6 +505,7 @@ void TofRun::RunLoadHits(){
         GenericToolbox::displayProgressBar(iEntry, nEntries, LogWarning.getPrefixString() + "Loading MIDAS entries...");
         auto* entry = midasInterface.getEntry(iEntry);
         entry->FindAllBanks(); // fetch banks, otherwise give 0
+//        entry->PrintBanks();
 
         if( not MidasInterface::isEventValid(entry) ){
           LogAlert << "Event #" << iEntry << " contains an error." << std::endl;
@@ -714,24 +715,42 @@ void TofRun::RunFillHitInfo(TofHit &this_hit){
 
 void TofRun::RunOrderHits(){
 
-    std::vector<std::pair<double, int>> pair_cell0times_hitid;
 
-    for (int ihit = 0; ihit < RunUnorderedHitsList.size(); ihit++)
-        pair_cell0times_hitid.push_back(std::make_pair(RunUnorderedHitsList.at(ihit).GetHitCell0Time(), ihit));
+  auto p = GenericToolbox::getSortPermutation(
+      RunUnorderedHitsList, [](const TofHit& a_, const TofHit& b_){
+        if( a_.GetHitCell0Time() < b_.GetHitCell0Time() ){ return true; }
+        return false;
+      }
+  );
 
-    LogInfo << "\nSorting hits basing on Cell0Time...";
-    std::sort(pair_cell0times_hitid.begin(), pair_cell0times_hitid.end(), [](const std::pair<double, int>& a_, const std::pair<double, int>& b_){
-      if( a_.first < b_.first ) return true;
-      return false;
-    });
-    // for (int ihit = 0; ihit < 200; ihit++)
-    //     LogInfo << pair_cell0times_hitid.at(ihit).first << " ";
-    LogInfo << "Done!";
+  RunOrderedHitsList = RunUnorderedHitsList;
+  GenericToolbox::applyPermutation(RunOrderedHitsList, p);
 
-    for (int ihit = 0; ihit < RunUnorderedHitsList.size(); ihit++)
-        RunOrderedHitsList.push_back(RunUnorderedHitsList.at(pair_cell0times_hitid.at(ihit).second));
-    
-    RunUnorderedHitsList = {}; // free memory
+  RunUnorderedHitsList.clear();
+
+//    std::vector<std::pair<double, int>> pair_cell0times_hitid;
+//
+//    pair_cell0times_hitid.reserve(RunUnorderedHitsList.size());
+//    for (int ihit = 0; ihit < RunUnorderedHitsList.size(); ihit++){
+//      pair_cell0times_hitid.emplace_back(
+//          RunUnorderedHitsList.at(ihit).GetHitCell0Time(), ihit
+//      );
+//    }
+//
+//
+//    LogInfo << "\nSorting hits basing on Cell0Time...";
+//    std::sort(pair_cell0times_hitid.begin(), pair_cell0times_hitid.end(), [](const std::pair<double, int>& a_, const std::pair<double, int>& b_){
+//      if( a_.first < b_.first ) return true;
+//      return false;
+//    });
+//    // for (int ihit = 0; ihit < 200; ihit++)
+//    //     LogInfo << pair_cell0times_hitid.at(ihit).first << " ";
+//    LogInfo << "Done!";
+//
+//    for (int ihit = 0; ihit < RunUnorderedHitsList.size(); ihit++)
+//        RunOrderedHitsList.push_back(RunUnorderedHitsList.at(pair_cell0times_hitid.at(ihit).second));
+//
+//    RunUnorderedHitsList = {}; // free memory
     LogInfo << "\nStored hits in RunOrderedHitsList and emptied RunUnorderedHitsList.\n";
     // print size of ordered
     LogInfo << "RunOrderedHitsList size: " << RunOrderedHitsList.size() << std::endl;

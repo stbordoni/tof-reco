@@ -71,7 +71,7 @@ template<typename T> std::vector<T> MidasInterface::getBankDataArray(const std::
   // return empty if non-existing
   if( bank == nullptr ){ return std::vector<T>(); }
 
-  LogThrowIf( bank->type != MidasInterface::getTid<T>(), "Bank type id is not matching to provided type." );
+  LogThrowIf( bank->type != MidasInterface::getTid<T>(), bankName_ << ": bank type id (" << bank->type << ") is not matching to provided type." );
 
   return GenericToolbox::getTypedArray<T>(bank->data_size, _currentEvent_->GetBankData( bank ));
 }
