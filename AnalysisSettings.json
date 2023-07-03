@@ -13,5 +13,6 @@
     "HitVerboseMode":false,
     "HitDisplay":false,
 
-    "PlotsDisplay":true
+    "PlotsDisplay":true,
+    "SaveTree":false
 }
