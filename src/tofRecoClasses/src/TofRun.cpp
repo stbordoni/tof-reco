@@ -515,6 +515,9 @@ void TofRun::RunLoadHits(){
 
         auto& sampicEvt = midasInterface.getSampicEventBuffer();
 
+        // print MAX_NB_OF_SAMPLES
+        // LogInfo << "MAX_NB_OF_SAMPLES: " << MAX_NB_OF_SAMPLES << std::endl;
+
         for( int iHit = 0 ; iHit < sampicEvt.NbOfHitsInEvent ; iHit++ ){
           RunTotalHits++;
           TofHit newHit;
@@ -523,16 +526,17 @@ void TofRun::RunLoadHits(){
           newHit.SetHitFebChannel( sampicEvt.Hit[iHit].Channel );
           newHit.SetHitCell0Time( sampicEvt.Hit[iHit].FirstCellTimeStamp );
           newHit.SetHitTotValue( sampicEvt.Hit[iHit].TOTValue );
-
           newHit.GetHitWaveform().clear();
           newHit.GetHitWaveform().reserve( MAX_NB_OF_SAMPLES );
           for( float CorrectedDataSample : sampicEvt.Hit[iHit].CorrectedDataSamples ){
             newHit.GetHitWaveform().emplace_back( double( CorrectedDataSample ) );
+            // print corrected data samples
+            LogInfo << CorrectedDataSample << " ";
           }
 
           newHit.SetHitId(hitId_counter);
           // print hit id counter
-          // LogInfo << "HitId: " << newHit.HitId << " ";
+        //   LogInfo << "HitId: " << newHit.HitId << " ";
 
           if ((previous_cell0time - Cell0TimeCycles*Cell0TimeOffset) - newHit.GetHitCell0Time() > 2e13) {
             Cell0TimeCycles++;
@@ -540,7 +544,8 @@ void TofRun::RunLoadHits(){
           }
 
           newHit.SetHitCell0Time(newHit.GetHitCell0Time() + Cell0TimeCycles*Cell0TimeOffset);
-
+        // print cell0time
+        //   LogInfo << "Cell0Time: " << newHit.GetHitCell0Time() << " ";
           previous_cell0time = newHit.GetHitCell0Time();
 
           RunFillHitInfo(newHit);    // can do elsewhere
@@ -728,10 +733,17 @@ void TofRun::RunOrderHits(){
     
     RunUnorderedHitsList = {}; // free memory
     LogInfo << "\nStored hits in RunOrderedHitsList and emptied RunUnorderedHitsList.\n";
+    // print size of ordered
+    LogInfo << "RunOrderedHitsList size: " << RunOrderedHitsList.size() << std::endl;
+    // print hitcell0times
+    for (int ihit = 0; ihit < 200; ihit++)
+        LogInfo << RunOrderedHitsList.at(ihit).GetHitCell0Time() << " ";
 
 }
 
 void TofRun::RunCreateEvents(){
+    
+    std::cout << "Creating events..." << std::endl;
 
     double this_hit_time = 0;
     bool  create_new_event = true;

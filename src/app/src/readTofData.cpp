@@ -17,6 +17,8 @@
 #include "iostream"
 #include "vector"
 
+#include "nlohmann/json.hpp"
+
 LoggerInit([]{
   Logger::getUserHeader() << "[" << FILENAME << "]";
 });
@@ -70,7 +72,24 @@ int main(int argc, char *argv[]){
   thisRun.RunPrintErrors();
   // thisRun.RunGenerateOutputFile(output_directory);
 
-  bool waveform_display = false;
+  // read AnalysisSettings.json
+  std::string RunAnalysisSettingsFile = "../../../AnalysisSettings.json"; 
+    std::ifstream RunAnalysisSettingsStream(RunAnalysisSettingsFile.c_str());
+    // if (RunAnalysisSettingsStream.good()) RunSelectedAnalysisOptions = true;
+  
+    if (!RunAnalysisSettingsStream.is_open()) {
+        std::string this_error = "Failed to open " + RunAnalysisSettingsFile;
+        // return;
+    }
+    LogInfo << "Reading analysis settings from " << RunAnalysisSettingsFile << std::endl;
+    
+    nlohmann::json analysis_settings_file;
+    RunAnalysisSettingsStream >> analysis_settings_file;
+    bool waveform_display = analysis_settings_file["HitDisplay"];
+    bool run_root_app = analysis_settings_file["PlotsDisplay"];
+    
+
+  // bool waveform_display = false;
   
   LogInfo << "Run number " << thisRun.GetRunNumber() << std::endl;
 
@@ -179,11 +198,6 @@ int main(int argc, char *argv[]){
     h_planes[i]->GetYaxis()->SetTickLength(0);
     h_planes[i]->GetYaxis()->SetTitle("Bar number");
     h_planes[i]->GetXaxis()->SetTitle("Position [cm]");
-    // horizontal lines for better visualization
-    for (int j = 1; j <= 20; j++) {
-      TLine* line = new TLine(0, j - 0.5, 220, j - 0.5);
-      h_planes[i]->GetListOfFunctions()->Add(line);
-    }
     hist_list->Add(h_planes[i]);
   }
   std::vector <TGraphErrors*> g_hits;
@@ -300,6 +314,7 @@ int main(int argc, char *argv[]){
   h_channelsFiring->Draw("HIST");
   c_goodSignals->cd(6);
   h_timeOfFlight->Draw("HIST");
+  c_goodSignals->SaveAs(Form("../../../../TofRootFiles/run%i_goodSignals.C", thisRun.GetRunNumber()));
 
   // plot bad signals in some way
   TCanvas *c_badSignals = new TCanvas("c_badSignals", "'Bad' Signals", 900, 900);
@@ -312,6 +327,7 @@ int main(int argc, char *argv[]){
   c_badSignals->cd(3);
   h_saturatedHits->Draw("HIST");
   h_saturatedOtherEdge->Draw("SAMES");
+  c_badSignals->SaveAs(Form("../../../../TofRootFiles/run%i_badSignals.C", thisRun.GetRunNumber()));
 
   // plot event display, first adjust color palette
 
@@ -353,7 +369,14 @@ int main(int argc, char *argv[]){
   c_planes->cd(5);
   h_planes[PlaneNumbers["D"]]->Draw("COLZ");
   if (g_hits[PlaneNumbers["D"]]->GetN() > 0) g_hits[PlaneNumbers["D"]]->Draw("Psame");
-
+  c_planes->SaveAs(Form("../../../../TofRootFiles/run%i_eventDisplay.C", thisRun.GetRunNumber()));
+  for (int i = 0; i < 6; i++) {  
+    // horizontal lines for better visualization
+    for (int j = 1; j <= 20; j++) {
+      TLine* line = new TLine(0, j - 0.5, 220, j - 0.5);
+      h_planes[i]->GetListOfFunctions()->Add(line);
+    }
+  }
   // monitoring plots
   TCanvas *c_monitoring = new TCanvas("c_monitoring", Form("Monitoring, run %i", thisRun.GetRunNumber()), 900, 900);
   c_monitoring->Divide(3,2);
@@ -408,6 +431,7 @@ int main(int argc, char *argv[]){
   g_integral->SetMarkerColor(kRed);
   g_integral->Draw("AP");
   // 6 is empty for now
+  c_monitoring -> SaveAs(Form("../../../../TofRootFiles/run%i_monitoring.C", thisRun.GetRunNumber()));
 
   // save all files in a histogram list  and output to a root file
   TFile *f_out = new TFile(Form("../../../../TofRootFiles/run%i_plots.root", thisRun.GetRunNumber()), "RECREATE");
@@ -415,7 +439,8 @@ int main(int argc, char *argv[]){
   hist_list->Write();
   f_out->Close();
 
-  // app->Run();
+  if (run_root_app) app->Run();
+  else LogInfo << "Info: Enable PlotsDisplay in AnalysisSettings.json to see plots at end of execution.\n";
 
   return 0;
 }
