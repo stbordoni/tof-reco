@@ -531,7 +531,7 @@ void TofRun::RunLoadHits(){
           for( float CorrectedDataSample : sampicEvt.Hit[iHit].CorrectedDataSamples ){
             newHit.GetHitWaveform().emplace_back( double( CorrectedDataSample ) );
             // print corrected data samples
-            LogInfo << CorrectedDataSample << " ";
+            // LogInfo << CorrectedDataSample << " ";
           }
 
           newHit.SetHitId(hitId_counter);
