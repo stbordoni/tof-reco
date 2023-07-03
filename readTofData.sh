@@ -43,7 +43,12 @@ do
   then
     software="linux"
     # inputDirectory="/home/emanuele/Documents/ToF/linuxData/"
-    runFullPath=$(find $inputDirectory -name "sampic_*_*_run"$runit".txt")
+    runFullPath=$(find $inputDirectory -name "sampic_*_*_run"$runit".gz")
+    if [ "$runFullPath" == "" ]
+    then
+      echo "Run "$runit " is not in text format, looking for MIDAS format."
+      runFullPath=$(find $inputDirectory -name "sampic_*_*_run"$runit".gz")
+    fi
   else
     software="windows"
     # inputDirectory="/home/emanuele/Documents/ToF/sampic/data/"

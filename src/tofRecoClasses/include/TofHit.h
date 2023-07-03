@@ -52,10 +52,10 @@ public:
     double HitComputeCfTime(double);
     void HitQualityCheck();
     void HitMatchDaqChToTofCh();
-    char HitGetPlaneId();
+    char HitGetPlaneId() const;
     void HitDisplayWaveform();
-    void HitGetHitInfo();
-    void HitPrintErrors();
+    void HitGetHitInfo() ;
+    void HitPrintErrors() ;
 
     // Setters
     void SetHitFeb(int value) { HitFeb = value; }

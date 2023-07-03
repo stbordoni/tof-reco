@@ -30,8 +30,10 @@ public:
 
     // Getters
     int GetSignalType() {return SignalType;}
-    TofHit GetSignalHitMin() {return SignalHitMin;}
-    TofHit GetSignalHitMax() {return SignalHitMax;}
+    const TofHit & GetSignalHitMin() const {return SignalHitMin;}
+    TofHit & GetSignalHitMin() {return SignalHitMin;}
+    const TofHit & GetSignalHitMax() const {return SignalHitMax;}
+    TofHit & GetSignalHitMax() {return SignalHitMax;}
     double GetSignalPosition() {return SignalPosition;}
     double GetSignalTime() {return SignalTime;}
     std::vector <std::string> GetSignalErrorsList() {return SignalErrorsList;}

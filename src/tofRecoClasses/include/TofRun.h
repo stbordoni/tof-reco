@@ -67,6 +67,7 @@ public:
     double GetRunUnixTime() {return RunUnixTime;}
     int GetRunNFebs() {return RunNFebs;}
     int GetRunNSamplesToRead() {return RunNSamplesToRead;}
+    int GetRunNSamplesInWaveform() {return RunNSamplesInWaveform;}
     double GetRunSamplingFrequency() {return RunSamplingFrequency;}
     double GetRunSampleLength() {return RunSampleLength;}
     double GetRunSamplingTime() {return RunSamplingFrequency;}
