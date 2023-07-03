@@ -1,9 +1,9 @@
 {
-    "RunMaxHitsToLoad":10000,
+    "RunMaxHitsToLoad":1000,
 
     "RunCoincWindow":55,
     "RunBaselineNSamples":5,
-    "RunNSamplesToExclude":0,
+    "RunNSamplesToExclude":1,
     "RunVerboseMode":false,
 
     "EventVerboseMode":false,

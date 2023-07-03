@@ -28,7 +28,8 @@ The standard folder where the run is `../TofData`, and the results are in
 `../TofRootFiles`.
 If you want to set different folders (not recommended), change the path in `readTofData.sh`.
 
-The data can be found at this link: https://cernbox.cern.ch/s/4G9V1T8z8YgbUdE, you can just download the whole folder or just some runs.
+The data can be found at this link: https://cernbox.cern.ch/s/4G9V1T8z8YgbUdE, you can just download the whole folder or just some runs. 
+Details of  the runs can be found here https://docs.google.com/spreadsheets/d/15NT4joJ0t3p2j6Rzqt6P1NoHgueVN5eeZ-fOHoEHNRg/edit#gid=148818969.
 
 In `AnalysisSettings.json` there are some parameters to be changed during the analysis, names should be self-explicative.
 Some parameters affect the display of the plots during the execution of the script.

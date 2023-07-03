@@ -216,6 +216,8 @@ int main(int argc, char *argv[]){
 
   // create a vector of histograms with 256 elements, each being a vector of 62 elements
   int nSamples = thisRun.GetRunNSamplesInWaveform();
+  // print this and some spacers
+  LogInfo << "Number of samples in waveform: " << nSamples << std::endl;
   std::vector<std::vector<std::pair<int,double>>> h_waveforms(nChannels, std::vector<std::pair<int,double>>(nSamples, std::make_pair(0,0)));
 
   // average waveforms per channel
@@ -287,7 +289,7 @@ int main(int argc, char *argv[]){
         h_integral[thisHitMaxChannel]->Fill(thisHitMax.GetHitVoltageIntegral());
         // average waveform per channel 
         // loop over samples
-        for (int i = 0; i < thisHitMin.GetHitWaveform().size(); i++){
+        for (int i = 0; i < nSamples; i++){
           h_waveforms.at(thisHitMinChannel).at(i).second += (thisHitMin.GetHitWaveform()[i]);
           h_waveforms.at(thisHitMinChannel).at(i).first ++;
           h_waveforms.at(thisHitMaxChannel).at(i).second += (thisHitMax.GetHitWaveform()[i]);
@@ -307,7 +309,7 @@ int main(int argc, char *argv[]){
         h_peakSample[thisHitMinChannel]->Fill(thisHitMin.GetHitPeakSample());
         // h_risingTime[thisHitMinChannel]->Fill(thisHitMin.HitComputeCfTime(0.9)-thisHitMin.HitComputeCfTime(0.1));
         h_integral[thisHitMinChannel]->Fill(thisHitMin.GetHitVoltageIntegral());
-        for (int i = 0; i < thisHitMin.GetHitWaveform().size(); i++){
+        for (int i = 0; i < nSamples; i++){
           h_waveforms.at(thisHitMinChannel).at(i).second += (thisHitMin.GetHitWaveform()[i]);
           h_waveforms.at(thisHitMinChannel).at(i).first ++;
           // h_waveforms.at(thisHitMaxChannel).at(i).second += (thisHitMax.GetHitWaveform()[i]);
@@ -327,7 +329,7 @@ int main(int argc, char *argv[]){
         h_peakSample[thisHitMaxChannel]->Fill(thisHitMax.GetHitPeakSample());
         // h_risingTime[thisChannel]->Fill(thisHitMax.HitComputeCfTime(0.9)-thisHitMin.HitComputeCfTime(0.1));
         h_integral[thisHitMaxChannel]->Fill(thisHitMax.GetHitVoltageIntegral());
-        for (int i = 0; i < thisHitMax.GetHitWaveform().size(); i++){
+        for (int i = 0; i < nSamples; i++){
           // h_waveforms.at(thisHitMinChannel).at(i).second += (thisHitMin.GetHitWaveform()[i]);
           // h_waveforms.at(thisHitMinChannel).at(i).first ++;
           h_waveforms.at(thisHitMaxChannel).at(i).second += (thisHitMax.GetHitWaveform()[i]);
