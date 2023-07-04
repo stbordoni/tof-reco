@@ -11,6 +11,7 @@
 
 #include "Logger.h"
 #include "GenericToolbox.h"
+#include "nlohmann/json.hpp"
 
 #include <string>
 #include <memory>
@@ -58,7 +59,7 @@ private:
   std::unique_ptr<TMEvent> _currentEvent_{nullptr};
 
   EventStruct _sampicEventBuffer_{};
-
+  nlohmann::json _MidasConfigJson_{}; // Midas Configuration as a json file.
 };
 
 

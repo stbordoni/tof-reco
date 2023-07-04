@@ -44,6 +44,15 @@ void MidasInterface::initialize() {
   LogThrowIf(_midasReaderInterface_ == nullptr or _midasReaderInterface_->fError, "Could not open file: " << _filePath_);
 
   LogInfo << "Successfully opened file: " << _filePath_ << std::endl;
+
+  this->getEntry(0);
+  TMEvent* midasEvt = this->getCurrentEvent();
+  LogThrowIf(midasEvt->data.size() < 10000, "Begining of Run is too short, run configuration likely missing!");
+  std::string jsonString(midasEvt->data.begin()+sizeof(char)*16, midasEvt->data.end());
+  _MidasConfigJson_ = nlohmann::json::parse(jsonString);
+
+  LogInfo << "Successfully loaded MIDAS config into json file. " << std::endl;
+  
   _isInitialized_ = true;
 }
 
