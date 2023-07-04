@@ -69,6 +69,7 @@ void MidasInterface::fillSampicEvent(){
   // scalars
   auto nbOfHitsInEvent = this->getBankDataArray<int>("TFNH");
   auto nbOfTriggers = this->getBankDataArray<int>("TFNT");
+  auto rawDataSize = this->getBankDataArray<int>("TFTZ");
 
   // array of [NbOfHitsInEvent]
   auto boardIndices = this->getBankDataArray<int>("TFBI");
@@ -118,11 +119,13 @@ void MidasInterface::fillSampicEvent(){
 
   }
 
-  _sampicEventBuffer_.TriggerData.RawDataSize = int( triggerRawDataList.size() );
+  // RawDataSize
+  if( not rawDataSize.empty() ) _sampicEventBuffer_.TriggerData.RawDataSize = rawDataSize[0];
   for( int iByte = 0 ; iByte < _sampicEventBuffer_.TriggerData.RawDataSize ; iByte++ ){
     _sampicEventBuffer_.TriggerData.RawData[iByte] = triggerRawDataList[iByte];
   }
 
+  // NbOfTriggers
   if( not nbOfTriggers.empty() ) _sampicEventBuffer_.TriggerData.NbOfTriggers = nbOfTriggers[0];
   else _sampicEventBuffer_.TriggerData.NbOfTriggers = 0;
   for( int iTrig = 0 ; iTrig < _sampicEventBuffer_.TriggerData.NbOfTriggers ; iTrig++ ){
@@ -131,6 +134,35 @@ void MidasInterface::fillSampicEvent(){
     _sampicEventBuffer_.TriggerData.TriggerTimeStamp[iTrig] = triggerTimeStampList[iTrig];
     _sampicEventBuffer_.TriggerData.SpillNumberFromExtTrig[iTrig] = spillNumberFromExtTrigList[iTrig];
     _sampicEventBuffer_.TriggerData.RawExtraWord[iTrig] = rawExtraWordList[iTrig];
+  }
+
+}
+void MidasInterface::printSampicEvent() const {
+
+  LogWarning << "Event #" << _currentEntry_ << std::endl;
+  {
+    LogScopeIndent;
+    LogInfo << "NbOfHitsInEvent: " << _sampicEventBuffer_.NbOfHitsInEvent << "{" << std::endl;
+    for( int iHit = 0 ; iHit < _sampicEventBuffer_.NbOfHitsInEvent ; iHit++ ){
+      LogScopeIndent;
+      LogInfo << "HitNumber: " << _sampicEventBuffer_.Hit[iHit].HitNumber << std::endl;
+      {
+        LogScopeIndent;
+        LogInfo << "SampicIndex(" << _sampicEventBuffer_.Hit[iHit].SampicIndex << ")";
+        LogInfo << ", FeBoardIndex(" << _sampicEventBuffer_.Hit[iHit].FeBoardIndex << ")";
+        LogInfo << ", Channel(" << _sampicEventBuffer_.Hit[iHit].Channel << ")" << std::endl;
+        LogInfo << "FirstCellTimeStamp: " << _sampicEventBuffer_.Hit[iHit].FirstCellTimeStamp << std::endl;
+        LogInfo << "TOTValue: " << _sampicEventBuffer_.Hit[iHit].TOTValue << std::endl;
+      }
+
+    }
+    LogInfo << "}" << std::endl;
+
+    LogInfo << "RawDataSize: " << _sampicEventBuffer_.TriggerData.RawDataSize << std::endl;
+    LogInfo << "NbOfTriggers: " << _sampicEventBuffer_.TriggerData.NbOfTriggers << std::endl;
+
+    LogThrowIf(_sampicEventBuffer_.TriggerData.RawDataSize != 0, "FOUND DATA!");
+
   }
 
 }

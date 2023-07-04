@@ -45,6 +45,7 @@ public:
     void RunPrintErrors(); // set different ranks: Info, warning, error, fatal?
 
     // Setters
+    void setVerbose(bool verbose_){ _verbose_ = verbose_; };
     void RunSetInputFilePath(const std::string & run_full_path){RunPath = run_full_path;};
     void RunSetSoftwareType(std::string software){RunSoftware = std::move(software);};
     void RunSetRunNumber(int run_number){RunNumber = run_number;};
@@ -80,6 +81,11 @@ public:
   std::vector <TofEvent> RunEventsList;
 
 private:
+
+  // user info
+  bool _verbose_{false};
+
+
     // Run details
     std::string RunSoftware;
     int RunNumber{};

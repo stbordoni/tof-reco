@@ -37,6 +37,10 @@ int main(int argc, char *argv[]){
   clp.addOption("software", {"-s", "--software"}, "Specify weather if the DAQ software was linux or windows.");
   clp.addOption("runFullPath", {"-r", "--run"}, "Run full path.");
   clp.addOption("outputDir", {"-o", "--output"}, "Specify output directory path");
+
+  clp.addDummyOption("Triggers");
+  clp.addTriggerOption("verboseMode", {"-v"}, "Printout event info");
+
   clp.addDummyOption();
 
   // usage allways displayed
@@ -58,6 +62,9 @@ int main(int argc, char *argv[]){
   LogInfo << "Run path " << run_full_path << std::endl;
 
   TofRun thisRun;
+
+  thisRun.setVerbose( clp.isOptionTriggered("verboseMode") );
+
   thisRun.RunSetSoftwareType( clp.getOptionVal<std::string>("software") );
   thisRun.RunSetInputFilePath( run_full_path );
   thisRun.RunReadFilename();

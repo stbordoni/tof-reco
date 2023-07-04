@@ -38,6 +38,7 @@ public:
   // core
   void rewind();
   void fillSampicEvent();
+  void printSampicEvent() const;
   long fetchNbEvents();
   TMEvent* getEntry(long iEntry_);
   TMEvent* nextEvent();

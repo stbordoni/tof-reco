@@ -505,7 +505,7 @@ void TofRun::RunLoadHits(){
         GenericToolbox::displayProgressBar(iEntry, nEntries, LogWarning.getPrefixString() + "Loading MIDAS entries...");
         auto* entry = midasInterface.getEntry(iEntry);
         entry->FindAllBanks(); // fetch banks, otherwise give 0
-//        entry->PrintBanks();
+        if(_verbose_) { entry->PrintBanks(); }
 
         if( not MidasInterface::isEventValid(entry) ){
           LogAlert << "Event #" << iEntry << " contains an error." << std::endl;
@@ -513,6 +513,8 @@ void TofRun::RunLoadHits(){
         }
 
         midasInterface.fillSampicEvent();
+
+        if(_verbose_){ midasInterface.printSampicEvent(); }
 
         auto& sampicEvt = midasInterface.getSampicEventBuffer();
 
