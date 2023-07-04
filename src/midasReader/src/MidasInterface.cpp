@@ -66,6 +66,10 @@ void MidasInterface::fillSampicEvent(){
     LogThrow("Event don't have the expected TFNH bank.");
   }
 
+  // scalars
+  auto nbOfHitsInEvent = this->getBankDataArray<int>("TFNH");
+  auto nbOfTriggers = this->getBankDataArray<int>("TFNT");
+
   // array of [NbOfHitsInEvent]
   auto boardIndices = this->getBankDataArray<int>("TFBI");
   auto channelIndices = this->getBankDataArray<int>("TFCI");
@@ -75,13 +79,24 @@ void MidasInterface::fillSampicEvent(){
   auto FirstCellTimeList = this->getBankDataArray<double>("TFC0");
   auto TOTValueList = this->getBankDataArray<float>("TFTV");
 
+
+  // array of [RawDataSize]
+  auto triggerRawDataList = this->getBankDataArray<unsigned char>("TFTR");
+
+  // array of [NbOfTriggers]
+  auto triggerIDFromFPGAList = this->getBankDataArray<int>("TFTI");
+  auto triggerIDFromExtTrigList = this->getBankDataArray<unsigned int>("TFTE");
+  auto triggerTimeStampList = this->getBankDataArray<double>("TFTT");
+  auto spillNumberFromExtTrigList = this->getBankDataArray<unsigned short>("TFTS");
+  auto rawExtraWordList = this->getBankDataArray<unsigned short>("TFTW");
+
   // array of [NbOfHitsInEvent][nSamples]
   auto rawSampleList = this->getBankDataArray<unsigned short>("TFRS");
   auto orderedSampleList = this->getBankDataArray<unsigned short>("TFOS");
   auto correctedSampleList = this->getBankDataArray<float>("TFCS");
 
   // filling struct
-  _sampicEventBuffer_.NbOfHitsInEvent = this->getBankDataArray<int>("TFNH")[0];
+  _sampicEventBuffer_.NbOfHitsInEvent = nbOfHitsInEvent[0];
 
   int sampleGlobalIndex{-1};
   for( int iHit = 0 ; iHit < _sampicEventBuffer_.NbOfHitsInEvent ; iHit++ ){
@@ -103,6 +118,20 @@ void MidasInterface::fillSampicEvent(){
 
   }
 
+  _sampicEventBuffer_.TriggerData.RawDataSize = int( triggerRawDataList.size() );
+  for( int iByte = 0 ; iByte < _sampicEventBuffer_.TriggerData.RawDataSize ; iByte++ ){
+    _sampicEventBuffer_.TriggerData.RawData[iByte] = triggerRawDataList[iByte];
+  }
+
+  if( not nbOfTriggers.empty() ) _sampicEventBuffer_.TriggerData.NbOfTriggers = nbOfTriggers[0];
+  else _sampicEventBuffer_.TriggerData.NbOfTriggers = 0;
+  for( int iTrig = 0 ; iTrig < _sampicEventBuffer_.TriggerData.NbOfTriggers ; iTrig++ ){
+    _sampicEventBuffer_.TriggerData.TriggerIDFromFPGA[iTrig] = triggerIDFromFPGAList[iTrig];
+    _sampicEventBuffer_.TriggerData.TriggerIDFromExtTrig[iTrig] = triggerIDFromExtTrigList[iTrig];
+    _sampicEventBuffer_.TriggerData.TriggerTimeStamp[iTrig] = triggerTimeStampList[iTrig];
+    _sampicEventBuffer_.TriggerData.SpillNumberFromExtTrig[iTrig] = spillNumberFromExtTrigList[iTrig];
+    _sampicEventBuffer_.TriggerData.RawExtraWord[iTrig] = rawExtraWordList[iTrig];
+  }
 
 }
 bool MidasInterface::isEventValid(TMEvent *eventPtr_) {
