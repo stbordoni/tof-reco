@@ -27,7 +27,12 @@ void TofRun::RunReadFilename(){
     if     ( RunSoftware == "linux" ) {
       // in linux the format is sampic_YYYYMMDD_HHMM_runX.txt -> not anymore? Create a midas mode?
 
-      RunNumber = 0;
+      // /path/to/run_01110.gz
+      auto runName = GenericToolbox::getFileNameFromFilePath( RunPath, false );
+      auto runNameElmList = GenericToolbox::splitString(runName, "_");
+      LogThrowIf(runNameElmList.size() < 2, "Can't fetch run number: invalid run file name: " << runName);
+      RunNumber = std::stoi(runNameElmList[1]);
+      LogInfo << GET_VAR_NAME_VALUE(RunNumber) << std::endl;
 
       RunDate = 20220101;
       RunTime = 0000;
