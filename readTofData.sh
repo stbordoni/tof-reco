@@ -10,7 +10,19 @@ cd build;
 # Compile the code
 echo "Compiling the code"
 cmake ..
+# check if cmake was successful
+if [ $? -ne 0 ]
+then
+  echo "CMake failed. Stopping execution."
+  exit 0
+fi
 make
+# check if make was successful
+if [ $? -ne 0 ]
+then
+  echo "Make failed. Stopping execution."
+  exit 0
+fi
 cd src/app; # executable is here
 
 
