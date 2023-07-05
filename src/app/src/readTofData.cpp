@@ -80,13 +80,13 @@ int main(int argc, char *argv[]){
 
   // read AnalysisSettings.json
   std::string RunAnalysisSettingsFile = "../../../AnalysisSettings.json"; 
-    std::ifstream RunAnalysisSettingsStream(RunAnalysisSettingsFile.c_str());
-    LogInfo << "Reading analysis settings from " << RunAnalysisSettingsFile << std::endl;
-    nlohmann::json analysis_settings_file;
-    RunAnalysisSettingsStream >> analysis_settings_file;
-    bool waveform_display = analysis_settings_file["HitDisplay"];
-    bool run_root_app = analysis_settings_file["PlotsDisplay"];
-    bool save_root_tree = analysis_settings_file["SaveTree"]; // you need dictionary enabled for this
+  std::ifstream RunAnalysisSettingsStream(RunAnalysisSettingsFile.c_str());
+  LogInfo << "Reading analysis settings from " << RunAnalysisSettingsFile << std::endl;
+  nlohmann::json analysis_settings_file;
+  RunAnalysisSettingsStream >> analysis_settings_file;
+  bool waveform_display = analysis_settings_file["HitDisplay"];
+  bool run_root_app = analysis_settings_file["PlotsDisplay"];
+  bool save_root_tree = analysis_settings_file["SaveTree"]; // you need dictionary enabled for this
     
 
   // bool waveform_display = false;
@@ -103,6 +103,16 @@ int main(int argc, char *argv[]){
   h_signalBar->SetMinimum(0);
   hist_list->Add(h_signalBar);
 
+  // create a vector of 6 histograms called h_signalBar_plane, one for each plane
+  std::vector <TH1F*> h_signalBar_plane;
+  h_signalBar_plane.reserve(6);
+  for (int i = 0; i < 6; i++){
+    h_signalBar_plane[i] = new TH1F(Form("h_signalBar_plane_%i", i), Form("SignalBar, run%i, plane%i", thisRun.GetRunNumber(), i), 20, -0.5, 19.5);
+    h_signalBar_plane[i]->GetXaxis()->SetTitle("Bar");
+    h_signalBar_plane[i]->SetMinimum(0);
+    hist_list->Add(h_signalBar_plane[i]);
+  }
+
   TH1F *h_signalPlane = new TH1F("h_signalPlane", Form("SignalPlane, run%i", thisRun.GetRunNumber()), 6, -0.5, 5.5);
   h_signalPlane->GetXaxis()->SetTitle("Plane");
   h_signalPlane->SetMinimum(0);
@@ -113,10 +123,32 @@ int main(int argc, char *argv[]){
   h_signalPosition->SetMinimum(0);
   hist_list->Add(h_signalPosition);
 
+  // create a vector of 6 histograms called h_signalPosition_plane, one for each plane
+  std::vector <TH1F*> h_signalPosition_plane;
+  h_signalPosition_plane.reserve(6);
+  for (int i = 0; i < 6; i++){
+    h_signalPosition_plane[i] = new TH1F(Form("h_signalPosition_plane_%i", i), Form("SignalPosition, run%i, plane%i", thisRun.GetRunNumber(), i), 50, -50, 270.);
+    h_signalPosition_plane[i]->GetXaxis()->SetTitle("Position [cm]");
+    h_signalPosition_plane[i]->SetMinimum(0);
+    hist_list->Add(h_signalPosition_plane[i]);
+  }
+
+
   TH1F *h_hitPeak = new TH1F("h_hitPeak", Form("HitPeak, run%i", thisRun.GetRunNumber()), 50, -0.1,1.1 );
   h_hitPeak->GetXaxis()->SetTitle("Peak [V]");
   h_hitPeak->SetMinimum(0);
   hist_list->Add(h_hitPeak);
+
+  // create a vector of 6 histograms called h_hitPeak_plane, one for each plane
+  std::vector <TH1F*> h_hitPeak_plane;
+  h_hitPeak_plane.reserve(6);
+  for (int i = 0; i < 6; i++){
+    h_hitPeak_plane[i] = new TH1F(Form("h_hitPeak_plane_%i", i), Form("HitPeak, run%i, plane%i", thisRun.GetRunNumber(), i), 50, -0.1,1.1 );
+    h_hitPeak_plane[i]->GetXaxis()->SetTitle("Peak [V]");
+    h_hitPeak_plane[i]->SetMinimum(0);
+    hist_list->Add(h_hitPeak_plane[i]);
+  }
+  
 
   TH1F *h_singleHitPeak = new TH1F("h_singleHitPeak", Form("SingleHitPeak, run%i", thisRun.GetRunNumber()), 50, -0.1,1.1 );
   h_singleHitPeak->GetXaxis()->SetTitle("Peak [V]");
@@ -128,6 +160,16 @@ int main(int argc, char *argv[]){
   h_channelsFiring->GetXaxis()->SetTitle("Channel");
   h_channelsFiring->SetMinimum(0);
   hist_list->Add(h_channelsFiring);
+
+  // create a vector of 6 histograms called h_channelsFiring_plane, one for each plane
+  std::vector <TH1F*> h_channelsFiring_plane;
+  h_channelsFiring_plane.reserve(6);
+  for (int i = 0; i < 6; i++){
+    h_channelsFiring_plane[i] = new TH1F(Form("h_channelsFiring_plane_%i", i), Form("ChannelsFiring, run%i, plane%i", thisRun.GetRunNumber(), i), 0, -0.5, 19.5);
+    h_channelsFiring_plane[i]->GetXaxis()->SetTitle("Channel");
+    h_channelsFiring_plane[i]->SetMinimum(0);
+    hist_list->Add(h_channelsFiring_plane[i]);
+  }
 
   // array of histos to plot the baseline, rising time, peak sample, max amplitude, for each channel
   const int nChannels = TofRunParameters::nChannels; 
@@ -166,6 +208,16 @@ int main(int argc, char *argv[]){
   h_timeOfFlight->SetMinimum(0);
   hist_list->Add(h_timeOfFlight);
 
+  // create a vector of 6 histograms called h_timeOfFlight_plane, one for each plane
+  std::vector <TH1F*> h_timeOfFlight_plane;
+  h_timeOfFlight_plane.reserve(6);
+  for (int i = 0; i < 6; i++){
+    h_timeOfFlight_plane[i] = new TH1F(Form("h_timeOfFlight_plane_%i", i), Form("TimeOfFlight, run%i, plane%i", thisRun.GetRunNumber(), i), 40, -0.5, 55.5);
+    h_timeOfFlight_plane[i]->GetXaxis()->SetTitle("Time of Flight [ns]");
+    h_timeOfFlight_plane[i]->SetMinimum(0);
+    hist_list->Add(h_timeOfFlight_plane[i]);
+  }
+
   TH1F *h_saturatedHits = new TH1F("h_saturatedHits", Form("SaturatedHits, run%i", thisRun.GetRunNumber()), 256, -0.5, 255.5);
   h_saturatedHits->GetXaxis()->SetTitle("Channel");
   h_saturatedHits->SetMinimum(0);
@@ -174,12 +226,38 @@ int main(int argc, char *argv[]){
   h_saturatedHits->SetFillStyle(3004);
   hist_list->Add(h_saturatedHits);
 
+  // create a vector of 6 histograms called h_saturatedHits_plane, one for each plane
+  std::vector <TH1F*> h_saturatedHits_plane;
+  h_saturatedHits_plane.reserve(6);
+  for (int i = 0; i < 6; i++){
+    h_saturatedHits_plane[i] = new TH1F(Form("h_saturatedHits_plane_%i", i), Form("SaturatedHits, run%i, plane%i", thisRun.GetRunNumber(), i), 256, -0.5, 255.5);
+    h_saturatedHits_plane[i]->GetXaxis()->SetTitle("Channel");
+    h_saturatedHits_plane[i]->SetMinimum(0);
+    h_saturatedHits_plane[i]->SetFillColor(kRed);
+    h_saturatedHits_plane[i]->SetLineColor(kRed);
+    h_saturatedHits_plane[i]->SetFillStyle(3004);
+    hist_list->Add(h_saturatedHits_plane[i]);
+  }
+
+
   TH1F * h_saturatedOtherEdge = new TH1F("h_saturatedOtherEdge", Form("SaturatedOtherEdge, run%i", thisRun.GetRunNumber()), 256, -0.5, 255.5);
   h_saturatedOtherEdge->GetXaxis()->SetTitle("Channel");
   h_saturatedOtherEdge->SetMinimum(0);
   h_saturatedOtherEdge->SetLineColor(kGreen);
   h_saturatedOtherEdge->SetFillStyle(3004);
   hist_list->Add(h_saturatedOtherEdge);
+
+  // create a vector of 6 histograms called h_saturatedOtherEdge_plane, one for each plane
+  std::vector <TH1F*> h_saturatedOtherEdge_plane;
+  h_saturatedOtherEdge_plane.reserve(6);
+  for (int i = 0; i < 6; i++){
+    h_saturatedOtherEdge_plane[i] = new TH1F(Form("h_saturatedOtherEdge_plane_%i", i), Form("SaturatedOtherEdge, run%i, plane%i", thisRun.GetRunNumber(), i), 256, -0.5, 255.5);
+    h_saturatedOtherEdge_plane[i]->GetXaxis()->SetTitle("Channel");
+    h_saturatedOtherEdge_plane[i]->SetMinimum(0);
+    h_saturatedOtherEdge_plane[i]->SetLineColor(kGreen);
+    h_saturatedOtherEdge_plane[i]->SetFillStyle(3004);
+    hist_list->Add(h_saturatedOtherEdge_plane[i]);
+  }
 
 // display the events
 
@@ -259,18 +337,32 @@ int main(int argc, char *argv[]){
         auto thisHitMinChannel = thisHitMin.GetHitDaqChannel();
         auto thisHitMaxChannel = thisHitMax.GetHitDaqChannel();
         h_signalPosition->Fill(signalit.GetSignalPosition());
+        h_signalPosition_plane[thisHitMin.GetHitPlane()]->Fill(signalit.GetSignalPosition());
         h_signalBar->Fill(thisHitMin.GetHitBar());
+        h_signalBar_plane[thisHitMin.GetHitPlane()]->Fill(thisHitMin.GetHitBar());
         h_signalPlane->Fill(thisHitMin.GetHitPlane());
         h_hitPeak->Fill(thisHitMin.GetHitPeak());
+        h_hitPeak_plane[thisHitMin.GetHitPlane()]->Fill(thisHitMin.GetHitPeak());
+        h_hitPeak_plane[thisHitMax.GetHitPlane()]->Fill(thisHitMax.GetHitPeak());
         h_channelsFiring->Fill(thisHitMinChannel);
+        h_channelsFiring_plane[thisHitMin.GetHitPlane()]->Fill(signalit.GetSignalHitMin().GetHitBar());
         h_channelsFiring->Fill(thisHitMaxChannel);
+        h_channelsFiring_plane[thisHitMax.GetHitPlane()]->Fill(signalit.GetSignalHitMax().GetHitBar());
         if (thisHitMin.GetHitIsSaturated()){
           h_saturatedHits->Fill(thisHitMinChannel);
-          if (thisHitMax.GetHitIsSaturated()) h_saturatedOtherEdge->Fill(thisHitMaxChannel);
+          h_saturatedHits_plane[thisHitMin.GetHitPlane()]->Fill(thisHitMinChannel);
+          if (thisHitMax.GetHitIsSaturated()) {
+            h_saturatedOtherEdge->Fill(thisHitMaxChannel);
+            h_saturatedOtherEdge_plane[thisHitMax.GetHitPlane()]->Fill(thisHitMaxChannel);
+          }
         }
         if (thisHitMax.GetHitIsSaturated()){
           h_saturatedHits->Fill(thisHitMaxChannel);
-          if (thisHitMin.GetHitIsSaturated()) h_saturatedOtherEdge->Fill(thisHitMinChannel);
+          h_saturatedHits_plane[thisHitMax.GetHitPlane()]->Fill(thisHitMaxChannel);
+          if (thisHitMin.GetHitIsSaturated()) {
+            h_saturatedOtherEdge->Fill(thisHitMinChannel);
+            h_saturatedOtherEdge_plane[thisHitMin.GetHitPlane()]->Fill(thisHitMinChannel);
+          }
         }
         h_planes[thisHitMin.GetHitPlane()]->Fill(signalit.GetSignalPosition(), thisHitMin.GetHitBar());
         g_hits[thisHitMin.GetHitPlane()]->SetPoint(g_hits[thisHitMin.GetHitPlane()]->GetN(), signalit.GetSignalPosition(), thisHitMin.GetHitBar());
@@ -364,6 +456,30 @@ int main(int argc, char *argv[]){
   h_timeOfFlight->Draw("HIST");
   c_allSignals->SaveAs(Form("../../../../TofRootFiles/run%i_allSignals.C", thisRun.GetRunNumber()));
   c_allSignals->SaveAs(Form("../../../../TofRootFiles/run%i_allSignals.pdf", thisRun.GetRunNumber()));
+
+  // create vector of 6 canvas to host the 6 planes. Divide each canvas in 6 pads, for different plots
+  std::vector <TCanvas*> c_planeSignals;
+  c_planeSignals.reserve(6);
+  for (int i = 0; i < 6; i++){
+    c_planeSignals[i] = new TCanvas(Form("c_plane%iSignals", i), Form("plane%iSignals", i), 900, 900);
+    c_planeSignals[i]->Divide(3,2);
+    c_planeSignals[i]->cd(1);
+    h_signalBar_plane[i]->Draw("HIST");
+    c_planeSignals[i]->cd(2);
+    h_signalPosition_plane[i]->Draw("HIST");
+    c_planeSignals[i]->cd(3);
+    h_hitPeak_plane[i]->Draw("HIST");
+    c_planeSignals[i]->cd(4);
+    h_channelsFiring_plane[i]->Draw("HIST");
+    c_planeSignals[i]->cd(5);
+    h_timeOfFlight_plane[i]->Draw("HIST");
+    c_planeSignals[i]->cd(6);
+    h_saturatedHits_plane[i]->Draw("HIST");
+    c_planeSignals[i]->SaveAs(Form("../../../../TofRootFiles/run%i_plane%i.C", thisRun.GetRunNumber(), i));
+    c_planeSignals[i]->SaveAs(Form("../../../../TofRootFiles/run%i_plane%i.pdf", thisRun.GetRunNumber(), i));
+  }
+
+
 
   // plot bad signals in some way
   TCanvas *c_badSignals = new TCanvas("c_badSignals", "'Bad' Signals", 900, 900);
