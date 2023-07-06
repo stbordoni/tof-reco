@@ -103,11 +103,16 @@ int main(int argc, char *argv[]){
   h_signalBar->SetMinimum(0);
   hist_list->Add(h_signalBar);
 
+  // not elegant, temporary solution
+  std::vector <std::string> PlaneLabels = {"U","D","T","B","L","R"}; // use map instead!
+  std::map<std::string, int> PlaneNumbers;
+  for (int i= 0; i < 6; i++) PlaneNumbers[PlaneLabels[i]] = i;
+
   // create a vector of 6 histograms called h_signalBar_plane, one for each plane
   std::vector <TH1F*> h_signalBar_plane;
   h_signalBar_plane.reserve(6);
   for (int i = 0; i < 6; i++){
-    h_signalBar_plane[i] = new TH1F(Form("h_signalBar_plane_%i", i), Form("SignalBar, run%i, plane%i", thisRun.GetRunNumber(), i), 20, -0.5, 19.5);
+    h_signalBar_plane[i] = new TH1F(Form("h_signalBar_plane%s", PlaneLabels[i].c_str()), Form("SignalBar, run%i, plane%s", thisRun.GetRunNumber(),  PlaneLabels[i].c_str()), 20, -0.5, 19.5);
     h_signalBar_plane[i]->GetXaxis()->SetTitle("Bar");
     h_signalBar_plane[i]->SetMinimum(0);
     hist_list->Add(h_signalBar_plane[i]);
@@ -127,7 +132,7 @@ int main(int argc, char *argv[]){
   std::vector <TH1F*> h_signalPosition_plane;
   h_signalPosition_plane.reserve(6);
   for (int i = 0; i < 6; i++){
-    h_signalPosition_plane[i] = new TH1F(Form("h_signalPosition_plane_%i", i), Form("SignalPosition, run%i, plane%i", thisRun.GetRunNumber(), i), 50, -50, 270.);
+    h_signalPosition_plane[i] = new TH1F(Form("h_signalPosition_plane%s", PlaneLabels[i].c_str()), Form("SignalPosition, run%i, plane%s", thisRun.GetRunNumber(), PlaneLabels[i].c_str()), 50, -50, 270.);
     h_signalPosition_plane[i]->GetXaxis()->SetTitle("Position [cm]");
     h_signalPosition_plane[i]->SetMinimum(0);
     hist_list->Add(h_signalPosition_plane[i]);
@@ -143,7 +148,7 @@ int main(int argc, char *argv[]){
   std::vector <TH1F*> h_hitPeak_plane;
   h_hitPeak_plane.reserve(6);
   for (int i = 0; i < 6; i++){
-    h_hitPeak_plane[i] = new TH1F(Form("h_hitPeak_plane_%i", i), Form("HitPeak, run%i, plane%i", thisRun.GetRunNumber(), i), 50, -0.1,1.1 );
+    h_hitPeak_plane[i] = new TH1F(Form("h_hitPeak_plane%s", PlaneLabels[i].c_str()), Form("HitPeak, run%i, plane%s", thisRun.GetRunNumber(), PlaneLabels[i].c_str()), 50, -0.1,1.1 );
     h_hitPeak_plane[i]->GetXaxis()->SetTitle("Peak [V]");
     h_hitPeak_plane[i]->SetMinimum(0);
     hist_list->Add(h_hitPeak_plane[i]);
@@ -165,7 +170,7 @@ int main(int argc, char *argv[]){
   std::vector <TH1F*> h_channelsFiring_plane;
   h_channelsFiring_plane.reserve(6);
   for (int i = 0; i < 6; i++){
-    h_channelsFiring_plane[i] = new TH1F(Form("h_channelsFiring_plane_%i", i), Form("ChannelsFiring, run%i, plane%i", thisRun.GetRunNumber(), i), 0, -0.5, 19.5);
+    h_channelsFiring_plane[i] = new TH1F(Form("h_channelsFiring_plane%s", PlaneLabels[i].c_str()), Form("ChannelsFiring, run%i, plane%s", thisRun.GetRunNumber(), PlaneLabels[i].c_str()), 40, -0.5, 39.5);
     h_channelsFiring_plane[i]->GetXaxis()->SetTitle("Channel");
     h_channelsFiring_plane[i]->SetMinimum(0);
     hist_list->Add(h_channelsFiring_plane[i]);
@@ -212,7 +217,7 @@ int main(int argc, char *argv[]){
   std::vector <TH1F*> h_timeOfFlight_plane;
   h_timeOfFlight_plane.reserve(6);
   for (int i = 0; i < 6; i++){
-    h_timeOfFlight_plane[i] = new TH1F(Form("h_timeOfFlight_plane_%i", i), Form("TimeOfFlight, run%i, plane%i", thisRun.GetRunNumber(), i), 40, -0.5, 55.5);
+    h_timeOfFlight_plane[i] = new TH1F(Form("h_timeOfFlight_plane%s", PlaneLabels[i].c_str()), Form("TimeOfFlight, run%i, plane%s", thisRun.GetRunNumber(), PlaneLabels[i].c_str()), 40, -0.5, 55.5);
     h_timeOfFlight_plane[i]->GetXaxis()->SetTitle("Time of Flight [ns]");
     h_timeOfFlight_plane[i]->SetMinimum(0);
     hist_list->Add(h_timeOfFlight_plane[i]);
@@ -230,7 +235,7 @@ int main(int argc, char *argv[]){
   std::vector <TH1F*> h_saturatedHits_plane;
   h_saturatedHits_plane.reserve(6);
   for (int i = 0; i < 6; i++){
-    h_saturatedHits_plane[i] = new TH1F(Form("h_saturatedHits_plane_%i", i), Form("SaturatedHits, run%i, plane%i", thisRun.GetRunNumber(), i), 256, -0.5, 255.5);
+    h_saturatedHits_plane[i] = new TH1F(Form("h_saturatedHits_plane%s", PlaneLabels[i].c_str()), Form("SaturatedHits, run%i, plane%s", thisRun.GetRunNumber(), PlaneLabels[i].c_str()), 256, -0.5, 255.5);
     h_saturatedHits_plane[i]->GetXaxis()->SetTitle("Channel");
     h_saturatedHits_plane[i]->SetMinimum(0);
     h_saturatedHits_plane[i]->SetFillColor(kRed);
@@ -251,7 +256,7 @@ int main(int argc, char *argv[]){
   std::vector <TH1F*> h_saturatedOtherEdge_plane;
   h_saturatedOtherEdge_plane.reserve(6);
   for (int i = 0; i < 6; i++){
-    h_saturatedOtherEdge_plane[i] = new TH1F(Form("h_saturatedOtherEdge_plane_%i", i), Form("SaturatedOtherEdge, run%i, plane%i", thisRun.GetRunNumber(), i), 256, -0.5, 255.5);
+    h_saturatedOtherEdge_plane[i] = new TH1F(Form("h_saturatedOtherEdge_plane%s", PlaneLabels[i].c_str()), Form("SaturatedOtherEdge, run%i, plane%s", thisRun.GetRunNumber(), PlaneLabels[i].c_str()), 256, -0.5, 255.5);
     h_saturatedOtherEdge_plane[i]->GetXaxis()->SetTitle("Channel");
     h_saturatedOtherEdge_plane[i]->SetMinimum(0);
     h_saturatedOtherEdge_plane[i]->SetLineColor(kGreen);
@@ -261,10 +266,6 @@ int main(int argc, char *argv[]){
 
 // display the events
 
-  // not elegant, temporary solution
-  std::vector <std::string> PlaneLabels = {"U","D","T","B","L","R"}; // use map instead!
-  std::map<std::string, int> PlaneNumbers;
-  for (int i= 0; i < 6; i++) PlaneNumbers[PlaneLabels[i]] = i;
 
   std::vector <TH2F*> h_planes; // better static?
   h_planes.reserve(6);
@@ -345,9 +346,9 @@ int main(int argc, char *argv[]){
         h_hitPeak_plane[thisHitMin.GetHitPlane()]->Fill(thisHitMin.GetHitPeak());
         h_hitPeak_plane[thisHitMax.GetHitPlane()]->Fill(thisHitMax.GetHitPeak());
         h_channelsFiring->Fill(thisHitMinChannel);
-        h_channelsFiring_plane[thisHitMin.GetHitPlane()]->Fill(signalit.GetSignalHitMin().GetHitBar());
+        h_channelsFiring_plane[thisHitMin.GetHitPlane()]->Fill(signalit.GetSignalHitMin().GetHitChannelOnPlane());
         h_channelsFiring->Fill(thisHitMaxChannel);
-        h_channelsFiring_plane[thisHitMax.GetHitPlane()]->Fill(signalit.GetSignalHitMax().GetHitBar());
+        h_channelsFiring_plane[thisHitMax.GetHitPlane()]->Fill(signalit.GetSignalHitMax().GetHitChannelOnPlane());
         if (thisHitMin.GetHitIsSaturated()){
           h_saturatedHits->Fill(thisHitMinChannel);
           h_saturatedHits_plane[thisHitMin.GetHitPlane()]->Fill(thisHitMinChannel);
