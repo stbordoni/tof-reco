@@ -514,6 +514,7 @@ void TofRun::RunLoadHits(){
 
         if( not MidasInterface::isEventValid(entry) ){
           LogAlert << "Event #" << iEntry << " contains an error." << std::endl;
+          LogAlert << "If it's Event 0, it's normal since the first MIDAS event containing other info." << std::endl;
           continue;
         }
 
