@@ -1,5 +1,5 @@
 {
-    "RunMaxHitsToLoad":20000,
+    "RunMaxHitsToLoad":1000,
 
     "RunCoincWindow":55,
     "RunBaselineNSamples":5,

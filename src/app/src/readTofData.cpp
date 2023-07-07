@@ -213,16 +213,6 @@ int main(int argc, char *argv[]){
   h_timeOfFlight->SetMinimum(0);
   hist_list->Add(h_timeOfFlight);
 
-  // create a vector of 6 histograms called h_timeOfFlight_plane, one for each plane
-  std::vector <TH1F*> h_timeOfFlight_plane;
-  h_timeOfFlight_plane.reserve(6);
-  for (int i = 0; i < 6; i++){
-    h_timeOfFlight_plane[i] = new TH1F(Form("h_timeOfFlight_plane%s", PlaneLabels[i].c_str()), Form("TimeOfFlight, run%i, plane%s", thisRun.GetRunNumber(), PlaneLabels[i].c_str()), 40, -0.5, 55.5);
-    h_timeOfFlight_plane[i]->GetXaxis()->SetTitle("Time of Flight [ns]");
-    h_timeOfFlight_plane[i]->SetMinimum(0);
-    hist_list->Add(h_timeOfFlight_plane[i]);
-  }
-
   TH1F *h_saturatedHits = new TH1F("h_saturatedHits", Form("SaturatedHits, run%i", thisRun.GetRunNumber()), 256, -0.5, 255.5);
   h_saturatedHits->GetXaxis()->SetTitle("Channel");
   h_saturatedHits->SetMinimum(0);
@@ -473,7 +463,7 @@ int main(int argc, char *argv[]){
     c_planeSignals[i]->cd(4);
     h_channelsFiring_plane[i]->Draw("HIST");
     c_planeSignals[i]->cd(5);
-    h_timeOfFlight_plane[i]->Draw("HIST");
+    // empty
     c_planeSignals[i]->cd(6);
     h_saturatedHits_plane[i]->Draw("HIST");
     c_planeSignals[i]->SaveAs(Form("../../../../TofRootFiles/run%i_plane%i.C", thisRun.GetRunNumber(), i));
