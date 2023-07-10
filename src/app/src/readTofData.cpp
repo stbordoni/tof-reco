@@ -294,13 +294,16 @@ int main(int argc, char *argv[]){
   g_aveWf.reserve(256);
   for (int i = 0; i < 256; i++){
     g_aveWf[i] = new TGraphErrors();
-    g_aveWf[i]->SetTitle(Form("baseline_Ch%i", i));
+    g_aveWf[i]->SetTitle(Form("aveWf_Ch%i", i));
     g_aveWf[i]->SetMarkerStyle(22);
     g_aveWf[i]->SetMarkerSize(0.6);
     g_aveWf[i]->SetMarkerColor(2);
     // set y limits between -0.1 and 1.2
     g_aveWf[i]->SetMinimum(-0.02);
     g_aveWf[i]->SetMaximum(0.22);
+    // put labels
+    g_aveWf[i]->GetXaxis()->SetTitle("Sample");
+    g_aveWf[i]->GetYaxis()->SetTitle("Amplitude [V]");
     // g_aveWf[i]->SetStats(false);
     // g_aveWf[i]->GetXaxis()->SetTickLength(0);
     // g_aveWf[i]->GetXaxis()->SetLabelOffset(999);
@@ -314,6 +317,7 @@ int main(int argc, char *argv[]){
   LogInfo << "Number of events: " << thisRun.GetRunEventsList().size() << std::endl;
 
   int event_counter = 0;
+  int appo_flag = true;
   for (auto  eventit : thisRun.GetRunEventsList()) {
     // LogInfo << "enter event loop" << std::endl;
     for (auto  signalit : eventit.GetEventSignalsList()) {
@@ -321,6 +325,7 @@ int main(int argc, char *argv[]){
       //   LogInfo << "Reading through Events, currently at " << event_counter / (double)(thisRun.RunEventsList.size()) * 100 << " %\r";
       //   LogInfo << std::flush;
       // }
+
 
       if (signalit.GetSignalType() == 3) {
         auto & thisHitMin = signalit.GetSignalHitMin();
@@ -355,7 +360,9 @@ int main(int argc, char *argv[]){
             h_saturatedOtherEdge_plane[thisHitMin.GetHitPlane()]->Fill(thisHitMinChannel);
           }
         }
-        h_planes[thisHitMin.GetHitPlane()]->Fill(signalit.GetSignalPosition(), thisHitMin.GetHitBar());
+        // if (eventit.GetEventTimeOfFlight() != 0 && appo_flag) 
+        h_planes[thisHitMin.GetHitPlane()]->Fill(signalit.GetSignalPosition(), thisHitMin.GetHitBar()); 
+        // if (eventit.GetEventTimeOfFlight() != 0 && appo_flag) 
         g_hits[thisHitMin.GetHitPlane()]->SetPoint(g_hits[thisHitMin.GetHitPlane()]->GetN(), signalit.GetSignalPosition(), thisHitMin.GetHitBar());
         if (waveform_display) signalit.GetSignalHitMin().HitDisplayWaveform();
         if (waveform_display)  signalit.GetSignalHitMax().HitDisplayWaveform();
@@ -419,6 +426,8 @@ int main(int argc, char *argv[]){
           h_waveforms.at(thisHitMaxChannel).at(i).first ++;       }
         }
     }
+
+    // if (eventit.GetEventTimeOfFlight() != 0) appo_flag = false;
 
     if (eventit.GetEventTimeOfFlight() != 0) {
       // LogInfo << "Event has time of flight: " << eventit.GetEventTimeOfFlight() << std::endl;
@@ -550,7 +559,11 @@ int main(int argc, char *argv[]){
   g_baseline->SetMarkerStyle(2);
   g_baseline->SetMarkerSize(1);
   g_baseline->SetMarkerColor(kRed);
+  // set labels
+  g_baseline->GetXaxis()->SetTitle("Channel");
+  g_baseline->GetYaxis()->SetTitle("Baseline [V]");
   g_baseline->Draw("AP");
+
   c_monitoring->cd(2);
   TGraph *g_maxAmp = new TGraph();
   for (int i = 0; i < nChannels; i++) {
@@ -560,6 +573,9 @@ int main(int argc, char *argv[]){
   g_maxAmp->SetMarkerStyle(2);
   g_maxAmp->SetMarkerSize(1);
   g_maxAmp->SetMarkerColor(kRed);
+  // labels
+  g_maxAmp->GetXaxis()->SetTitle("Channel");
+  g_maxAmp->GetYaxis()->SetTitle("Peak Amplitude [V]");
   g_maxAmp->Draw("AP");
   c_monitoring->cd(3);
   TGraph *g_peakSample = new TGraph();
@@ -570,6 +586,9 @@ int main(int argc, char *argv[]){
   g_peakSample->SetMarkerStyle(2);
   g_peakSample->SetMarkerSize(1);
   g_peakSample->SetMarkerColor(kRed);
+  // labels
+  g_peakSample->GetXaxis()->SetTitle("Channel");
+  g_peakSample->GetYaxis()->SetTitle("Peak Sample");
   g_peakSample->Draw("AP");
   c_monitoring->cd(4);
   TGraph *g_risingTime = new TGraph();
@@ -580,16 +599,22 @@ int main(int argc, char *argv[]){
   g_risingTime->SetMarkerStyle(2);
   g_risingTime->SetMarkerSize(1);
   g_risingTime->SetMarkerColor(kRed);
+  // labels
+  g_risingTime->GetXaxis()->SetTitle("Channel");
+  g_risingTime->GetYaxis()->SetTitle("Rising Time [ns]");
   g_risingTime->Draw("AP");
   c_monitoring->cd(5);
   TGraph *g_integral = new TGraph();
   for (int i = 0; i < nChannels; i++) {
-    g_integral->SetPoint(i, i, h_integral[i]->GetMean());
+    g_integral->SetPoint(i, i, h_integral[i]->GetMean()*thisRun.GetRunSamplingTime());
   }
   g_integral->SetTitle(Form ("Integral, run%i", thisRun.GetRunNumber()));
   g_integral->SetMarkerStyle(2);
   g_integral->SetMarkerSize(1);
   g_integral->SetMarkerColor(kRed);
+  // labels
+  g_integral->GetXaxis()->SetTitle("Channel");
+  g_integral->GetYaxis()->SetTitle("Integral [V ns]");
   g_integral->Draw("AP");
   // 6 is empty for now
   c_monitoring -> SaveAs(Form("../../../../TofRootFiles/run%i_monitoring.C", thisRun.GetRunNumber()));
@@ -603,12 +628,14 @@ int main(int argc, char *argv[]){
     }
   }
   
-  TCanvas *c_aveWf = new TCanvas("c_aveWf", Form("Average Waveforms, run %i", thisRun.GetRunNumber()), 900, 900);
+  TCanvas *c_aveWf = new TCanvas("c_aveWf", Form("Average Waveforms, run %i", thisRun.GetRunNumber()), 600, 700);
   c_aveWf->Divide(4,4);
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
       int canvas_number = (i)*4 + j+1;
       c_aveWf->cd(canvas_number);
+      // set title as FEBx, SAMPICx
+      g_aveWf[canvas_number]->SetTitle(Form("FEB%i, SAMPIC%i", i, j));
       g_aveWf[canvas_number]->Draw("AL");
       for (int k = 1; k < 16; k++) g_aveWf[canvas_number + k]->Draw("L");
     }
