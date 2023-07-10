@@ -95,6 +95,9 @@ void TofSignal::SignalComputePosition(){
 
 
 void TofSignal::SignalComputeTime(){
+    double cable_length [6] = {8150., 10850., 8800., 10600., 8400., 10850.}; //mm
+    double speed_of_signal = 198.; // mm/ns
+
     if (SignalPosition == -1 || SignalPosition < 0. || SignalPosition > 220.) {
         // std::cout << "not computing time, position is not valid: " << SignalPosition << std::endl;
         // std::string this_error = "Error: in SignalComputeTime, this Signal only has one edge \n";
@@ -116,6 +119,10 @@ void TofSignal::SignalComputeTime(){
             SignalTime = SignalHitMin.HitLinearInterpolation(0.1) - SignalPosition/light_velocity;
             // std::cout << "  Computed SignalTime: " << SignalTime << std::endl;
         }
+        double cable_length_correction = cable_length[SignalHitMin.GetHitPlane()]/speed_of_signal; // mm to m
+        double arbitrary_correction = 100; // ns, to avoid going negative
+        SignalTime = SignalTime + arbitrary_correction - cable_length_correction;
+
     }
 }
 
