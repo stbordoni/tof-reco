@@ -9,7 +9,7 @@
 
 
 LoggerInit([]{
-  Logger::getUserHeader() << "[tofPrintData.cpp]";
+  Logger::getUserHeader() << "[tofRootConverter.cpp]";
 });
 
 int main(int argc, char *argv[]){
@@ -45,8 +45,10 @@ int main(int argc, char *argv[]){
   midasInterface.initialize();
 
   long nOffset = clp.getOptionVal("nOffset", long(0));
+  long nEventToPrint = clp.getOptionVal("nEventToPrint", long(-1));
 
   LogWarningIf( nOffset != 0 ) << GET_VAR_NAME_VALUE(nOffset) << std::endl;
+  LogWarningIf( nEventToPrint != -1 ) << GET_VAR_NAME_VALUE(nEventToPrint) << std::endl;
 
   LogWarning << "Fetching nb of entries in file..." << std::endl;
   long nEntries = midasInterface.fetchNbEvents();
@@ -57,12 +59,7 @@ int main(int argc, char *argv[]){
     auto* entry = midasInterface.getEntry(iEntry);
 
     if( iEntry < nOffset ){ LogDebug << GET_VAR_NAME_VALUE(iEntry) << std::endl; continue; }
-
-    if( clp.isOptionTriggered("nEventToPrint") ){
-      if( iEntry - nOffset >= clp.getOptionVal<int>("nEventToPrint")){
-        break;
-      }
-    }
+    if( nEventToPrint != -1 and iEntry - nOffset < nEventToPrint ){ break; }
 
     entry->FindAllBanks(); // fetch banks, otherwise give 0
 

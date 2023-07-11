@@ -14,3 +14,8 @@ add_executable( tofPrintData ${CMAKE_CURRENT_SOURCE_DIR}/src/tofPrintData.cpp)
 target_link_libraries( tofPrintData TofRecoClasses )
 install( TARGETS tofPrintData compareTofRuns DESTINATION bin )
 
+cmessage( STATUS "Creating tofRootConverter app..." )
+add_executable( tofRootConverter ${CMAKE_CURRENT_SOURCE_DIR}/src/tofRootConverter.cpp)
+target_link_libraries( tofRootConverter TofRecoClasses )
+install( TARGETS tofRootConverter compareTofRuns DESTINATION bin )
+
