@@ -44,25 +44,26 @@ int main(int argc, char *argv[]){
   LogWarning << "Initializing MIDAS interface..." << std::endl;
   midasInterface.initialize();
 
+  long nOffset = clp.getOptionVal("nOffset", long(0));
+
+  LogWarningIf( nOffset != 0 ) << GET_VAR_NAME_VALUE(nOffset) << std::endl;
+
   LogWarning << "Fetching nb of entries in file..." << std::endl;
   long nEntries = midasInterface.fetchNbEvents();
   LogInfo << "File has " << nEntries << " recorded SAMPIC events." << std::endl;
 
   for(long iEntry = 0 ; iEntry < nEntries ; iEntry++){
 
-    if( clp.isOptionTriggered("nOffset") ){
-      if( iEntry < clp.getOptionVal<int>("nOffset") ){
-        continue;
-      }
-    }
+    auto* entry = midasInterface.getEntry(iEntry);
+
+    if( iEntry < nOffset ){ LogDebug << GET_VAR_NAME_VALUE(iEntry) << std::endl; continue; }
 
     if( clp.isOptionTriggered("nEventToPrint") ){
-      if( iEntry >= clp.getOptionVal<int>("nEventToPrint")){
+      if( iEntry - nOffset >= clp.getOptionVal<int>("nEventToPrint")){
         break;
       }
     }
 
-    auto* entry = midasInterface.getEntry(iEntry);
     entry->FindAllBanks(); // fetch banks, otherwise give 0
 
     LogInfo << "--------------------" << std::endl;
