@@ -9,8 +9,8 @@ add_executable( compareTofRuns ${CMAKE_CURRENT_SOURCE_DIR}/src/compareTofRuns.cp
 target_link_libraries( compareTofRuns TofRecoClasses )
 install( TARGETS compareTofRuns DESTINATION bin )
 
-cmessage( STATUS "Creating printTofData app..." )
-add_executable( printTofData ${CMAKE_CURRENT_SOURCE_DIR}/src/printTofData.cpp )
-target_link_libraries( printTofData TofRecoClasses )
-install( TARGETS printTofData compareTofRuns DESTINATION bin )
+cmessage( STATUS "Creating tofPrintData app..." )
+add_executable( tofPrintData ${CMAKE_CURRENT_SOURCE_DIR}/src/tofPrintData.cpp)
+target_link_libraries( tofPrintData TofRecoClasses )
+install( TARGETS tofPrintData compareTofRuns DESTINATION bin )
 

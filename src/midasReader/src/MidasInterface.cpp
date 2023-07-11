@@ -150,10 +150,10 @@ void MidasInterface::printSampicEvent() const {
         LogScopeIndent;
         LogInfo << "SampicIndex(" << _sampicEventBuffer_.Hit[iHit].SampicIndex << ")";
         LogInfo << ", FeBoardIndex(" << _sampicEventBuffer_.Hit[iHit].FeBoardIndex << ")";
-        LogInfo << ", Channel(" << _sampicEventBuffer_.Hit[iHit].Channel << ")" << std::endl;
-        LogInfo << ", ChannelIndex(" << _sampicEventBuffer_.Hit[iHit].ChannelIndex << ")" << std::endl;
-        LogInfo << "FirstCellTimeStamp: " << _sampicEventBuffer_.Hit[iHit].FirstCellTimeStamp << std::endl;
-        LogInfo << "TOTValue: " << _sampicEventBuffer_.Hit[iHit].TOTValue << std::endl;
+        LogInfo << ", Channel(" << _sampicEventBuffer_.Hit[iHit].Channel << ")";
+        LogInfo << ", ChannelIndex(" << _sampicEventBuffer_.Hit[iHit].ChannelIndex << ")";
+        LogInfo << ", FirstCellTimeStamp(" << _sampicEventBuffer_.Hit[iHit].FirstCellTimeStamp << ")";
+        LogInfo << ", TOTValue(" << _sampicEventBuffer_.Hit[iHit].TOTValue << ")" << std::endl;
 
         LogInfo << "RawDataSamples: { ";
         for(auto elm : _sampicEventBuffer_.Hit[iHit].RawDataSamples){ LogInfo << elm << ", "; }
