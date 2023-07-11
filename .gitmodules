@@ -3,13 +3,13 @@
 	url = https://git.t2k.org/tof_utils/daq/sampic_256ch_linux.git
 [submodule "submodules/cpp-generic-toolbox"]
 	path = submodules/cpp-generic-toolbox
-	url = https://github.com/nadrino/cpp-generic-toolbox.git
+	url = https://git.t2k.org/ablanche/cpp-generic-toolbox.git
 [submodule "submodules/simple-cpp-logger"]
 	path = submodules/simple-cpp-logger
-	url = https://github.com/nadrino/simple-cpp-logger
+	url = https://git.t2k.org/ablanche/simple-cpp-logger.git
 [submodule "submodules/simple-cpp-cmd-line-parser"]
 	path = submodules/simple-cpp-cmd-line-parser
-	url = https://github.com/nadrino/simple-cpp-cmd-line-parser.git
+	url = https://git.t2k.org/ablanche/simple-cpp-cmd-line-parser.git
 [submodule "submodules/midasio"]
 	path = submodules/midasio
 	url = https://bitbucket.org/tmidas/midasio.git
