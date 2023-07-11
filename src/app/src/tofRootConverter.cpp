@@ -5,7 +5,13 @@
 #include "MidasInterface.h"
 
 #include "CmdLineParser.h"
+#include "GenericToolbox.RawDataArray.h"
 #include "Logger.h"
+
+#include "SAMPIC_256Ch_Type.h"
+
+#include "TFile.h"
+#include "TTree.h"
 
 
 LoggerInit([]{
@@ -44,6 +50,34 @@ int main(int argc, char *argv[]){
   LogWarning << "Initializing MIDAS interface..." << std::endl;
   midasInterface.initialize();
 
+  std::string outFilePath = clp.getOptionVal<std::string>("midasFile") + ".root";
+  LogInfo << "Output file will be writen as: \"" << outFilePath << "\"" << std::endl;
+
+  auto outFile = std::make_unique<TFile>( outFilePath.c_str(), "RECREATE" );
+  auto* outTree = new TTree( "TofHit", "TofHit" );
+
+  int midasEntryIndex;
+  int hitIndex;
+  HitStruct hitBuffer;
+
+  outTree->Branch( "midasEntryIndex", &midasEntryIndex );
+  outTree->Branch( "hitIndex", &hitIndex );
+
+  outTree->Branch( "HitNumber", &hitBuffer.HitNumber );
+  outTree->Branch( "ChannelIndex", &hitBuffer.ChannelIndex );
+  outTree->Branch( "FeBoardIndex", &hitBuffer.FeBoardIndex );
+  outTree->Branch( "ChannelIndex", &hitBuffer.ChannelIndex );
+  outTree->Branch( "ChannelIndex", &hitBuffer.ChannelIndex );
+  outTree->Branch( "SampicIndex", &hitBuffer.SampicIndex );
+
+  outTree->Branch( "TOTValue", &hitBuffer.TOTValue );
+  outTree->Branch( "FirstCellTimeStamp", &hitBuffer.FirstCellTimeStamp );
+
+  outTree->Branch( "CorrectedDataSamples", hitBuffer.CorrectedDataSamples, ("CorrectedDataSamples[" + std::to_string(MAX_NB_OF_SAMPLES) + "]/F").c_str() );
+  outTree->Branch( "RawDataSamples", hitBuffer.RawDataSamples, ("RawDataSamples[" + std::to_string(MAX_NB_OF_SAMPLES) + "]/s").c_str() );
+  outTree->Branch( "OrderedRawDataSamples", hitBuffer.OrderedRawDataSamples, ("OrderedRawDataSamples[" + std::to_string(MAX_NB_OF_SAMPLES) + "]/s").c_str() );
+
+
   long nOffset = clp.getOptionVal("nOffset", long(0));
   long nEventToPrint = clp.getOptionVal("nEventToPrint", long(-1));
 
@@ -56,18 +90,13 @@ int main(int argc, char *argv[]){
 
   for(long iEntry = 0 ; iEntry < nEntries ; iEntry++){
 
+    GenericToolbox::displayProgressBar(iEntry, nEntries, LogWarning.getPrefixString() + "Loading MIDAS entries...");
     auto* entry = midasInterface.getEntry(iEntry);
 
     if( iEntry < nOffset ){ LogDebug << GET_VAR_NAME_VALUE(iEntry) << std::endl; continue; }
     if( nEventToPrint != -1 and iEntry - nOffset < nEventToPrint ){ break; }
 
     entry->FindAllBanks(); // fetch banks, otherwise give 0
-
-    LogInfo << "--------------------" << std::endl;
-    LogInfo << "Event #" << iEntry << std::endl;
-    LogScopeIndent;
-    entry->PrintHeader();
-    entry->PrintBanks();
 
     if( not MidasInterface::isEventValid(entry) ){
       LogAlert << "Event #" << iEntry << " contains an error." << std::endl;
@@ -76,8 +105,22 @@ int main(int argc, char *argv[]){
     }
 
     midasInterface.fillSampicEvent();
-    midasInterface.printSampicEvent();
+
+    auto* sampicEv = &midasInterface.getSampicEventBuffer();
+    for( int iHit=0 ; iHit < sampicEv->NbOfHitsInEvent ; iHit++ ){
+      midasEntryIndex = int(iEntry);
+      hitIndex = iHit;
+
+      hitBuffer = sampicEv->Hit[iHit];
+
+      outTree->Fill();
+    }
 
   }
+
+  outTree->Write();
+  outFile->Close();
+
+  LogInfo << "Output file writen as: \"" << outFilePath << "\"" << std::endl;
 
 }
