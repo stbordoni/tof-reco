@@ -742,44 +742,44 @@ void TofRun::RunOrderHits(){
 
 void TofRun::RunCreateEvents(){
     
-    std::cout << "Creating events..." << std::endl;
+    LogInfo << "Creating events..." << std::endl;
 
-    double this_hit_time = 0;
-    bool  create_new_event = true;
+    bool makeNewEvent{true};
+    double thisHitTime{0};
     TofEvent new_event;
 
-    for (int ihit = 0; ihit < RunOrderedHitsList.size(); ihit++){
+    for( const auto& hit : RunOrderedHitsList){
 
-        if (create_new_event) {
-            // LogInfo << "Creating new event" << std::endl;
-            this_hit_time = RunOrderedHitsList.at(ihit).GetHitCell0Time();
-            new_event = TofEvent(); // reset
-            // LogInfo << "Create new event\n";
+        if ( makeNewEvent ) {
+          makeNewEvent = false;
+          thisHitTime = hit.GetHitCell0Time();
+          new_event = TofEvent(); // reset
         }
 
-        if (RunOrderedHitsList.at(ihit).GetHitCell0Time() - this_hit_time < RunCoincWindow){
-            new_event.AddHit(RunOrderedHitsList.at(ihit));
-            create_new_event = false;
+        // Does this hit belongs to the same time window?
+        if( hit.GetHitCell0Time() - thisHitTime < RunCoincWindow ){
+          new_event.AddHit( hit );
         }
         else{            
-            // more operations on EventHits
-            // LogInfo << "Event " << RunEventsList.size() << " has " << new_event.EventHitsList.size() << " hits." << std::endl;
-            new_event.EventCreateSignals();
-            new_event.EventComputeTimeOfFlight();
-            RunEventsList.push_back(new_event);
-            create_new_event = true;
+          // more operations on EventHits
+          // LogInfo << "Event " << RunEventsList.size() << " has " << new_event.EventHitsList.size() << " hits." << std::endl;
+          new_event.EventCreateSignals();
+          new_event.EventComputeTimeOfFlight();
+          RunEventsList.emplace_back( new_event );
+          makeNewEvent = true;
         }
 
     }
     
     LogInfo << "Created " << RunEventsList.size() << " events." << std::endl;
-    RunOrderedHitsList = {}; // free memory
+    RunOrderedHitsList.clear(); // free memory
+    RunOrderedHitsList.shrink_to_fit();
 
 }
 
 void TofRun::RunSetAnalysisOptions (){   
 
-    if (RunSelectedAnalysisOptions == true) return; // avoid double calls
+    if ( RunSelectedAnalysisOptions ) return; // avoid double calls
 
 
     std::string RunAnalysisSettingsFile = "../../../AnalysisSettings.json"; // has to be in same folder for now
