@@ -11,6 +11,7 @@
 #include "TH1F.h"
 
 #include "GenericToolbox.h"
+#include "GenericToolbox.RawDataArray.h"
 #include "CmdLineParser.h"
 #include "Logger.h"
 
@@ -88,10 +89,36 @@ int main(int argc, char *argv[]){
     auto outFile = std::make_unique<TFile>( outFilePath.c_str(), "RECREATE" );
     auto* outTree = new TTree("TofEvents", "TofEvents");
 
-    auto& evList = thisRun.GetRunEventsList();
-    for( auto& tofEvent : evList ){
+    double timeOfFlight{};
+    outTree->Branch("timeOfFlight", &timeOfFlight);
 
+    int maxSignalPerEvent{32};
+
+    GenericToolbox::RawDataArray tofSignalArr;
+    std::map<std::string, std::function<void(GenericToolbox::RawDataArray&, const std::vector<TofSignal>&)>> leafDictionary;
+    leafDictionary["signalType["+std::to_string(maxSignalPerEvent)+"]/D"] = [&](GenericToolbox::RawDataArray& arr_, const std::vector<TofSignal>& ev_){ for(int i=0;i<maxSignalPerEvent;i++){ arr_.writeRawData(ev_[i].GetSignalType()); } };
+    std::string leavesDefStr;
+    for( auto& leafDef : leafDictionary ){
+      if( not leavesDefStr.empty() ) leavesDefStr += ":";
+      leavesDefStr += leafDef.first;
+      leafDef.second(tofSignalArr, thisRun.GetRunEventsList()[0].GetEventSignalsList()); // resize buffer
     }
+    tofSignalArr.lockArraySize();
+    outTree->Branch("TofSignal", &tofSignalArr.getRawDataArray()[0], leavesDefStr.c_str());
+
+
+
+
+    size_t iEvt{0}; size_t nEvt{thisRun.GetRunEventsList().size()};
+    for( auto& tofEvent : thisRun.GetRunEventsList() ){
+      GenericToolbox::displayProgressBar(iEvt++, nEvt, LogWarning.getPrefixString() + "Saving events to ttree");
+      timeOfFlight = tofEvent.GetEventTimeOfFlight();
+
+      outTree->Fill();
+    }
+
+    outTree->Write();
+    outFile->Close();
 
     exit( EXIT_SUCCESS );
   }

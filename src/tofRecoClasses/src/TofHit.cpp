@@ -298,7 +298,7 @@ char TofHit::HitGetPlaneId() const{
     }
 }
 
-void TofHit::HitDisplayWaveform() {
+void TofHit::HitDisplayWaveform() const {
 
     gROOT->SetBatch(kFALSE);
     TCanvas *c_appo = new TCanvas("c_appo","c_appo",800,600);
@@ -310,7 +310,7 @@ void TofHit::HitDisplayWaveform() {
     std::cout << "Drawing " << h_waveform->GetName() << std::endl;
     c_appo->cd();
     h_waveform->Draw();
-    if (HitFitSuccess) HitFitFunction.Draw("same");
+    if (HitFitSuccess) ((TF1*) &HitFitFunction)->Draw("same");
     c_appo->Update();
     c_appo->Modified();
     c_appo->WaitPrimitive();

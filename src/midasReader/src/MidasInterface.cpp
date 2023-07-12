@@ -121,15 +121,22 @@ void MidasInterface::fillSampicEvent(){
 
   // RawDataSize
   if( not rawDataSize.empty() ) _sampicEventBuffer_.TriggerData.RawDataSize = rawDataSize[0];
-  for( int iByte = 0 ; iByte < _sampicEventBuffer_.TriggerData.RawDataSize ; iByte++ ){
-    _sampicEventBuffer_.TriggerData.RawData[iByte] = triggerRawDataList[iByte];
+
+  if(triggerRawDataList.size() == _sampicEventBuffer_.TriggerData.RawDataSize ){
+    for( int iByte = 0 ; iByte < _sampicEventBuffer_.TriggerData.RawDataSize ; iByte++ ){
+      _sampicEventBuffer_.TriggerData.RawData[iByte] = triggerRawDataList[iByte];
+    }
+  }
+  else{
+    LogError << GET_VAR_NAME_VALUE(triggerRawDataList.size()) << std::endl;
   }
 
   // NbOfTriggers
   if( not nbOfTriggers.empty() ) _sampicEventBuffer_.TriggerData.NbOfTriggers = nbOfTriggers[0];
   else _sampicEventBuffer_.TriggerData.NbOfTriggers = 0;
+
   for( int iTrig = 0 ; iTrig < _sampicEventBuffer_.TriggerData.NbOfTriggers ; iTrig++ ){
-    _sampicEventBuffer_.TriggerData.TriggerIDFromFPGA[iTrig] = triggerIDFromFPGAList[iTrig];
+    if(not triggerIDFromFPGAList.empty()) _sampicEventBuffer_.TriggerData.TriggerIDFromFPGA[iTrig] = triggerIDFromFPGAList[iTrig];
     _sampicEventBuffer_.TriggerData.TriggerIDFromExtTrig[iTrig] = triggerIDFromExtTrigList[iTrig];
     _sampicEventBuffer_.TriggerData.TriggerTimeStamp[iTrig] = triggerTimeStampList[iTrig];
     _sampicEventBuffer_.TriggerData.SpillNumberFromExtTrig[iTrig] = spillNumberFromExtTrigList[iTrig];

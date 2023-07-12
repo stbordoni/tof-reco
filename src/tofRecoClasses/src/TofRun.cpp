@@ -736,7 +736,7 @@ void TofRun::RunOrderHits(){
 
     RunUnorderedHitsList.clear();
 
-    LogInfo << "\nStored hits in RunOrderedHitsList and emptied RunUnorderedHitsList.\n";
+    LogInfo << std::endl << "Stored hits in RunOrderedHitsList and emptied RunUnorderedHitsList.\n";
 
 }
 
@@ -760,7 +760,7 @@ void TofRun::RunCreateEvents(){
         if( hit.GetHitCell0Time() - thisHitTime < RunCoincWindow ){
           new_event.AddHit( hit );
         }
-        else{            
+        else{
           // more operations on EventHits
           // LogInfo << "Event " << RunEventsList.size() << " has " << new_event.EventHitsList.size() << " hits." << std::endl;
           new_event.EventCreateSignals();
