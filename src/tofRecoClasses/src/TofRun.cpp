@@ -570,6 +570,13 @@ void TofRun::RunLoadHits(){
           }
         }
 
+        // saving gate timestamps, only from run 1173 on
+        if (RunNumber >= 1173){        
+            for( int iTrigger = 0 ; iTrigger < sampicEvt.TriggerData.NbOfTriggers ; iTrigger++ ){
+                RunGatesTimestamps.emplace_back( sampicEvt.TriggerData.TriggerTimeStamp [iTrigger]);
+            }
+        }
+
         if (hitId_counter > RunMaxHitsToLoad){
           LogInfo << "\nReached max hits set in analysis settings\n";
           break;
@@ -773,7 +780,7 @@ void TofRun::RunCreateEvents(){
     }
     
     LogInfo << "Created " << RunEventsList.size() << " events." << std::endl;
-    RunOrderedHitsList = {}; // free memory
+    // RunOrderedHitsList = {}; // free memory
 
 }
 

@@ -31,8 +31,7 @@ int main(int argc, char *argv[]){
   clp.getDescription() << "> compareTofRuns is used to compare some quantities across different runs"<< std::endl;
 
   clp.addDummyOption("Main options");
-  clp.addOption("software", {"-s", "--software"}, "Specify weather if the DAQ software was linux or windows.");
-  clp.addOption("runFullPath", {"-r", "--run"}, "Run full path.");
+  clp.addOption("runFullPath", {"-i", "--input"}, "Run full path.");
   clp.addOption("outputDir", {"-o", "--output"}, "Specify output directory path");
   clp.addDummyOption();
 

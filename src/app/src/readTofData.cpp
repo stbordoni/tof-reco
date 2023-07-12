@@ -19,6 +19,9 @@
 
 #include "nlohmann/json.hpp"
 
+// move
+#include "TLegend.h"
+
 LoggerInit([]{
   Logger::getUserHeader() << "[" << FILENAME << "]";
 });
@@ -643,6 +646,39 @@ int main(int argc, char *argv[]){
   c_aveWf->SaveAs(Form("../../../../TofRootFiles/run%i_aveWf.C", thisRun.GetRunNumber()));
   c_aveWf->SaveAs(Form("../../../../TofRootFiles/run%i_aveWf.pdf", thisRun.GetRunNumber()));
 
+  if (thisRun.GetRunNumber() >= 1175) {
+    TH1F *h_cell0times = new TH1F("h_cell0times", Form("Timestamps, run%i", thisRun.GetRunNumber()), 10000, 0, 5e7);
+    h_cell0times->GetXaxis()->SetTitle("Timestamp [ns]");
+    h_cell0times->SetMinimum(0);
+    h_cell0times->SetFillColor(kBlue);
+    for (auto hitit : thisRun.GetRunOrderedHitsList()) {
+      h_cell0times->Fill(hitit.GetHitCell0Time());
+    }
+    double gate_size = 1e5; // take from somewhere else    
+    TCanvas *c_timestamps = new TCanvas("c_timestamps", Form("Timestamps of hits and gates, run%i", thisRun.GetRunNumber()), 900, 900);
+    c_timestamps->cd();
+    TLegend *leg_timestamps = new TLegend();
+    leg_timestamps->AddEntry(h_cell0times, "Hits", "l");
+    h_cell0times->Draw("HIST");
+
+    // add vertical lines in the positions where the GateTimeStamps are, start and end
+    bool appo_first_line = true;
+    for (auto gateit : thisRun.GetRunGatesTimestamps()) {
+      TLine* line_start = new TLine(gateit, 0, gateit, 1);
+      TLine* line_stop = new TLine(gateit + gate_size, 0, gateit + gate_size, 1);
+      line_start->SetLineColor(kRed);
+      line_start->SetLineStyle(2);
+      line_stop->SetLineColor(kRed);
+      line_stop->SetLineStyle(3);
+      line_start->Draw("SAMES");
+      line_stop->Draw("SAMES");
+      if (appo_first_line) leg_timestamps->AddEntry(line_start, "Gate", "l");
+      appo_first_line = false;
+    }
+    leg_timestamps->Draw();
+    c_timestamps->SaveAs(Form("../../../../TofRootFiles/run%i_cell0times.C", thisRun.GetRunNumber()));
+    c_timestamps->SaveAs(Form("../../../../TofRootFiles/run%i_cell0times.pdf", thisRun.GetRunNumber()));
+  }
 
   // save all files in a histogram list  and output to a root file
   TFile *f_out = new TFile(Form("../../../../TofRootFiles/run%i_histos.root", thisRun.GetRunNumber()), "RECREATE");

@@ -74,6 +74,9 @@ public:
     double GetRunSamplingTime() {return RunSamplingFrequency;}
     std::vector <TofEvent> GetRunEventsList() {return RunEventsList;}
     double GetRunCoincWindow() {return RunCoincWindow;}
+    // for gate times
+    std::vector <int> GetRunGatesTimestamps() {return RunGatesTimestamps;}
+    std::vector <TofHit> GetRunOrderedHitsList() {return RunOrderedHitsList;}
 
   // Actual events, that are added only after creating the objects
   std::vector <TofHit> RunUnorderedHitsList;
@@ -108,6 +111,8 @@ private:
     double RunPostTrig[TofRunParameters::nFebsMax][TofRunParameters::nSampicsPerFeb] {};
     double RunTrigThr[TofRunParameters::nChannels] {};
     int RunTotalHits {-1};
+    // vector of RunGatesTimestamps
+    std::vector <int> RunGatesTimestamps{};
 
     // Settings for analysis
     bool RunVerboseMode {false};
