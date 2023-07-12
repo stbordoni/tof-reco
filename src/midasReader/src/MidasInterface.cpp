@@ -205,8 +205,8 @@ void MidasInterface::printSampicEvent() const {
       for(int i=0 ; i<_sampicEventBuffer_.TriggerData.NbOfTriggers ; i++ ){ LogInfo << _sampicEventBuffer_.TriggerData.RawExtraWord[i] << ", "; }
       LogInfo << " }" << std::endl;
     }
-    LogThrowIf(_sampicEventBuffer_.TriggerData.RawDataSize != 0, "FOUND DATA!");
-    LogThrowIf(_sampicEventBuffer_.TriggerData.NbOfTriggers != 0, "FOUND TRIGGERS");
+//    LogThrowIf(_sampicEventBuffer_.TriggerData.RawDataSize != 0, "FOUND DATA!");
+//    LogThrowIf(_sampicEventBuffer_.TriggerData.NbOfTriggers != 0, "FOUND TRIGGERS");
 
   }
 
