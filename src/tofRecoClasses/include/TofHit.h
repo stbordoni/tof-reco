@@ -39,52 +39,52 @@ std::vector<std::string> SplitString(const std::string &, char);
 Double_t FitFunction(Double_t *, Double_t *);
 
 class TofHit{
-public: 
-    // Constructor
-    TofHit();
-    // TofHit(); // from SAMPIC library
-    virtual ~TofHit()= default;
+public:
+  // Constructor
+  TofHit();
+  // TofHit(); // from SAMPIC library
+  virtual ~TofHit()= default;
 
-    // Functions
-    // void HitComputeVariables();
-    void HitFitWaveform();
-    double HitLinearInterpolation(double);
-    double HitComputeCfTime(double);
-    void HitQualityCheck();
-    void HitMatchDaqChToTofCh();
-    char HitGetPlaneId() const;
-    void HitDisplayWaveform();
-    void HitGetHitInfo() ;
-    void HitPrintErrors() ;
+  // Functions
+  // void HitComputeVariables();
+  void HitFitWaveform();
+  double HitLinearInterpolation(double);
+  double HitComputeCfTime(double);
+  void HitQualityCheck();
+  void HitMatchDaqChToTofCh();
+  char HitGetPlaneId() const;
+  void HitDisplayWaveform() const;
+  void HitGetHitInfo() ;
+  void HitPrintErrors() ;
 
-    // Setters
-    void SetHitFeb(int value) { HitFeb = value; }
-    void SetHitFebChannel(int value) { HitFebChannel = value; }
-    void SetHitCell0Time(double value) { HitCell0Time = value; }
-    void SetHitTotValue(double value) { HitTotValue = value; }
-    void SetHitWaveform(std::vector<double> waveform) { HitWaveform = waveform; }
-    void SetHitId(int value) { HitId = value; }
-    void SetHitSampic(int value) { HitSampic = value; }
-    void SetHitDaqChannel(int value) { HitDaqChannel = value; }
-    void SetHitPlane(int value) { HitPlane = value; }
-    void SetHitBar(int value) { HitBar = value; }
-    void SetHitEdge(int value) { HitEdge = value; }
-    void SetHitBaseline(double value) { HitBaseline = value; }
-    void SetHitRawPeak(double value) { HitRawPeak = value; }
-    void SetHitPeak(double value) { HitPeak = value; }
-    void SetHitIsSaturated(bool value) { HitIsSaturated = value; }
-    void SetHitPeakSample(int value) { HitPeakSample = value; }
-    void SetHitPeakTime(double value) { HitPeakTime = value; }
-    void SetHitVoltageIntegral(double value) { HitVoltageIntegral = value; }
-    void SetHitChannelOnPlane(int value) { HitChannelOnPlane = value; }
-    void SetHitRawTotValue(double value) { HitRawTotValue = value; }
-    void SetHitUnixTime(double value) { HitUnixTime = value; }
-    void SetHitSampleLength(double value) { HitSampleLength = value; }
-    void SetHitFitSuccess(bool value) { HitFitSuccess = value; }
-    void SetHitFitParameter(double value[6]) { for (int i = 0; i < 6; i++) HitFitParameter[i] = value[i]; }
-    void SetHitErrorsList(std::vector<std::string> value) { HitErrorsList = value; }
+  // Setters
+  void SetHitFeb(int value) { HitFeb = value; }
+  void SetHitFebChannel(int value) { HitFebChannel = value; }
+  void SetHitCell0Time(double value) { HitCell0Time = value; }
+  void SetHitTotValue(double value) { HitTotValue = value; }
+  void SetHitWaveform(const std::vector<double>& waveform) { HitWaveform = waveform; }
+  void SetHitId(int value) { HitId = value; }
+  void SetHitSampic(int value) { HitSampic = value; }
+  void SetHitDaqChannel(int value) { HitDaqChannel = value; }
+  void SetHitPlane(int value) { HitPlane = value; }
+  void SetHitBar(int value) { HitBar = value; }
+  void SetHitEdge(int value) { HitEdge = value; }
+  void SetHitBaseline(double value) { HitBaseline = value; }
+  void SetHitRawPeak(double value) { HitRawPeak = value; }
+  void SetHitPeak(double value) { HitPeak = value; }
+  void SetHitIsSaturated(bool value) { HitIsSaturated = value; }
+  void SetHitPeakSample(int value) { HitPeakSample = value; }
+  void SetHitPeakTime(double value) { HitPeakTime = value; }
+  void SetHitVoltageIntegral(double value) { HitVoltageIntegral = value; }
+  void SetHitChannelOnPlane(int value) { HitChannelOnPlane = value; }
+  void SetHitRawTotValue(double value) { HitRawTotValue = value; }
+  void SetHitUnixTime(double value) { HitUnixTime = value; }
+  void SetHitSampleLength(double value) { HitSampleLength = value; }
+  void SetHitFitSuccess(bool value) { HitFitSuccess = value; }
+  void SetHitFitParameter(const double value[6]) { for (int i = 0; i < 6; i++) HitFitParameter[i] = value[i]; }
+  void SetHitErrorsList(const std::vector<std::string>& value) { HitErrorsList = value; }
 
-    // Getters
+  // Getters
   [[nodiscard]] bool GetHitFitSuccess() const { return HitFitSuccess; }
   [[nodiscard]] bool GetHitIsSaturated() const { return HitIsSaturated; }
   [[nodiscard]] int GetHitID() const { return HitId; }
@@ -110,47 +110,48 @@ public:
   [[nodiscard]] TF1 GetHitFitFunction() const { return HitFitFunction; }
 
 
-    // non-const getters
+  // non-const getters
   double* GetHitFitParameter() { return HitFitParameter; }
+  const std::vector<double>& GetHitWaveform() const { return HitWaveform; }
   std::vector<double>& GetHitWaveform() { return HitWaveform; }
 
 private:
 
-    // Variables
-    // Read from input file
-    int HitFeb {-1};
-    int HitFebChannel{-1};
-    double HitCell0Time{-1};
-    double HitTotValue{-1};
-    std::vector<double> HitWaveform = {};
+  // Variables
+  // Read from input file
+  int HitFeb {-1};
+  int HitFebChannel{-1};
+  double HitCell0Time{-1};
+  double HitTotValue{-1};
+  std::vector<double> HitWaveform{};
 
-    // Computed
-    int HitId{-1};
-    int HitSampic{-1};
-    int HitDaqChannel{-1}; // not too strictly needed but better to have it
-    int HitPlane{-1}; // dictionary is U=0, D=1, T=2, B=3, L=4, R=5
-    int HitBar{-1};
-    int HitEdge{-1}; // 0 is L, 1 is R
-    double HitBaseline{-1};
-    double HitRawPeak{-1};
-    double HitPeak{-1};
-    int HitPeakSample{-1};
-    double HitPeakTime{-1}; // for now it's inside readout window
-    double HitVoltageIntegral{-1};
-    bool HitIsSaturated{false};
+  // Computed
+  int HitId{-1};
+  int HitSampic{-1};
+  int HitDaqChannel{-1}; // not too strictly needed but better to have it
+  int HitPlane{-1}; // dictionary is U=0, D=1, T=2, B=3, L=4, R=5
+  int HitBar{-1};
+  int HitEdge{-1}; // 0 is L, 1 is R
+  double HitBaseline{-1};
+  double HitRawPeak{-1};
+  double HitPeak{-1};
+  int HitPeakSample{-1};
+  double HitPeakTime{-1}; // for now it's inside readout window
+  double HitVoltageIntegral{-1};
+  bool HitIsSaturated{false};
 
-    // Might remove
-    int HitChannelOnPlane{-1};
-    double HitRawTotValue{-1};
-    double HitUnixTime{-1};
+  // Might remove
+  int HitChannelOnPlane{-1};
+  double HitRawTotValue{-1};
+  double HitUnixTime{-1};
 
-    // Fit
-    double HitSampleLength{-1}; // taken from run
-    bool HitFitSuccess {false};
-    double HitFitParameter[6];
-    TF1 HitFitFunction {"HitFitFunction", FitFunction, 0, 0, 6};
+  // Fit
+  double HitSampleLength{-1}; // taken from run
+  bool HitFitSuccess {false};
+  double HitFitParameter[6];
+  TF1 HitFitFunction {"HitFitFunction", FitFunction, 0, 0, 6};
 
-    std::vector <std::string> HitErrorsList = {}; 
+  std::vector <std::string> HitErrorsList = {};
 };
 
 

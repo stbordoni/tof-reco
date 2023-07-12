@@ -121,15 +121,22 @@ void MidasInterface::fillSampicEvent(){
 
   // RawDataSize
   if( not rawDataSize.empty() ) _sampicEventBuffer_.TriggerData.RawDataSize = rawDataSize[0];
-  for( int iByte = 0 ; iByte < _sampicEventBuffer_.TriggerData.RawDataSize ; iByte++ ){
-    _sampicEventBuffer_.TriggerData.RawData[iByte] = triggerRawDataList[iByte];
+
+  if(triggerRawDataList.size() == _sampicEventBuffer_.TriggerData.RawDataSize ){
+    for( int iByte = 0 ; iByte < _sampicEventBuffer_.TriggerData.RawDataSize ; iByte++ ){
+      _sampicEventBuffer_.TriggerData.RawData[iByte] = triggerRawDataList[iByte];
+    }
+  }
+  else{
+    LogError << GET_VAR_NAME_VALUE(triggerRawDataList.size()) << std::endl;
   }
 
   // NbOfTriggers
   if( not nbOfTriggers.empty() ) _sampicEventBuffer_.TriggerData.NbOfTriggers = nbOfTriggers[0];
   else _sampicEventBuffer_.TriggerData.NbOfTriggers = 0;
+
   for( int iTrig = 0 ; iTrig < _sampicEventBuffer_.TriggerData.NbOfTriggers ; iTrig++ ){
-    _sampicEventBuffer_.TriggerData.TriggerIDFromFPGA[iTrig] = triggerIDFromFPGAList[iTrig];
+    if(not triggerIDFromFPGAList.empty()) _sampicEventBuffer_.TriggerData.TriggerIDFromFPGA[iTrig] = triggerIDFromFPGAList[iTrig];
     _sampicEventBuffer_.TriggerData.TriggerIDFromExtTrig[iTrig] = triggerIDFromExtTrigList[iTrig];
     _sampicEventBuffer_.TriggerData.TriggerTimeStamp[iTrig] = triggerTimeStampList[iTrig];
     _sampicEventBuffer_.TriggerData.SpillNumberFromExtTrig[iTrig] = spillNumberFromExtTrigList[iTrig];
@@ -150,10 +157,10 @@ void MidasInterface::printSampicEvent() const {
         LogScopeIndent;
         LogInfo << "SampicIndex(" << _sampicEventBuffer_.Hit[iHit].SampicIndex << ")";
         LogInfo << ", FeBoardIndex(" << _sampicEventBuffer_.Hit[iHit].FeBoardIndex << ")";
-        LogInfo << ", Channel(" << _sampicEventBuffer_.Hit[iHit].Channel << ")" << std::endl;
-        LogInfo << ", ChannelIndex(" << _sampicEventBuffer_.Hit[iHit].ChannelIndex << ")" << std::endl;
-        LogInfo << "FirstCellTimeStamp: " << _sampicEventBuffer_.Hit[iHit].FirstCellTimeStamp << std::endl;
-        LogInfo << "TOTValue: " << _sampicEventBuffer_.Hit[iHit].TOTValue << std::endl;
+        LogInfo << ", Channel(" << _sampicEventBuffer_.Hit[iHit].Channel << ")";
+        LogInfo << ", ChannelIndex(" << _sampicEventBuffer_.Hit[iHit].ChannelIndex << ")";
+        LogInfo << ", FirstCellTimeStamp(" << _sampicEventBuffer_.Hit[iHit].FirstCellTimeStamp << ")";
+        LogInfo << ", TOTValue(" << _sampicEventBuffer_.Hit[iHit].TOTValue << ")" << std::endl;
 
         LogInfo << "RawDataSamples: { ";
         for(auto elm : _sampicEventBuffer_.Hit[iHit].RawDataSamples){ LogInfo << elm << ", "; }
@@ -198,7 +205,8 @@ void MidasInterface::printSampicEvent() const {
       for(int i=0 ; i<_sampicEventBuffer_.TriggerData.NbOfTriggers ; i++ ){ LogInfo << _sampicEventBuffer_.TriggerData.RawExtraWord[i] << ", "; }
       LogInfo << " }" << std::endl;
     }
-    LogThrowIf(_sampicEventBuffer_.TriggerData.RawDataSize != 0, "FOUND DATA!");
+//    LogThrowIf(_sampicEventBuffer_.TriggerData.RawDataSize != 0, "FOUND DATA!");
+//    LogThrowIf(_sampicEventBuffer_.TriggerData.NbOfTriggers != 0, "FOUND TRIGGERS");
 
   }
 

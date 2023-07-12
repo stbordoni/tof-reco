@@ -3,10 +3,10 @@
 #include "TofHit.h"
 #include "TofSignal.h"
 
-TofEvent::TofEvent(){
 
+void TofEvent::printEventInfo(){
+  std::cout << "Event size: " << EventSignalsList.size() << std::endl;
 }
-
 void TofEvent::EventCreateSignals(){
 
     bool created_new_signal = true;
@@ -63,11 +63,8 @@ void TofEvent::EventCreateSignals(){
     
     }
 
-    EventSize = EventSignalsList.size();
     // std::cout << "Created " << EventSignalsList.size() << " signals" << std::endl;
-
 }
-
 void TofEvent::EventComputeTimeOfFlight(){
 
     // if there are exactly two signals having SignalType == 3, then compute the time of flight
@@ -99,10 +96,5 @@ void TofEvent::EventComputeTimeOfFlight(){
         // std::cout << " Computed time of flight: " << EventTimeOfFlight << std::endl;
     }
 
-}
-
-
-void TofEvent::EventGetEventInfo(){
-    std::cout << "Event size: " << EventSize << std::endl;
 }
 

@@ -10,6 +10,8 @@
 #include "TApplication.h"
 #include "TH1F.h"
 
+#include "GenericToolbox.h"
+#include "GenericToolbox.RawDataArray.h"
 #include "CmdLineParser.h"
 #include "Logger.h"
 
@@ -37,6 +39,7 @@ int main(int argc, char *argv[]){
   clp.addOption("software", {"-s", "--software"}, "Specify weather if the DAQ software was linux or windows.");
   clp.addOption("runFullPath", {"-r", "--run"}, "Run full path.");
   clp.addOption("outputDir", {"-o", "--output"}, "Specify output directory path");
+  clp.addOption("saveTree", {"--save-tree"}, "Export reco hits to TTree in provided file name");
 
   clp.addDummyOption("Triggers");
   clp.addTriggerOption("verboseMode", {"-v"}, "Printout event info");
@@ -78,6 +81,49 @@ int main(int argc, char *argv[]){
   thisRun.RunCreateEvents();
   thisRun.RunPrintErrors();
 
+  if( clp.isOptionTriggered("saveTree") ){
+    LogWarning << "Save tree mode triggered..." << std::endl;
+
+    std::string outFilePath = GenericToolbox::joinPath(output_directory, clp.getOptionVal<std::string>("saveTree"));
+    LogInfo << "Opening output file: " << outFilePath << std::endl;
+    auto outFile = std::make_unique<TFile>( outFilePath.c_str(), "RECREATE" );
+    auto* outTree = new TTree("TofEvents", "TofEvents");
+
+    double timeOfFlight{};
+    outTree->Branch("timeOfFlight", &timeOfFlight);
+
+    int maxSignalPerEvent{32};
+
+    GenericToolbox::RawDataArray tofSignalArr;
+    std::map<std::string, std::function<void(GenericToolbox::RawDataArray&, const std::vector<TofSignal>&)>> leafDictionary;
+    leafDictionary["signalType["+std::to_string(maxSignalPerEvent)+"]/D"] = [&](GenericToolbox::RawDataArray& arr_, const std::vector<TofSignal>& ev_){ for(int i=0;i<maxSignalPerEvent;i++){ arr_.writeRawData(ev_[i].GetSignalType()); } };
+    std::string leavesDefStr;
+    for( auto& leafDef : leafDictionary ){
+      if( not leavesDefStr.empty() ) leavesDefStr += ":";
+      leavesDefStr += leafDef.first;
+      leafDef.second(tofSignalArr, thisRun.GetRunEventsList()[0].GetEventSignalsList()); // resize buffer
+    }
+    tofSignalArr.lockArraySize();
+    outTree->Branch("TofSignal", &tofSignalArr.getRawDataArray()[0], leavesDefStr.c_str());
+
+
+
+
+    size_t iEvt{0}; size_t nEvt{thisRun.GetRunEventsList().size()};
+    for( auto& tofEvent : thisRun.GetRunEventsList() ){
+      GenericToolbox::displayProgressBar(iEvt++, nEvt, LogWarning.getPrefixString() + "Saving events to ttree");
+      timeOfFlight = tofEvent.GetEventTimeOfFlight();
+
+      outTree->Fill();
+    }
+
+    outTree->Write();
+    outFile->Close();
+
+    exit( EXIT_SUCCESS );
+  }
+
+
   // read AnalysisSettings.json
   std::string RunAnalysisSettingsFile = "../../../AnalysisSettings.json"; 
   std::ifstream RunAnalysisSettingsStream(RunAnalysisSettingsFile.c_str());
@@ -95,8 +141,8 @@ int main(int argc, char *argv[]){
 
   //////////////////////////////////////////////////////////////
   // ROOT app and objects
-  TApplication *app = new TApplication("myapp", &argc, argv);
-  TObjArray *hist_list = new TObjArray();
+  auto *app = new TApplication("myapp", &argc, argv);
+  auto *hist_list = new TObjArray();
 
   TH1F *h_signalBar = new TH1F("h_signalBar", Form("SignalBar, run%i",thisRun.GetRunNumber()), 20, -0.5, 19.5);
   h_signalBar->GetXaxis()->SetTitle("Bar");
