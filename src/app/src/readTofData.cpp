@@ -10,6 +10,7 @@
 #include "TApplication.h"
 #include "TH1F.h"
 
+#include "GenericToolbox.h"
 #include "CmdLineParser.h"
 #include "Logger.h"
 
@@ -37,6 +38,7 @@ int main(int argc, char *argv[]){
   clp.addOption("software", {"-s", "--software"}, "Specify weather if the DAQ software was linux or windows.");
   clp.addOption("runFullPath", {"-r", "--run"}, "Run full path.");
   clp.addOption("outputDir", {"-o", "--output"}, "Specify output directory path");
+  clp.addOption("saveTree", {"--save-tree"}, "Export reco hits to TTree in provided file name");
 
   clp.addDummyOption("Triggers");
   clp.addTriggerOption("verboseMode", {"-v"}, "Printout event info");
@@ -78,6 +80,23 @@ int main(int argc, char *argv[]){
   thisRun.RunCreateEvents();
   thisRun.RunPrintErrors();
 
+  if( clp.isOptionTriggered("saveTree") ){
+    LogWarning << "Save tree mode triggered..." << std::endl;
+
+    std::string outFilePath = GenericToolbox::joinPath(output_directory, clp.getOptionVal<std::string>("saveTree"));
+    LogInfo << "Opening output file: " << outFilePath << std::endl;
+    auto outFile = std::make_unique<TFile>( outFilePath.c_str(), "RECREATE" );
+    auto* outTree = new TTree("TofEvents", "TofEvents");
+
+    auto& evList = thisRun.GetRunEventsList();
+    for( auto& tofEvent : evList ){
+
+    }
+
+    exit( EXIT_SUCCESS );
+  }
+
+
   // read AnalysisSettings.json
   std::string RunAnalysisSettingsFile = "../../../AnalysisSettings.json"; 
   std::ifstream RunAnalysisSettingsStream(RunAnalysisSettingsFile.c_str());
@@ -95,8 +114,8 @@ int main(int argc, char *argv[]){
 
   //////////////////////////////////////////////////////////////
   // ROOT app and objects
-  TApplication *app = new TApplication("myapp", &argc, argv);
-  TObjArray *hist_list = new TObjArray();
+  auto *app = new TApplication("myapp", &argc, argv);
+  auto *hist_list = new TObjArray();
 
   TH1F *h_signalBar = new TH1F("h_signalBar", Form("SignalBar, run%i",thisRun.GetRunNumber()), 20, -0.5, 19.5);
   h_signalBar->GetXaxis()->SetTitle("Bar");
