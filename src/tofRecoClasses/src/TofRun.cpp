@@ -780,7 +780,7 @@ void TofRun::RunCreateEvents(){
     }
     
     LogInfo << "Created " << RunEventsList.size() << " events." << std::endl;
-    // RunOrderedHitsList = {}; // free memory
+    if (RunNumber < 1173) RunOrderedHitsList.clear(); // free memory, dont need this when not having trigger word
 
 }
 

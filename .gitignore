@@ -1,5 +1,4 @@
 Reconstruction.code-workspace
 build/
 .vscode/
-notesEV.txt
-quickPlots.ipynb
+AnalysisSettings.json

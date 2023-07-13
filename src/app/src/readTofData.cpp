@@ -320,7 +320,6 @@ int main(int argc, char *argv[]){
   LogInfo << "Number of events: " << thisRun.GetRunEventsList().size() << std::endl;
 
   int event_counter = 0;
-  int appo_flag = true;
   for (auto  eventit : thisRun.GetRunEventsList()) {
     // LogInfo << "enter event loop" << std::endl;
     for (auto  signalit : eventit.GetEventSignalsList()) {
@@ -363,9 +362,7 @@ int main(int argc, char *argv[]){
             h_saturatedOtherEdge_plane[thisHitMin.GetHitPlane()]->Fill(thisHitMinChannel);
           }
         }
-        // if (eventit.GetEventTimeOfFlight() != 0 && appo_flag) 
         h_planes[thisHitMin.GetHitPlane()]->Fill(signalit.GetSignalPosition(), thisHitMin.GetHitBar()); 
-        // if (eventit.GetEventTimeOfFlight() != 0 && appo_flag) 
         g_hits[thisHitMin.GetHitPlane()]->SetPoint(g_hits[thisHitMin.GetHitPlane()]->GetN(), signalit.GetSignalPosition(), thisHitMin.GetHitBar());
         if (waveform_display) signalit.GetSignalHitMin().HitDisplayWaveform();
         if (waveform_display)  signalit.GetSignalHitMax().HitDisplayWaveform();
@@ -539,15 +536,14 @@ int main(int argc, char *argv[]){
   h_planes[PlaneNumbers["D"]]->Draw("COLZ");
   if (g_hits[PlaneNumbers["D"]]->GetN() > 0) g_hits[PlaneNumbers["D"]]->Draw("Psame");
   c_planes->SaveAs(Form("../../../../TofRootFiles/run%i_eventDisplay.C", thisRun.GetRunNumber()));
-  c_planes->SaveAs(Form("../../../../TofRootFiles/run%i_eventDisplay.pdf", thisRun.GetRunNumber()));
-
-  // horizontal lines for better visualization
+  // horizontal lines for better visualization, root file doesnt open if I add them before
   for (int i = 0; i < 6; i++) {  
     for (int j = 1; j <= 20; j++) {
       TLine* line = new TLine(0, j - 0.5, 220, j - 0.5);
       h_planes[i]->GetListOfFunctions()->Add(line);
     }
   }
+  c_planes->SaveAs(Form("../../../../TofRootFiles/run%i_eventDisplay.pdf", thisRun.GetRunNumber()));
 
 
   // monitoring plots
